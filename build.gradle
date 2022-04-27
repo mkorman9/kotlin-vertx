@@ -2,6 +2,7 @@ buildscript {
     ext {
         kotlinVersion = '1.5.31'
         vertxVersion = '4.2.7'
+        mutinyVersion = '2.21.0'
     }
 
     dependencies {
@@ -25,8 +26,6 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
-def mainVerticleName = 'com.github.mkorman9.vertx.MainVerticle'
-
 repositories {
     mavenCentral()
 }
@@ -43,9 +42,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.2'
     implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2'
     implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.4.Final'
-    implementation 'io.smallrye.reactive:smallrye-mutiny-vertx-core:2.21.0'
-    implementation 'io.smallrye.reactive:smallrye-mutiny-vertx-web-client:2.21.0'
-    implementation 'io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:2.21.0'
+    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
+    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
 
     annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final'
 }
@@ -56,7 +54,7 @@ shadowJar {
     mainClassName = 'io.vertx.core.Launcher'
 
     manifest {
-        attributes 'Main-Verticle': mainVerticleName
+        attributes 'Main-Verticle': 'com.github.mkorman9.vertx.MainVerticle'
     }
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
