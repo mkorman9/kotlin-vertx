@@ -6,7 +6,7 @@
     <persistence-unit name="default">
         <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
 
-        <class>com.github.mkorman9.vertx.Client</class>
+        <class>com.github.mkorman9.vertx.client.Client</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/postgres" />

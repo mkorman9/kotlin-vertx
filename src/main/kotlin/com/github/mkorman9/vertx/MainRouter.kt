@@ -1,13 +1,12 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.client.createClientRouter
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 
 class MainRouter(
     private val context: AppContext
 ) {
-    private val clientsRepository: ClientRepository = ClientRepository(context.sessionFactory)
-
     private val router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             ctx.response().endWithJson(StatusDTO(
@@ -15,11 +14,7 @@ class MainRouter(
             ))
         }
 
-        get("/clients").handler { ctx ->
-            clientsRepository.findClients()
-                .onSuccess { clientsList -> ctx.response().endWithJson(clientsList) }
-                .onFailure { failure -> ctx.fail(500, failure) }
-        }
+        mountSubRouter("/clients", createClientRouter(context))
     }
 
     fun handle(request: HttpServerRequest) {

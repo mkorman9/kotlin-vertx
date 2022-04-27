@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.client
 
 import io.vertx.core.Future
 import io.vertx.core.Promise

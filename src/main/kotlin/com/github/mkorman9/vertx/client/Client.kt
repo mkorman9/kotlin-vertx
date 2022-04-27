@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.client
 
 import java.util.UUID
 import javax.persistence.Column
