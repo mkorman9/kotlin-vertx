@@ -21,7 +21,6 @@ apply plugin: 'kotlin'
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-mainClassName = 'io.vertx.core.Launcher'
 def mainVerticleName = 'com.github.mkorman9.vertx.MainVerticle'
 
 repositories {
@@ -38,14 +37,6 @@ dependencies {
 
     implementation 'org.slf4j:slf4j-log4j12:1.7.36'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
-}
-
-run {
-    args = ['run', mainVerticleName,
-            "--launcher-class=$mainClassName",
-            "--redeploy=src/**/*.*",
-            "--on-redeploy=./gradlew classes"
-    ]
 }
 
 shadowJar {
