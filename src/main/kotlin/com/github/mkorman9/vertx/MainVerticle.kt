@@ -3,35 +3,48 @@ package com.github.mkorman9.vertx
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.impl.logging.LoggerFactory
-import io.vertx.ext.web.Router
 import io.vertx.kotlin.core.http.httpServerOptionsOf
-import io.vertx.pgclient.PgPool
-import io.vertx.sqlclient.PoolOptions
-import io.vertx.sqlclient.SqlClient
+import org.hibernate.reactive.mutiny.Mutiny
+
+import javax.persistence.Persistence
 
 class MainVerticle : AbstractVerticle() {
     private val log = LoggerFactory.getLogger(MainVerticle::class.java)
 
-    private val sqlClient = createPgClient()
-    private val clientRepository = ClientRepository(sqlClient)
-
-    private val router = Router.router(vertx).apply {
-        get("/").handler { ctx ->
-            ctx.response().endWithJson(StatusDTO(
-                status = "OK"
-            ))
-        }
-
-        get("/clients").handler { ctx ->
-            clientRepository.findClients()
-                .onSuccess { data -> ctx.response().endWithJson(data) }
-                .onFailure { handler -> ctx.fail(500, handler.cause) }
-        }
-    }
-
     override fun start(startPromise: Promise<Void>) {
         log.info("Starting main verticle...")
 
+        vertx
+            .executeBlocking<Mutiny.SessionFactory> { call ->
+                val sessionFactory = startHibernate()
+                call.complete(sessionFactory)
+            }
+            .onSuccess { sessionFactory ->
+                val appRouter = AppRouter(
+                    vertx,
+                    sessionFactory
+                )
+
+                startHttpServer(appRouter, startPromise)
+            }
+            .onFailure { handler ->
+                log.error("Failed to start Hibernate: ${handler.cause}")
+            }
+    }
+
+    private fun startHibernate(): Mutiny.SessionFactory {
+        val props = mapOf(
+            "javax.persistence.jdbc.url" to "jdbc:postgresql://localhost:5432/tsexpress",
+            "javax.persistence.jdbc.user" to "username",
+            "javax.persistence.jdbc.password" to "password"
+        )
+
+        return Persistence
+            .createEntityManagerFactory("default", props)
+            .unwrap(Mutiny.SessionFactory::class.java)
+    }
+
+    private fun startHttpServer(appRouter: AppRouter, donePromise: Promise<Void>) {
         vertx
             .createHttpServer(
                 httpServerOptionsOf(
@@ -39,21 +52,14 @@ class MainVerticle : AbstractVerticle() {
                     logActivity = true
                 )
             )
-            .requestHandler { router.handle(it) }
+            .requestHandler { appRouter.handle(it) }
             .listen { result ->
                 if (result.succeeded()) {
-                    startPromise.complete()
+                    donePromise.complete()
                     log.info("HTTP server started successfully")
                 } else {
-                    startPromise.fail(result.cause())
+                    donePromise.fail(result.cause())
                 }
             }
-    }
-
-    private fun createPgClient(): SqlClient {
-        val poolOptions = PoolOptions()
-            .setMaxSize(5)
-
-        return PgPool.client(vertx, "postgres://username:password@localhost:5432/tsexpress?sslmode=disable", poolOptions)
     }
 }
