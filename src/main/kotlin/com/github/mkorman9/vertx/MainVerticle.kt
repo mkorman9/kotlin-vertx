@@ -15,31 +15,57 @@ class MainVerticle : AbstractVerticle() {
     override fun start(startPromise: Promise<Void>) {
         log.info("Starting main verticle...")
 
-        startHibernate()
-            .onSuccess { sessionFactory ->
-                val appRouter = AppRouter(
-                    vertx,
-                    sessionFactory
-                )
+        readConfig()
+            .onSuccess { config ->
+                startHibernate(config)
+                    .onSuccess { sessionFactory ->
+                        val appContext = AppContext(
+                            vertx = vertx,
+                            config = config,
+                            sessionFactory = sessionFactory
+                        )
 
-                startHttpServer(appRouter)
-                    .onSuccess { startPromise.complete() }
+                        startHttpServer(appContext)
+                            .onSuccess { startPromise.complete() }
+                            .onFailure {
+                                log.error("Failed to start HTTP server: $it")
+                                startPromise.fail(it)
+                            }
+                    }
                     .onFailure {
-                        log.error("Failed to start HTTP server")
+                        log.error("Failed to start Hibernate: $it")
                         startPromise.fail(it)
                     }
             }
             .onFailure {
-                log.error("Failed to start Hibernate")
+                log.error("Failed to read configuration file: $it")
                 startPromise.fail(it)
             }
     }
 
-    private fun startHibernate(): Future<Mutiny.SessionFactory> {
+    private fun readConfig(): Future<Config> {
+        val promise = Promise.promise<Config>()
+
+        vertx
+            .fileSystem()
+            .readFile(System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
+            .onSuccess {
+                try {
+                    promise.complete(parseConfig(it))
+                } catch (e: Exception) {
+                    promise.fail(e)
+                }
+            }
+            .onFailure { promise.fail(it) }
+
+        return promise.future()
+    }
+
+    private fun startHibernate(config: Config): Future<Mutiny.SessionFactory> {
         val props = mapOf(
-            "javax.persistence.jdbc.url" to "jdbc:postgresql://localhost:5432/tsexpress",
-            "javax.persistence.jdbc.user" to "username",
-            "javax.persistence.jdbc.password" to "password"
+            "javax.persistence.jdbc.url" to config.db.uri,
+            "javax.persistence.jdbc.user" to config.db.user,
+            "javax.persistence.jdbc.password" to config.db.password
         )
 
         return vertx
@@ -52,17 +78,19 @@ class MainVerticle : AbstractVerticle() {
             }
     }
 
-    private fun startHttpServer(appRouter: AppRouter): Future<Void> {
+    private fun startHttpServer(context: AppContext): Future<Void> {
         val promise = Promise.promise<Void>()
+        val mainRouter = MainRouter(context)
 
         vertx
             .createHttpServer(
                 httpServerOptionsOf(
-                    port = 8080,
+                    host = context.config.server?.host ?: "0.0.0.0",
+                    port = context.config.server?.port ?: 8080,
                     logActivity = true
                 )
             )
-            .requestHandler { appRouter.handle(it) }
+            .requestHandler { mainRouter.handle(it) }
             .listen { result ->
                 if (result.succeeded()) {
                     promise.complete()

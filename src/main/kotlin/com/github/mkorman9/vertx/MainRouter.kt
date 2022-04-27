@@ -1,17 +1,14 @@
 package com.github.mkorman9.vertx
 
-import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 
-class AppRouter(
-    private val vertx: Vertx,
-    private val sessionFactory: SessionFactory
+class MainRouter(
+    private val context: AppContext
 ) {
-    private val clientsRepository: ClientRepository = ClientRepository(sessionFactory)
+    private val clientsRepository: ClientRepository = ClientRepository(context.sessionFactory)
 
-    private val router = Router.router(vertx).apply {
+    private val router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             ctx.response().endWithJson(StatusDTO(
                 status = "OK"
