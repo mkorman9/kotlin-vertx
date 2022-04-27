@@ -2,6 +2,7 @@ buildscript {
     ext {
         kotlinVersion = '1.5.31'
         vertxVersion = '4.2.7'
+        jacksonVersion = '2.13.2'
         mutinyVersion = '2.21.0'
     }
 
@@ -38,9 +39,10 @@ dependencies {
     implementation "io.vertx:vertx-lang-kotlin:$vertxVersion"
 
     implementation 'org.slf4j:slf4j-log4j12:1.7.36'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.2'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2'
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.2.2"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.4.Final'
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"

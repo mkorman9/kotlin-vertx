@@ -1,9 +1,13 @@
 package com.github.mkorman9.vertx
 
+import com.fasterxml.jackson.databind.util.StdDateFormat
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import org.hibernate.reactive.mutiny.Mutiny
 
@@ -14,6 +18,8 @@ class MainVerticle : AbstractVerticle() {
 
     override fun start(startPromise: Promise<Void>) {
         log.info("Starting main verticle...")
+
+        configureJsonCodec()
 
         readConfig()
             .onSuccess { config ->
@@ -41,6 +47,14 @@ class MainVerticle : AbstractVerticle() {
                 log.error("Failed to read configuration file: $it")
                 startPromise.fail(it)
             }
+    }
+
+    private fun configureJsonCodec() {
+        val objectMapper = DatabindCodec.mapper()
+        objectMapper.registerModule(KotlinModule.Builder().build())
+        objectMapper.registerModule(JavaTimeModule())
+
+        objectMapper.dateFormat = StdDateFormat()
     }
 
     private fun readConfig(): Future<Config> {
