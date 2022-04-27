@@ -9,25 +9,13 @@
         <class>com.github.mkorman9.vertx.Client</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.url"
-                      value="jdbc:postgresql://localhost/postgres"
-            />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/postgres" />
+            <property name="javax.persistence.jdbc.user" value="username" />
+            <property name="javax.persistence.jdbc.password" value="password" />
 
-            <!-- Credentials -->
-            <property name="javax.persistence.jdbc.user"
-                      value="username"
-            />
-            <property name="javax.persistence.jdbc.password"
-                      value="password"
-            />
+            <property name="hibernate.connection.pool_size" value="5" />
 
-            <property name="hibernate.connection.pool_size"
-                      value="5"
-            />
-
-            <property name="javax.persistence.schema-generation.database.action"
-                      value="validate"
-            />
+            <property name="javax.persistence.schema-generation.database.action" value="validate" />
 
             <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.format_sql" value="false" />
