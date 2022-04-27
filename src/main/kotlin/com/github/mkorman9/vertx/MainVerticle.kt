@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -14,37 +15,42 @@ class MainVerticle : AbstractVerticle() {
     override fun start(startPromise: Promise<Void>) {
         log.info("Starting main verticle...")
 
-        vertx
-            .executeBlocking<Mutiny.SessionFactory> { call ->
-                val sessionFactory = startHibernate()
-                call.complete(sessionFactory)
-            }
+        startHibernate()
             .onSuccess { sessionFactory ->
                 val appRouter = AppRouter(
                     vertx,
                     sessionFactory
                 )
 
-                startHttpServer(appRouter, startPromise)
+                startHttpServer(appRouter)
+                    .onSuccess { startPromise.complete() }
+                    .onFailure { startPromise.fail(it) }
             }
             .onFailure { handler ->
                 log.error("Failed to start Hibernate: ${handler.cause}")
             }
     }
 
-    private fun startHibernate(): Mutiny.SessionFactory {
+    private fun startHibernate(): Future<Mutiny.SessionFactory> {
         val props = mapOf(
             "javax.persistence.jdbc.url" to "jdbc:postgresql://localhost:5432/tsexpress",
             "javax.persistence.jdbc.user" to "username",
             "javax.persistence.jdbc.password" to "password"
         )
 
-        return Persistence
-            .createEntityManagerFactory("default", props)
-            .unwrap(Mutiny.SessionFactory::class.java)
+        return vertx
+            .executeBlocking { call ->
+                val sessionFactory = Persistence
+                    .createEntityManagerFactory("default", props)
+                    .unwrap(Mutiny.SessionFactory::class.java)
+
+                call.complete(sessionFactory)
+            }
     }
 
-    private fun startHttpServer(appRouter: AppRouter, donePromise: Promise<Void>) {
+    private fun startHttpServer(appRouter: AppRouter): Future<Void> {
+        val promise = Promise.promise<Void>()
+
         vertx
             .createHttpServer(
                 httpServerOptionsOf(
@@ -55,11 +61,13 @@ class MainVerticle : AbstractVerticle() {
             .requestHandler { appRouter.handle(it) }
             .listen { result ->
                 if (result.succeeded()) {
-                    donePromise.complete()
+                    promise.complete()
                     log.info("HTTP server started successfully")
                 } else {
-                    donePromise.fail(result.cause())
+                    promise.fail(result.cause())
                 }
             }
+
+        return promise.future()
     }
 }
