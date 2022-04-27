@@ -20,9 +20,8 @@ class AppRouter(
 
         get("/clients").handler { ctx ->
             clientsRepository.findClients()
-                .subscribe().with { clientsList ->
-                    ctx.response().endWithJson(clientsList)
-                }
+                .onSuccess { clientsList -> ctx.response().endWithJson(clientsList) }
+                .onFailure { failure -> ctx.fail(500, failure) }
         }
     }
 
