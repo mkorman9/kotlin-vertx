@@ -24,10 +24,14 @@ class MainVerticle : AbstractVerticle() {
 
                 startHttpServer(appRouter)
                     .onSuccess { startPromise.complete() }
-                    .onFailure { startPromise.fail(it) }
+                    .onFailure {
+                        log.error("Failed to start HTTP server")
+                        startPromise.fail(it)
+                    }
             }
-            .onFailure { handler ->
-                log.error("Failed to start Hibernate: ${handler.cause}")
+            .onFailure {
+                log.error("Failed to start Hibernate")
+                startPromise.fail(it)
             }
     }
 
