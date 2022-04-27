@@ -16,8 +16,8 @@ class ClientRepository(
                 session.createQuery("from Client", Client::class.java).resultList
             }
             .subscribe().with(
-                { item -> promise.complete(item) },
-                { failure -> promise.fail(failure) }
+                { promise.complete(it) },
+                { promise.fail(it) }
             )
 
         return promise.future()
