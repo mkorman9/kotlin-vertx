@@ -44,4 +44,19 @@ class ClientRepository(
 
         return promise.future()
     }
+
+    fun add(client: Client): Future<Void> {
+        val promise = Promise.promise<Void>()
+
+        sessionFactory
+            .withSession { session ->
+                session.persist(client)
+            }
+            .subscribe().with(
+                { promise.complete() },
+                { promise.fail(it) }
+            )
+
+        return promise.future()
+    }
 }

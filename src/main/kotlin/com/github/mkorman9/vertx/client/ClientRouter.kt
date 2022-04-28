@@ -1,8 +1,6 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.AppContext
-import com.github.mkorman9.vertx.StatusDTO
-import com.github.mkorman9.vertx.endWithJson
+import com.github.mkorman9.vertx.*
 import io.vertx.ext.web.Router
 
 fun createClientRouter(context: AppContext): Router {
@@ -29,6 +27,14 @@ fun createClientRouter(context: AppContext): Router {
                     }
                 }
                 .onFailure { failure -> ctx.fail(500, failure) }
+        }
+
+        post("/").handler { ctx ->
+            ctx.handleJsonBody<ClientAddPayload> { payload ->
+                // TODO
+
+                ctx.response().endWithJson(StatusDTO(status = "ok"))
+            }
         }
     }
 }

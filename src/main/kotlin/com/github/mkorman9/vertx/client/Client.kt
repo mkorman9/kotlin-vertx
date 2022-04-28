@@ -13,7 +13,7 @@ data class Client(
     val id: UUID,
 
     @Column(name = "gender", columnDefinition = "CHAR(1)")
-    val gender: String,
+    val gender: String = "-",
 
     @Column(name = "first_name")
     val firstName: String,
@@ -22,21 +22,21 @@ data class Client(
     val lastName: String,
 
     @Column(name = "home_address")
-    val address: String,
+    val address: String? = null,
 
     @Column(name = "phone_number")
-    val phoneNumber: String,
+    val phoneNumber: String? = null,
 
     @Column(name = "email")
-    val email: String,
+    val email: String? = null,
 
     @Column(name = "birth_date")
-    val birthDate: LocalDateTime,
+    val birthDate: LocalDateTime? = null,
 
     @Column(name = "deleted")
     @JsonIgnore
-    val deleted: Boolean,
+    val deleted: Boolean = false,
 
     @OneToMany(mappedBy = "clientId", fetch = FetchType.EAGER)
-    val creditCards: List<CreditCard>
+    val creditCards: List<CreditCard> = listOf()
 )
