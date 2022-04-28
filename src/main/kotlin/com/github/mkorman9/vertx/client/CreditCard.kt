@@ -13,10 +13,10 @@ data class CreditCard(
     @JsonIgnore
     val clientId: UUID,
 
-    @ManyToOne
-    @JoinColumn(name = "client_id", nullable = false, insertable = false, updatable = false)
-    @JsonIgnore
-    val client: Client,
+//    @ManyToOne
+//    @JoinColumn(name = "client_id", nullable = false, insertable = false, updatable = false)
+//    @JsonIgnore
+//    val client: Client,
 
     @Id
     @Column(name = "number")

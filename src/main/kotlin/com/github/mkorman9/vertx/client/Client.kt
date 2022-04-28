@@ -37,6 +37,6 @@ data class Client(
     @JsonIgnore
     val deleted: Boolean,
 
-    @OneToMany(mappedBy = "client", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "clientId", fetch = FetchType.EAGER)
     val creditCards: List<CreditCard>
 )
