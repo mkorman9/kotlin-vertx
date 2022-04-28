@@ -8,13 +8,28 @@ class MainRouter(
     private val context: AppContext
 ) {
     private val router = Router.router(context.vertx).apply {
-        get("/").handler { ctx ->
+        mountSubRouter("/clients", createClientRouter(context))
+
+        get("/health").handler { ctx ->
             ctx.response().endWithJson(StatusDTO(
-                status = "OK"
+                status = "ok",
+                message = "healthy"
             ))
         }
 
-        mountSubRouter("/clients", createClientRouter(context))
+        errorHandler(404) { ctx ->
+            ctx.response().endWithJson(StatusDTO(
+                status = "error",
+                message = "not found"
+            ))
+        }
+
+        errorHandler(500) { ctx ->
+            ctx.response().endWithJson(StatusDTO(
+                status = "error",
+                message = "internal server error"
+            ))
+        }
     }
 
     fun handle(request: HttpServerRequest) {
