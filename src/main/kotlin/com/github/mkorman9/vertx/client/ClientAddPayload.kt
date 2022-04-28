@@ -14,5 +14,5 @@ data class ClientAddPayload(
 )
 
 data class ClientAddCreditCardPayload(
-    val number: String?
+    val number: String
 )

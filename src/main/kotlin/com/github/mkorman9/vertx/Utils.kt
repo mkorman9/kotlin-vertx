@@ -18,8 +18,10 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
         val payload = try {
             DatabindCodec.mapper().readValue(body.bytes, T::class.java)
         } catch (e: JsonMappingException) {
-            val field = e.path[0].fieldName
-            val code = if (e.cause is MissingKotlinParameterException) "required" else "format"
+            val field = e.path.joinToString(".") { if (it.fieldName != null) it.fieldName else "${it.index}" }
+            val code =
+                if (e is MissingKotlinParameterException || e.cause is MissingKotlinParameterException) "required"
+                else "format"
 
             response().setStatusCode(400).endWithJson(
                 StatusDTO(
