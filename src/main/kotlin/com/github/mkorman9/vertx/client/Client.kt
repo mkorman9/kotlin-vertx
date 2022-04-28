@@ -1,11 +1,9 @@
 package com.github.mkorman9.vertx.client
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
 import java.util.UUID
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 @Entity(name = "Client")
 @Table(name = "clients")
@@ -36,5 +34,9 @@ data class Client(
     val birthDate: LocalDateTime,
 
     @Column(name = "deleted")
-    val deleted: Boolean
+    @JsonIgnore
+    val deleted: Boolean,
+
+    @OneToMany(mappedBy = "client", fetch = FetchType.EAGER)
+    val creditCards: List<CreditCard>
 )

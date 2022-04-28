@@ -7,6 +7,7 @@
         <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
 
         <class>com.github.mkorman9.vertx.client.Client</class>
+        <class>com.github.mkorman9.vertx.client.CreditCard</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/postgres" />
