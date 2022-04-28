@@ -3,50 +3,40 @@ package com.github.mkorman9.vertx
 import com.fasterxml.jackson.databind.util.StdDateFormat
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
-import io.vertx.core.Promise
+import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.http.httpServerOptionsOf
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
 import org.hibernate.reactive.mutiny.Mutiny
-
 import javax.persistence.Persistence
 
-class MainVerticle : AbstractVerticle() {
+class MainVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(MainVerticle::class.java)
 
-    override fun start(startPromise: Promise<Void>) {
-        log.info("Starting main verticle...")
+    override suspend fun start() {
+        log.info("Starting MainVerticle...")
 
         configureJsonCodec()
 
-        readConfig()
-            .onSuccess { config ->
-                startHibernate(config)
-                    .onSuccess { sessionFactory ->
-                        val appContext = AppContext(
-                            vertx = vertx,
-                            config = config,
-                            sessionFactory = sessionFactory
-                        )
+        try {
+            val config = readConfig().await()
+            val sessionFactory = startHibernate(config).await()
+            val appContext = AppContext(
+                vertx = vertx,
+                config = config,
+                sessionFactory = sessionFactory
+            )
 
-                        startHttpServer(appContext)
-                            .onSuccess { startPromise.complete() }
-                            .onFailure {
-                                log.error("Failed to start HTTP server: $it")
-                                startPromise.fail(it)
-                            }
-                    }
-                    .onFailure {
-                        log.error("Failed to start Hibernate: $it")
-                        startPromise.fail(it)
-                    }
-            }
-            .onFailure {
-                log.error("Failed to read configuration file: $it")
-                startPromise.fail(it)
-            }
+            startHttpServer(appContext).await()
+
+            log.info("MainVerticle started successfully")
+        } catch (e: Exception) {
+            log.error("Failed to start MainVerticle", e)
+            throw e
+        }
     }
 
     private fun configureJsonCodec() {
@@ -58,21 +48,10 @@ class MainVerticle : AbstractVerticle() {
     }
 
     private fun readConfig(): Future<Config> {
-        val promise = Promise.promise<Config>()
-
-        vertx
+        return vertx
             .fileSystem()
             .readFile(System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
-            .onSuccess {
-                try {
-                    promise.complete(parseConfig(it))
-                } catch (e: Exception) {
-                    promise.fail(e)
-                }
-            }
-            .onFailure { promise.fail(it) }
-
-        return promise.future()
+            .map { parseConfig(it) }
     }
 
     private fun startHibernate(config: Config): Future<Mutiny.SessionFactory> {
@@ -92,11 +71,10 @@ class MainVerticle : AbstractVerticle() {
             }
     }
 
-    private fun startHttpServer(context: AppContext): Future<Void> {
-        val promise = Promise.promise<Void>()
+    private fun startHttpServer(context: AppContext): Future<HttpServer> {
         val mainRouter = MainRouter(context)
 
-        vertx
+        return vertx
             .createHttpServer(
                 httpServerOptionsOf(
                     host = context.config.server?.host ?: "0.0.0.0",
@@ -105,15 +83,6 @@ class MainVerticle : AbstractVerticle() {
                 )
             )
             .requestHandler { mainRouter.handle(it) }
-            .listen { result ->
-                if (result.succeeded()) {
-                    promise.complete()
-                    log.info("HTTP server started successfully")
-                } else {
-                    promise.fail(result.cause())
-                }
-            }
-
-        return promise.future()
+            .listen()
     }
 }
