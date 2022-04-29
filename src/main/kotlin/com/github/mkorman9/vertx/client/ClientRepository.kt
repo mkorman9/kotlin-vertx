@@ -3,7 +3,6 @@ package com.github.mkorman9.vertx.client
 import com.github.mkorman9.vertx.utils.withSession
 import com.github.mkorman9.vertx.utils.withTransaction
 import io.vertx.core.Future
-import io.vertx.core.Promise
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import java.util.*
 
