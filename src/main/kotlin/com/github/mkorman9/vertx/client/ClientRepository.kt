@@ -1,5 +1,7 @@
 package com.github.mkorman9.vertx.client
 
+import com.github.mkorman9.vertx.utils.withSession
+import com.github.mkorman9.vertx.utils.withTransaction
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -10,18 +12,9 @@ class ClientRepository(
 ) {
 
     fun findAll(): Future<List<Client>> {
-        val promise = Promise.promise<List<Client>>()
-
-        sessionFactory
-            .withSession { session ->
-                session.createQuery("from Client", Client::class.java).resultList
-            }
-            .subscribe().with(
-                { promise.complete(it) },
-                { promise.fail(it) }
-            )
-
-        return promise.future()
+        return withSession(sessionFactory) { session ->
+            session.createQuery("from Client", Client::class.java).resultList
+        }
     }
 
     fun findById(id: String): Future<Client?> {
@@ -33,32 +26,14 @@ class ClientRepository(
             return promise.future()
         }
 
-        sessionFactory
-            .withSession { session ->
-                session.find(Client::class.java, idUUID)
-            }
-            .subscribe().with(
-                { promise.complete(it) },
-                { promise.fail(it) }
-            )
-
-        return promise.future()
+        return withSession(sessionFactory) { session ->
+            session.find(Client::class.java, idUUID)
+        }
     }
 
     fun add(client: Client): Future<Void> {
-        val promise = Promise.promise<Void>()
-
-        sessionFactory
-            .withSession { session ->
-                session.withTransaction {
-                    session.persist(client)
-                }
-            }
-            .subscribe().with(
-                { promise.complete() },
-                { promise.fail(it) }
-            )
-
-        return promise.future()
+        return withTransaction(sessionFactory) { session, _ ->
+            session.persist(client)
+        }
     }
 }

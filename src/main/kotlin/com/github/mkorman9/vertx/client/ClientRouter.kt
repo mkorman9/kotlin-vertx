@@ -1,6 +1,9 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.*
+import com.github.mkorman9.vertx.utils.StatusDTO
+import com.github.mkorman9.vertx.utils.endWithJson
+import com.github.mkorman9.vertx.utils.handleJsonBody
 import io.vertx.ext.web.Router
 import java.util.*
 

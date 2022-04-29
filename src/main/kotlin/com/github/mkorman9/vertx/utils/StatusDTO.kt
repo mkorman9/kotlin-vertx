@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.utils
 
 import com.fasterxml.jackson.annotation.JsonInclude
 

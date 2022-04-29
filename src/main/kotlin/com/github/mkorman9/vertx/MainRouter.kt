@@ -1,6 +1,8 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.createClientRouter
+import com.github.mkorman9.vertx.utils.StatusDTO
+import com.github.mkorman9.vertx.utils.endWithJson
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router

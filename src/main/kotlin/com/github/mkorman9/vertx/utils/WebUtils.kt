@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
@@ -77,7 +77,7 @@ fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
             if (parts.isEmpty()) {
                 parts.add("")
             }
-            
+
             parts[parts.size - 1] += "[${p.index}]"
         }
     }
