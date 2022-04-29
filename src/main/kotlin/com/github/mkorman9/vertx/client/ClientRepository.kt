@@ -70,6 +70,18 @@ class ClientRepository(
                     if (payload.birthDate != null) {
                         client.birthDate = payload.birthDate
                     }
+                    if (payload.creditCards != null) {
+                        client.creditCards.clear()
+
+                        payload.creditCards.forEach {
+                            client.creditCards.add(
+                                CreditCard(
+                                    clientId = idUUID,
+                                    number = it.number
+                                )
+                            )
+                        }
+                    }
 
                     session.merge(client)
                     true

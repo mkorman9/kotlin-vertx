@@ -37,6 +37,11 @@ data class Client(
     @JsonIgnore
     var deleted: Boolean = false,
 
-    @OneToMany(mappedBy = "clientId", fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-    var creditCards: List<CreditCard> = listOf()
+    @OneToMany(
+        mappedBy = "clientId",
+        fetch = FetchType.EAGER,
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true
+    )
+    var creditCards: MutableList<CreditCard> = mutableListOf()
 )
