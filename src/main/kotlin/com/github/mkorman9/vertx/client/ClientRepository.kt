@@ -21,9 +21,7 @@ class ClientRepository(
         val idUUID = try {
             UUID.fromString(id)
         } catch (e: IllegalArgumentException) {
-            val promise = Promise.promise<Client?>()
-            promise.complete(null)
-            return promise.future()
+            return Future.succeededFuture(null)
         }
 
         return withSession(sessionFactory) { session ->
@@ -41,9 +39,7 @@ class ClientRepository(
         val idUUID = try {
             UUID.fromString(id)
         } catch (e: IllegalArgumentException) {
-            val promise = Promise.promise<Boolean>()
-            promise.complete(false)
-            return promise.future()
+            return Future.succeededFuture(false)
         }
 
         return withTransaction(sessionFactory) { session, _ ->

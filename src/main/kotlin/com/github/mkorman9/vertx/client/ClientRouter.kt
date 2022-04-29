@@ -46,7 +46,7 @@ fun createClientRouter(context: AppContext): Router {
                     phoneNumber = payload.phoneNumber,
                     email = payload.email,
                     birthDate = payload.birthDate,
-                    creditCards = (payload.creditCards ?: mutableListOf()).map {
+                    creditCards = (payload.creditCards ?: listOf()).map {
                         CreditCard(
                             clientId = id,
                             number = it.number
