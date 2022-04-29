@@ -11,7 +11,7 @@ data class CreditCard(
     @Id
     @Column(name = "client_id", columnDefinition = "uuid")
     @JsonIgnore
-    val clientId: UUID,
+    var clientId: UUID,
 
 //    @ManyToOne
 //    @JoinColumn(name = "client_id", nullable = false, insertable = false, updatable = false)
@@ -20,7 +20,7 @@ data class CreditCard(
 
     @Id
     @Column(name = "number")
-    val number: String
+    var number: String
 )
 
 data class CreditCardId(

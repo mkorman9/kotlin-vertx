@@ -10,33 +10,33 @@ import javax.persistence.*
 data class Client(
     @Id
     @Column(name = "id", columnDefinition = "uuid")
-    val id: UUID,
+    var id: UUID,
 
     @Column(name = "gender", columnDefinition = "CHAR(1)")
-    val gender: String = "-",
+    var gender: String = "-",
 
     @Column(name = "first_name")
-    val firstName: String,
+    var firstName: String,
 
     @Column(name = "last_name")
-    val lastName: String,
+    var lastName: String,
 
     @Column(name = "home_address")
-    val address: String? = null,
+    var address: String? = null,
 
     @Column(name = "phone_number")
-    val phoneNumber: String? = null,
+    var phoneNumber: String? = null,
 
     @Column(name = "email")
-    val email: String? = null,
+    var email: String? = null,
 
     @Column(name = "birth_date")
-    val birthDate: LocalDateTime? = null,
+    var birthDate: LocalDateTime? = null,
 
     @Column(name = "deleted")
     @JsonIgnore
-    val deleted: Boolean = false,
+    var deleted: Boolean = false,
 
     @OneToMany(mappedBy = "clientId", fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-    val creditCards: List<CreditCard> = listOf()
+    var creditCards: List<CreditCard> = listOf()
 )

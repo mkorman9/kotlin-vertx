@@ -57,5 +57,26 @@ fun createClientRouter(context: AppContext): Router {
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
         }
+
+        put("/:id").handler { ctx ->
+            ctx.handleJsonBody<ClientUpdatePayload>(context.validator) { payload ->
+                val id = ctx.pathParam("id")
+
+                clientsRepository.update(id, payload)
+                    .onSuccess { updated ->
+                        if (updated) {
+                            ctx.response().endWithJson(StatusDTO(
+                                status = "ok"
+                            ))
+                        } else {
+                            ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                                status = "error",
+                                message = "client not found"
+                            ))
+                        }
+                    }
+                    .onFailure { failure -> ctx.fail(500, failure) }
+            }
+        }
     }
 }
