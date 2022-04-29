@@ -2,7 +2,6 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.utils.withSession
 import com.github.mkorman9.vertx.utils.withTransaction
-import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -14,7 +13,7 @@ class ClientRepository(
 
     fun findAll(): Future<List<Client>> {
         return withSession(sessionFactory) { session ->
-            session.createQuery("from Client", Client::class.java).resultList
+            session.createQuery("from Client c where c.deleted = false", Client::class.java).resultList
         }
     }
 
