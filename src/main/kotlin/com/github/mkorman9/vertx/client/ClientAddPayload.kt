@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import java.time.LocalDateTime
+import javax.validation.Valid
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
@@ -30,6 +31,7 @@ data class ClientAddPayload(
 
     val birthDate: LocalDateTime?,
 
+    @field:Valid
     val creditCards: List<ClientAddCreditCardPayload>?
 )
 

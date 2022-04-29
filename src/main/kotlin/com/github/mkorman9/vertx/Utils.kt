@@ -19,7 +19,7 @@ inline fun <reified T> RoutingContext.handleJsonBody(validator: Validator? = nul
         val payload = try {
             DatabindCodec.mapper().readValue(body.bytes, T::class.java)
         } catch (e: JsonMappingException) {
-            val field = e.path.joinToString(".") { if (it.fieldName != null) it.fieldName else "${it.index}" }
+            val field = buildJsonExceptionPath(e.path)
             val code =
                 if (e is MissingKotlinParameterException || e.cause is MissingKotlinParameterException) "required"
                 else "format"
@@ -65,4 +65,18 @@ inline fun <reified T> RoutingContext.handleJsonBody(validator: Validator? = nul
 
         func.accept(payload)
     }
+}
+
+fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
+    val parts = mutableListOf<String>()
+
+    path.forEach { p ->
+        if (p.fieldName != null) {
+            parts.add(p.fieldName)
+        } else {
+            parts[parts.size - 1] += "[${p.index}]"
+        }
+    }
+
+    return parts.joinToString(".")
 }
