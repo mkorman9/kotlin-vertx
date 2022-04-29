@@ -71,15 +71,19 @@ class ClientRepository(
                         client.birthDate = payload.birthDate
                     }
                     if (payload.creditCards != null) {
-                        client.creditCards.clear()
+                        client.creditCards.removeIf { cc1 ->
+                            !payload.creditCards.any { cc2 -> cc1.number == cc2.number }
+                        }
 
-                        payload.creditCards.forEach {
-                            client.creditCards.add(
-                                CreditCard(
-                                    clientId = idUUID,
-                                    number = it.number
+                        payload.creditCards.forEach { cc1 ->
+                            if(!client.creditCards.any { cc2 -> cc1.number == cc2.number }) {
+                                client.creditCards.add(
+                                    CreditCard(
+                                        clientId = idUUID,
+                                        number = cc1.number
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
 
