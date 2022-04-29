@@ -11,7 +11,10 @@ import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import org.hibernate.reactive.mutiny.Mutiny
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
 import javax.persistence.Persistence
+import javax.validation.Validation
+import javax.validation.Validator
 
 class MainVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(MainVerticle::class.java)
@@ -24,10 +27,12 @@ class MainVerticle : CoroutineVerticle() {
         try {
             val config = readConfig().await()
             val sessionFactory = startHibernate(config).await()
+            val validator = createBeanValidator()
             val appContext = AppContext(
                 vertx = vertx,
                 config = config,
-                sessionFactory = sessionFactory
+                sessionFactory = sessionFactory,
+                validator = validator
             )
 
             startHttpServer(appContext).await()
@@ -69,6 +74,14 @@ class MainVerticle : CoroutineVerticle() {
 
                 call.complete(sessionFactory)
             }
+    }
+
+    private fun createBeanValidator(): Validator {
+        return Validation.byDefaultProvider()
+            .configure()
+            .messageInterpolator(ParameterMessageInterpolator())
+            .buildValidatorFactory()
+            .validator
     }
 
     private fun startHttpServer(context: AppContext): Future<HttpServer> {

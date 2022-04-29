@@ -50,7 +50,9 @@ class ClientRepository(
 
         sessionFactory
             .withSession { session ->
-                session.persist(client)
+                session.withTransaction {
+                    session.persist(client)
+                }
             }
             .subscribe().with(
                 { promise.complete() },

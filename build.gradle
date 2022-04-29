@@ -4,6 +4,7 @@ buildscript {
         vertxVersion = '4.2.7'
         jacksonVersion = '2.13.2'
         mutinyVersion = '2.21.0'
+        hibernateVersion = '6.0.0.Final'
     }
 
     dependencies {
@@ -47,8 +48,9 @@ dependencies {
     implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.4.Final'
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
+    implementation "org.hibernate.validator:hibernate-validator:$hibernateVersion"
 
-    annotationProcessor 'org.hibernate.orm:hibernate-jpamodelgen:6.0.0.Final'
+    annotationProcessor "org.hibernate.orm:hibernate-jpamodelgen:$hibernateVersion"
 }
 
 shadowJar {

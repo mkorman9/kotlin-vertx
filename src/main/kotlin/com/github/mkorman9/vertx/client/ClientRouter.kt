@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.*
 import io.vertx.ext.web.Router
+import java.util.*
 
 fun createClientRouter(context: AppContext): Router {
     val clientsRepository = ClientRepository(context.sessionFactory)
@@ -31,9 +32,41 @@ fun createClientRouter(context: AppContext): Router {
 
         post("/").handler { ctx ->
             ctx.handleJsonBody<ClientAddPayload> { payload ->
-                // TODO
+                val violations = context.validator.validate(payload)
+                if (violations.isNotEmpty()) {
+                    ctx.response().setStatusCode(400).endWithJson(
+                        StatusDTO(
+                            status = "error",
+                            message = "validation error",
+                            causes = violations.map {
+                                Cause(it.propertyPath.toString(), it.message)
+                            }
+                        )
+                    )
 
-                ctx.response().endWithJson(StatusDTO(status = "ok"))
+                    return@handleJsonBody
+                }
+
+                val id = UUID.randomUUID()
+
+                clientsRepository.add(Client(
+                    id = id,
+                    gender = payload.gender ?: "-",
+                    firstName = payload.firstName,
+                    lastName = payload.lastName,
+                    address = payload.address,
+                    phoneNumber = payload.phoneNumber,
+                    email = payload.email,
+                    birthDate = payload.birthDate,
+                    creditCards = (payload.creditCards ?: listOf()).map {
+                        CreditCard(
+                            clientId = id,
+                            number = it.number
+                        )
+                    }
+                ))
+                    .onSuccess { ctx.response().endWithJson(ClientAddResponse(id = id.toString())) }
+                    .onFailure { failure -> ctx.fail(500, failure) }
             }
         }
     }
