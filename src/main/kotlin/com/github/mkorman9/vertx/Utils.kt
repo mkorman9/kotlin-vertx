@@ -74,6 +74,10 @@ fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
         if (p.fieldName != null) {
             parts.add(p.fieldName)
         } else {
+            if (parts.isEmpty()) {
+                parts.add("")
+            }
+            
             parts[parts.size - 1] += "[${p.index}]"
         }
     }
