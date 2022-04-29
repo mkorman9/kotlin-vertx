@@ -31,22 +31,7 @@ fun createClientRouter(context: AppContext): Router {
         }
 
         post("/").handler { ctx ->
-            ctx.handleJsonBody<ClientAddPayload> { payload ->
-                val violations = context.validator.validate(payload)
-                if (violations.isNotEmpty()) {
-                    ctx.response().setStatusCode(400).endWithJson(
-                        StatusDTO(
-                            status = "error",
-                            message = "validation error",
-                            causes = violations.map {
-                                Cause(it.propertyPath.toString(), it.message)
-                            }
-                        )
-                    )
-
-                    return@handleJsonBody
-                }
-
+            ctx.handleJsonBody<ClientAddPayload>(context.validator) { payload ->
                 val id = UUID.randomUUID()
 
                 clientsRepository.add(Client(

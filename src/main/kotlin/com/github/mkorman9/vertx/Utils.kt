@@ -7,13 +7,14 @@ import io.vertx.core.json.Json
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
+import javax.validation.Validator
 
 fun HttpServerResponse.endWithJson(obj: Any) {
     putHeader("Content-Type", "application/json")
         .end(Json.encode(obj))
 }
 
-inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
+inline fun <reified T> RoutingContext.handleJsonBody(validator: Validator? = null, func: Consumer<T>) {
     request().bodyHandler { body ->
         val payload = try {
             DatabindCodec.mapper().readValue(body.bytes, T::class.java)
@@ -43,6 +44,23 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
             )
 
             return@bodyHandler
+        }
+
+        if (validator != null) {
+            val violations = validator.validate(payload)
+            if (violations.isNotEmpty()) {
+                response().setStatusCode(400).endWithJson(
+                    StatusDTO(
+                        status = "error",
+                        message = "validation error",
+                        causes = violations.map {
+                            Cause(it.propertyPath.toString(), it.message)
+                        }
+                    )
+                )
+
+                return@bodyHandler
+            }
         }
 
         func.accept(payload)
