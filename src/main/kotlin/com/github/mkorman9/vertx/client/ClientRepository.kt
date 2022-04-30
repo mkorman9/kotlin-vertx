@@ -34,7 +34,7 @@ class ClientRepository(
         return withSession(sessionFactory) { session ->
             Uni.combine().all().unis(
                 session.createQuery(dataQuery)
-                    .setFirstResult(paging.pageNumber * paging.pageSize)
+                    .setFirstResult((paging.pageNumber - 1) * paging.pageSize)
                     .setMaxResults(paging.pageSize)
                     .resultList,
                 session.createQuery(countQuery)

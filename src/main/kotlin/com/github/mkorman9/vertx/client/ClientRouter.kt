@@ -141,13 +141,13 @@ private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClients
         null
     }
 
-    var page = request.getParam("page", "0").toInt()
-    if (page > 0) {
-        page = 0
+    var page = request.getParam("page", "1").toInt()
+    if (page < 1) {
+        page = 1
     }
 
     var pageSize = request.getParam("pageSize", "10").toInt()
-    if (pageSize < 0) {
+    if (pageSize < 1) {
         pageSize = 10
     }
     if (pageSize > 100) {
