@@ -63,8 +63,8 @@ fun createClientRouter(context: AppContext): Router {
                 val id = ctx.pathParam("id")
 
                 clientsRepository.update(id, payload)
-                    .onSuccess { updated ->
-                        if (updated) {
+                    .onSuccess { client ->
+                        if (client != null) {
                             ctx.response().endWithJson(StatusDTO(
                                 status = "ok"
                             ))

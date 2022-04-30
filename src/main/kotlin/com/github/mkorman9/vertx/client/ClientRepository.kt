@@ -34,16 +34,16 @@ class ClientRepository(
         }
     }
 
-    fun update(id: String, payload: ClientUpdatePayload): Future<Boolean> {
+    fun update(id: String, payload: ClientUpdatePayload): Future<Client?> {
         val idUUID = try {
             UUID.fromString(id)
         } catch (e: IllegalArgumentException) {
-            return Future.succeededFuture(false)
+            return Future.succeededFuture(null)
         }
 
         return withTransaction(sessionFactory) { session, _ ->
             session.find(Client::class.java, idUUID)
-                .onItem().ifNotNull().transform { client ->
+                .onItem().ifNotNull().call { client ->
                     if (payload.gender != null) {
                         client.gender = payload.gender
                     }
@@ -83,9 +83,7 @@ class ClientRepository(
                     }
 
                     session.merge(client)
-                    true
                 }
-                .onItem().ifNull().continueWith(false)
         }
     }
 
