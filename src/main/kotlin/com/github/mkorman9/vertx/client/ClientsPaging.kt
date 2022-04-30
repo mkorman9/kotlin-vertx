@@ -16,11 +16,17 @@ data class ClientsFilteringOptions(
 )
 
 data class ClientsPagingOptions(
-    val pageNumber: Int = 0,
-    val pageSize: Int = 10
+    val pageNumber: Int,
+    val pageSize: Int
 )
 
 data class ClientsSortingOptions(
-    val sortBy: String = "id",
-    val reverseSort: Boolean = false
+    val sortBy: String,
+    val sortReverse: Boolean
+)
+
+data class FindClientsParams(
+    val filtering: ClientsFilteringOptions,
+    val paging: ClientsPagingOptions,
+    val sorting: ClientsSortingOptions
 )

@@ -4,6 +4,7 @@ import com.github.mkorman9.vertx.*
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.util.*
 
@@ -12,8 +13,14 @@ fun createClientRouter(context: AppContext): Router {
 
     return Router.router(context.vertx).apply {
         get("/").handler { ctx ->
-            clientsRepository.findPaged()
-                .onSuccess { clientsList -> ctx.response().endWithJson(clientsList) }
+            val params = parseFindClientsQueryParams(ctx.request())
+
+            clientsRepository.findPaged(
+                filtering = params.filtering,
+                paging = params.paging,
+                sorting = params.sorting
+            )
+                .onSuccess { clientsPage -> ctx.response().endWithJson(clientsPage) }
                 .onFailure { failure -> ctx.fail(500, failure) }
         }
 
@@ -98,4 +105,56 @@ fun createClientRouter(context: AppContext): Router {
                 .onFailure { failure -> ctx.fail(500, failure) }
         }
     }
+}
+
+private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {
+    var genderFilter = request.getParam("filter[gender]")
+    if (!hashSetOf("-", "M", "F").contains(genderFilter)) {
+        genderFilter = null
+    }
+
+    val firstNameFilter = request.getParam("filter[firstName]")
+    val lastNameFilter = request.getParam("filter[lastName]")
+    val addressFilter = request.getParam("filter[address]")
+    val phoneNumberFilter = request.getParam("filter[phoneNumber]")
+    val emailFilter = request.getParam("filter[email]")
+
+    var page = request.getParam("page", "0").toInt()
+    if (page > 0) {
+        page = 0
+    }
+
+    var pageSize = request.getParam("pageSize", "10").toInt()
+    if (pageSize < 0) {
+        pageSize = 10
+    }
+    if (pageSize > 100) {
+        pageSize = 100
+    }
+
+    var sortBy = request.getParam("sortBy", "id")
+    if (!hashSetOf("id", "gender", "firstName", "lastName", "address", "phoneNumber", "email", "birthDate").contains(sortBy)) {
+        sortBy = "id"
+    }
+
+    val sortReverse = request.params().contains("sortReverse")
+
+    return FindClientsParams(
+        filtering = ClientsFilteringOptions(
+            gender = genderFilter,
+            firstName = firstNameFilter,
+            lastName = lastNameFilter,
+            address = addressFilter,
+            phoneNumber = phoneNumberFilter,
+            email = emailFilter
+        ),
+        paging = ClientsPagingOptions(
+            pageNumber = page,
+            pageSize = pageSize
+        ),
+        sorting = ClientsSortingOptions(
+            sortBy = sortBy,
+            sortReverse = sortReverse
+        )
+    )
 }

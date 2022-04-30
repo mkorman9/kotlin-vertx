@@ -23,9 +23,9 @@ class ClientRepository(
     }
 
     fun findPaged(
-        filtering: ClientsFilteringOptions = ClientsFilteringOptions(),
-        paging: ClientsPagingOptions = ClientsPagingOptions(),
-        sorting: ClientsSortingOptions = ClientsSortingOptions()
+        filtering: ClientsFilteringOptions,
+        paging: ClientsPagingOptions,
+        sorting: ClientsSortingOptions
     ): Future<ClientsPage> {
         val criteriaBuilder = sessionFactory.criteriaBuilder
         val countQuery = buildCountQuery(filtering, criteriaBuilder)
@@ -175,7 +175,7 @@ class ClientRepository(
         query.select(root)
         query.where(whereClause)
 
-        if (sorting.reverseSort) {
+        if (sorting.sortReverse) {
             query.orderBy(criteriaBuilder.desc(root.get<String>(sorting.sortBy)))
         } else {
             query.orderBy(criteriaBuilder.asc(root.get<String>(sorting.sortBy)))
