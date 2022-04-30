@@ -25,6 +25,13 @@ class ClientRepository(
 
         return withSession(sessionFactory) { session ->
             session.find(Client::class.java, idUUID)
+                .onItem().ifNotNull().transform { client ->
+                    if (client.deleted) {
+                        null
+                    } else {
+                        client
+                    }
+                }
         }
     }
 
