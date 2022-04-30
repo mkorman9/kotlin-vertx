@@ -78,5 +78,24 @@ fun createClientRouter(context: AppContext): Router {
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
         }
+
+        delete("/:id").handler { ctx ->
+            val id = ctx.pathParam("id")
+
+            clientsRepository.delete(id)
+                .onSuccess { deleted ->
+                    if (deleted) {
+                        ctx.response().endWithJson(StatusDTO(
+                            status = "ok"
+                        ))
+                    } else {
+                        ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                            status = "error",
+                            message = "client not found"
+                        ))
+                    }
+                }
+                .onFailure { failure -> ctx.fail(500, failure) }
+        }
     }
 }

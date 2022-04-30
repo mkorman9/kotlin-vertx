@@ -88,4 +88,22 @@ class ClientRepository(
                 .onItem().ifNull().continueWith(false)
         }
     }
+
+    fun delete(id: String): Future<Boolean> {
+        val idUUID = try {
+            UUID.fromString(id)
+        } catch (e: IllegalArgumentException) {
+            return Future.succeededFuture(false)
+        }
+
+        return withTransaction(sessionFactory) { session, _ ->
+            session.find(Client::class.java, idUUID)
+                .onItem().ifNotNull().transform { client ->
+                    client.deleted = true
+                    session.merge(client)
+                    true
+                }
+                .onItem().ifNull().continueWith(false)
+        }
+    }
 }
