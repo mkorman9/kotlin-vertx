@@ -8,7 +8,6 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
-import java.util.*
 
 fun createClientRouter(context: AppContext): Router {
     val clientsRepository = ClientRepository(context.sessionFactory)
@@ -28,6 +27,7 @@ fun createClientRouter(context: AppContext): Router {
 
         get("/:id").handler { ctx ->
             val id = ctx.pathParam("id")
+
             clientsRepository.findById(id)
                 .onSuccess { client ->
                     if (client != null) {
@@ -44,25 +44,8 @@ fun createClientRouter(context: AppContext): Router {
 
         post("/").handler { ctx ->
             ctx.handleJsonBody<ClientAddPayload>(context.validator) { payload ->
-                val id = UUID.randomUUID()
-
-                clientsRepository.add(Client(
-                    id = id,
-                    gender = payload.gender ?: "-",
-                    firstName = payload.firstName,
-                    lastName = payload.lastName,
-                    address = payload.address,
-                    phoneNumber = payload.phoneNumber,
-                    email = payload.email,
-                    birthDate = payload.birthDate,
-                    creditCards = (payload.creditCards ?: listOf()).map {
-                        CreditCard(
-                            clientId = id,
-                            number = it.number
-                        )
-                    }.toMutableList()
-                ))
-                    .onSuccess { ctx.response().endWithJson(ClientAddResponse(id = id.toString())) }
+                clientsRepository.add(payload)
+                    .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
         }

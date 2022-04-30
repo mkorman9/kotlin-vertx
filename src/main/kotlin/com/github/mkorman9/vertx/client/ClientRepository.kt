@@ -70,9 +70,26 @@ class ClientRepository(
         }
     }
 
-    fun add(client: Client): Future<Void> {
+    fun add(payload: ClientAddPayload): Future<Client> {
+        val id = UUID.randomUUID()
+
         return withTransaction(sessionFactory) { session, _ ->
-            session.persist(client)
+            session.merge(Client(
+                id = id,
+                gender = payload.gender ?: "-",
+                firstName = payload.firstName,
+                lastName = payload.lastName,
+                address = payload.address,
+                phoneNumber = payload.phoneNumber,
+                email = payload.email,
+                birthDate = payload.birthDate,
+                creditCards = (payload.creditCards ?: listOf()).map {
+                    CreditCard(
+                        clientId = id,
+                        number = it.number
+                    )
+                }.toMutableList()
+            ))
         }
     }
 
