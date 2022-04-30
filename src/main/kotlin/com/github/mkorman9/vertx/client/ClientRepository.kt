@@ -28,8 +28,8 @@ class ClientRepository(
         sorting: ClientsSortingOptions
     ): Future<ClientsPage> {
         val criteriaBuilder = sessionFactory.criteriaBuilder
-        val countQuery = buildCountQuery(filtering, criteriaBuilder)
         val dataQuery = buildDataQuery(filtering, sorting, criteriaBuilder)
+        val countQuery = buildCountQuery(filtering, criteriaBuilder)
 
         return withSession(sessionFactory) { session ->
             Uni.combine().all().unis(
@@ -220,6 +220,12 @@ class ClientRepository(
             predicates.add(
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), "%${filtering.email.lowercase()}%")
             )
+        }
+        if (filtering.bornAfter != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("birthDate"), criteriaBuilder.literal(filtering.bornAfter)))
+        }
+        if (filtering.bornBefore != null) {
+            predicates.add(criteriaBuilder.lessThan(root.get("birthDate"), criteriaBuilder.literal(filtering.bornBefore)))
         }
 
         return criteriaBuilder.and(*predicates.toTypedArray())

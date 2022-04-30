@@ -1,5 +1,7 @@
 package com.github.mkorman9.vertx.client
 
+import java.time.LocalDateTime
+
 data class ClientsPage(
     val data: List<Client>,
     val page: Int,
@@ -13,6 +15,8 @@ data class ClientsFilteringOptions(
     val address: String? = null,
     val phoneNumber: String? = null,
     val email: String? = null,
+    val bornAfter: LocalDateTime? = null,
+    val bornBefore: LocalDateTime? = null
 )
 
 data class ClientsPagingOptions(

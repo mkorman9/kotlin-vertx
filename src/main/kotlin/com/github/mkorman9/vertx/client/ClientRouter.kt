@@ -6,6 +6,8 @@ import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
+import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 import java.util.*
 
 fun createClientRouter(context: AppContext): Router {
@@ -118,6 +120,26 @@ private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClients
     val addressFilter = request.getParam("filter[address]")
     val phoneNumberFilter = request.getParam("filter[phoneNumber]")
     val emailFilter = request.getParam("filter[email]")
+    val bornAfterFilter = try {
+        val v = request.getParam("filter[bornAfter]")
+        if (v == null) {
+            null
+        } else {
+            LocalDateTime.parse(v)
+        }
+    } catch (e: DateTimeParseException) {
+        null
+    }
+    val bornBeforeFilter = try {
+        val v = request.getParam("filter[bornBefore]")
+        if (v == null) {
+            null
+        } else {
+            LocalDateTime.parse(v)
+        }
+    } catch (e: DateTimeParseException) {
+        null
+    }
 
     var page = request.getParam("page", "0").toInt()
     if (page > 0) {
@@ -146,7 +168,9 @@ private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClients
             lastName = lastNameFilter,
             address = addressFilter,
             phoneNumber = phoneNumberFilter,
-            email = emailFilter
+            email = emailFilter,
+            bornAfter = bornAfterFilter,
+            bornBefore = bornBeforeFilter
         ),
         paging = ClientsPagingOptions(
             pageNumber = page,
