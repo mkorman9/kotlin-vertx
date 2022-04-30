@@ -197,19 +197,29 @@ class ClientRepository(
             predicates.add(criteriaBuilder.equal(root.get<String>("gender"), filtering.gender))
         }
         if (filtering.firstName != null) {
-            predicates.add(criteriaBuilder.like(root.get("firstName"), "%${filtering.firstName}%"))
+            predicates.add(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%${filtering.firstName.lowercase()}%")
+            )
         }
         if (filtering.lastName != null) {
-            predicates.add(criteriaBuilder.like(root.get("lastName"), "%${filtering.lastName}%"))
+            predicates.add(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%${filtering.lastName.lowercase()}%")
+            )
         }
         if (filtering.address != null) {
-            predicates.add(criteriaBuilder.like(root.get("address"), "%${filtering.address}%"))
+            predicates.add(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), "%${filtering.address.lowercase()}%")
+            )
         }
         if (filtering.phoneNumber != null) {
-            predicates.add(criteriaBuilder.like(root.get("phoneNumber"), "%${filtering.phoneNumber}%"))
+            predicates.add(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("phoneNumber")), "%${filtering.phoneNumber.lowercase()}%")
+            )
         }
         if (filtering.email != null) {
-            predicates.add(criteriaBuilder.like(root.get("email"), "%${filtering.email}%"))
+            predicates.add(
+                criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), "%${filtering.email.lowercase()}%")
+            )
         }
 
         return criteriaBuilder.and(*predicates.toTypedArray())
