@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.vertx.core.Future
 import io.vertx.core.http.HttpServer
+import io.vertx.core.impl.launcher.commands.RunCommand
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -12,6 +13,9 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import org.hibernate.reactive.mutiny.Mutiny
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.jar.Manifest
 import javax.persistence.Persistence
 import javax.validation.Validation
 import javax.validation.Validator
@@ -28,11 +32,14 @@ class MainVerticle : CoroutineVerticle() {
             val config = readConfig().await()
             val sessionFactory = startHibernate(config).await()
             val validator = createBeanValidator()
+            val version = readVersionFromManifest().await()
             val appContext = AppContext(
                 vertx = vertx,
                 config = config,
                 sessionFactory = sessionFactory,
-                validator = validator
+                validator = validator,
+                version = version,
+                startupTime = LocalDateTime.now()
             )
 
             startHttpServer(appContext).await()
@@ -82,6 +89,24 @@ class MainVerticle : CoroutineVerticle() {
             .messageInterpolator(ParameterMessageInterpolator())
             .buildValidatorFactory()
             .validator
+    }
+
+    private fun readVersionFromManifest(): Future<String> {
+        return vertx.executeBlocking { call ->
+            try {
+                val resources = RunCommand::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
+                while (resources.hasMoreElements()) {
+                    resources.nextElement().openStream().use { stream ->
+                        val manifest = Manifest(stream)
+                        val attributes = manifest.mainAttributes
+                        val version = attributes.getValue("Version") ?: "dev"
+                        call.complete(version)
+                    }
+                }
+            } catch (e: IOException) {
+                call.fail(e)
+            }
+        }
     }
 
     private fun startHttpServer(context: AppContext): Future<HttpServer> {

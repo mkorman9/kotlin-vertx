@@ -16,9 +16,10 @@ class MainRouter(
         mountSubRouter("/clients", createClientRouter(context))
 
         get("/health").handler { ctx ->
-            ctx.response().endWithJson(StatusDTO(
-                status = "ok",
-                message = "healthy"
+            ctx.response().endWithJson(HealthcheckResponse(
+                status = "healthy",
+                version = context.version,
+                startupTime = context.startupTime
             ))
         }
 
