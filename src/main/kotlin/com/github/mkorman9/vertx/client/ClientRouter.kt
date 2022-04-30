@@ -12,7 +12,7 @@ fun createClientRouter(context: AppContext): Router {
 
     return Router.router(context.vertx).apply {
         get("/").handler { ctx ->
-            clientsRepository.findAll()
+            clientsRepository.findPaged()
                 .onSuccess { clientsList -> ctx.response().endWithJson(clientsList) }
                 .onFailure { failure -> ctx.fail(500, failure) }
         }

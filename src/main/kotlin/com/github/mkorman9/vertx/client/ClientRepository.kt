@@ -2,9 +2,15 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.utils.withSession
 import com.github.mkorman9.vertx.utils.withTransaction
+import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import java.util.*
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
+import kotlin.math.ceil
 
 class ClientRepository(
     private val sessionFactory: SessionFactory
@@ -13,6 +19,35 @@ class ClientRepository(
     fun findAll(): Future<List<Client>> {
         return withSession(sessionFactory) { session ->
             session.createQuery("from Client c where c.deleted = false", Client::class.java).resultList
+        }
+    }
+
+    fun findPaged(
+        filtering: ClientsFilteringOptions = ClientsFilteringOptions(),
+        paging: ClientsPagingOptions = ClientsPagingOptions(),
+        sorting: ClientsSortingOptions = ClientsSortingOptions()
+    ): Future<ClientsPage> {
+        val criteriaBuilder = sessionFactory.criteriaBuilder
+        val countQuery = buildCountQuery(filtering, criteriaBuilder)
+        val dataQuery = buildDataQuery(filtering, sorting, criteriaBuilder)
+
+        return withSession(sessionFactory) { session ->
+            Uni.combine().all().unis(
+                session.createQuery(dataQuery)
+                    .setFirstResult(paging.pageNumber * paging.pageSize)
+                    .setMaxResults(paging.pageSize)
+                    .resultList,
+                session.createQuery(countQuery)
+                    .singleResult
+            )
+                .asTuple()
+                .onItem().transform { tuple ->
+                    ClientsPage(
+                        data = tuple.item1,
+                        page = paging.pageNumber,
+                        totalPages = ceil(tuple.item2.toDouble() / paging.pageSize.toDouble()).toInt()
+                    )
+                }
         }
     }
 
@@ -110,5 +145,73 @@ class ClientRepository(
                 }
                 .onItem().ifNull().continueWith(false)
         }
+    }
+
+    private fun buildCountQuery(
+        filtering: ClientsFilteringOptions,
+        criteriaBuilder: CriteriaBuilder
+    ): CriteriaQuery<Long> {
+        val query = criteriaBuilder.createQuery(Long::class.java)
+        val root = query.from(Client::class.java)
+
+        val whereClause = buildPredicate(filtering, criteriaBuilder, root)
+
+        query.select(criteriaBuilder.count(root))
+        query.where(whereClause)
+
+        return query
+    }
+
+    private fun buildDataQuery(
+        filtering: ClientsFilteringOptions,
+        sorting: ClientsSortingOptions,
+        criteriaBuilder: CriteriaBuilder,
+    ): CriteriaQuery<Client> {
+        val query = criteriaBuilder.createQuery(Client::class.java)
+        val root = query.from(Client::class.java)
+
+        val whereClause = buildPredicate(filtering, criteriaBuilder, root)
+
+        query.select(root)
+        query.where(whereClause)
+
+        if (sorting.reverseSort) {
+            query.orderBy(criteriaBuilder.desc(root.get<String>(sorting.sortBy)))
+        } else {
+            query.orderBy(criteriaBuilder.asc(root.get<String>(sorting.sortBy)))
+        }
+
+        return query
+    }
+
+    private fun buildPredicate(
+        filtering: ClientsFilteringOptions,
+        criteriaBuilder: CriteriaBuilder,
+        root: Root<Client>
+    ): Predicate {
+        val predicates = mutableListOf<Predicate>()
+
+        predicates.add(criteriaBuilder.equal(root.get<Boolean>("deleted"), false))
+
+        if (filtering.gender != null) {
+            predicates.add(criteriaBuilder.equal(root.get<String>("gender"), filtering.gender))
+        }
+        if (filtering.firstName != null) {
+            predicates.add(criteriaBuilder.like(root.get("firstName"), "%${filtering.firstName}%"))
+        }
+        if (filtering.lastName != null) {
+            predicates.add(criteriaBuilder.like(root.get("lastName"), "%${filtering.lastName}%"))
+        }
+        if (filtering.address != null) {
+            predicates.add(criteriaBuilder.like(root.get("address"), "%${filtering.address}%"))
+        }
+        if (filtering.phoneNumber != null) {
+            predicates.add(criteriaBuilder.like(root.get("phoneNumber"), "%${filtering.phoneNumber}%"))
+        }
+        if (filtering.email != null) {
+            predicates.add(criteriaBuilder.like(root.get("email"), "%${filtering.email}%"))
+        }
+
+        return criteriaBuilder.and(*predicates.toTypedArray())
     }
 }
