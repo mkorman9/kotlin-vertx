@@ -13,7 +13,7 @@ class MainRouter(
     private val log = LoggerFactory.getLogger(MainRouter::class.java)
 
     private val router = Router.router(context.vertx).apply {
-        mountSubRouter("/clients", createClientRouter(context))
+        mountSubRouter("/client", createClientRouter(context))
 
         get("/health").handler { ctx ->
             ctx.response().endWithJson(HealthcheckResponse(
