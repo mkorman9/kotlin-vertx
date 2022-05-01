@@ -3,6 +3,6 @@ server:
   port: 8080
 
 db:
-  uri: jdbc:postgresql://localhost:5432/tsexpress
+  uri: jdbc:postgresql://localhost:5432/kotlinvertx
   user: username
   password: password

@@ -10,9 +10,9 @@
         <class>com.github.mkorman9.vertx.client.CreditCard</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/postgres" />
-            <property name="javax.persistence.jdbc.user" value="username" />
-            <property name="javax.persistence.jdbc.password" value="password" />
+            <property name="javax.persistence.jdbc.url" value="" />
+            <property name="javax.persistence.jdbc.user" value="" />
+            <property name="javax.persistence.jdbc.password" value="" />
 
             <property name="hibernate.connection.pool_size" value="5" />
 
