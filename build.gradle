@@ -52,8 +52,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveBaseName = 'app'
-    archiveClassifier = 'shadow'
+    archiveFileName = 'app.jar'
     mainClassName = 'io.vertx.core.Launcher'
 
     manifest {
