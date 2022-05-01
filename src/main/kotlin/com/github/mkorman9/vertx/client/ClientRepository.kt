@@ -5,6 +5,7 @@ import com.github.mkorman9.vertx.utils.withTransaction
 import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import java.lang.Integer.max
 import java.util.*
 import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.CriteriaQuery
@@ -45,7 +46,7 @@ class ClientRepository(
                     ClientsPage(
                         data = tuple.item1,
                         page = paging.pageNumber,
-                        totalPages = ceil(tuple.item2.toDouble() / paging.pageSize.toDouble()).toInt()
+                        totalPages = max(1, ceil(tuple.item2.toDouble() / paging.pageSize.toDouble()).toInt())
                     )
                 }
         }
