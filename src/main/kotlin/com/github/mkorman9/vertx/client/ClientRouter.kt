@@ -123,6 +123,7 @@ private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClients
     } catch (e: DateTimeParseException) {
         null
     }
+    val creditCardFilter = request.getParam("filter[creditCard]")
 
     var page = request.getParam("page", "1").toInt()
     if (page < 1) {
@@ -153,7 +154,8 @@ private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClients
             phoneNumber = phoneNumberFilter,
             email = emailFilter,
             bornAfter = bornAfterFilter,
-            bornBefore = bornBeforeFilter
+            bornBefore = bornBeforeFilter,
+            creditCard = creditCardFilter
         ),
         paging = ClientsPagingOptions(
             pageNumber = page,

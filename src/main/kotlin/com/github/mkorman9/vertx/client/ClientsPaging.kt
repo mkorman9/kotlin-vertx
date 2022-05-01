@@ -16,7 +16,8 @@ data class ClientsFilteringOptions(
     val phoneNumber: String? = null,
     val email: String? = null,
     val bornAfter: LocalDateTime? = null,
-    val bornBefore: LocalDateTime? = null
+    val bornBefore: LocalDateTime? = null,
+    val creditCard: String? = null
 )
 
 data class ClientsPagingOptions(

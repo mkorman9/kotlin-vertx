@@ -171,7 +171,7 @@ class ClientRepository(
         val query = criteriaBuilder.createQuery(Long::class.java)
         val root = query.from(Client::class.java)
 
-        val whereClause = buildPredicate(filtering, criteriaBuilder, root)
+        val whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
 
         query.select(criteriaBuilder.count(root))
         query.where(whereClause)
@@ -187,7 +187,7 @@ class ClientRepository(
         val query = criteriaBuilder.createQuery(Client::class.java)
         val root = query.from(Client::class.java)
 
-        val whereClause = buildPredicate(filtering, criteriaBuilder, root)
+        val whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
 
         query.select(root)
         query.where(whereClause)
@@ -201,9 +201,10 @@ class ClientRepository(
         return query
     }
 
-    private fun buildPredicate(
+    private fun <T> buildPredicate(
         filtering: ClientsFilteringOptions,
         criteriaBuilder: CriteriaBuilder,
+        query: CriteriaQuery<T>,
         root: Root<Client>
     ): Predicate {
         val predicates = mutableListOf<Predicate>()
@@ -243,6 +244,15 @@ class ClientRepository(
         }
         if (filtering.bornBefore != null) {
             predicates.add(criteriaBuilder.lessThan(root.get("birthDate"), criteriaBuilder.literal(filtering.bornBefore)))
+        }
+        if (filtering.creditCard != null) {
+            val subquery = query.subquery(String::class.java)
+            val creditCardRoot = subquery.from(CreditCard::class.java)
+
+            subquery.select(creditCardRoot.get("clientId"))
+            subquery.where(criteriaBuilder.like(creditCardRoot.get("number"), "%${filtering.creditCard}%"))
+
+            predicates.add(root.get<String>("id").`in`(subquery))
         }
 
         return criteriaBuilder.and(*predicates.toTypedArray())
