@@ -49,8 +49,6 @@ dependencies {
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
     implementation "org.hibernate.validator:hibernate-validator:$hibernateVersion"
-
-    annotationProcessor "org.hibernate.orm:hibernate-jpamodelgen:$hibernateVersion"
 }
 
 shadowJar {
