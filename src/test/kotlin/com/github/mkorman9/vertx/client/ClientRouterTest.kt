@@ -62,6 +62,7 @@ class ClientRouterTest {
     @Test
     fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) {
         val id = "c9720047-b769-4345-9c60-a94339f46e08"
+
         every { clientRepository.findById(id) } returns Future.succeededFuture(null)
 
         val httpClient = vertx.createHttpClient()
