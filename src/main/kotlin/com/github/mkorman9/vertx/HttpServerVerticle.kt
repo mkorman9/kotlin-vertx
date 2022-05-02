@@ -14,7 +14,7 @@ class HttpServerVerticle(
     private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
 
     private val context: AppContext = passedContext ?: BootstrapVerticle.cachedContext
-    private var server: HttpServer? = null
+    private lateinit var server: HttpServer
 
     override suspend fun start() {
         val configRetriever = context.injector.getInstance(ConfigRetriever::class.java)
@@ -37,7 +37,7 @@ class HttpServerVerticle(
     }
 
     override suspend fun stop() {
-        server?.close()?.await()
+        server.close().await()
         log.info("HttpServerVerticle has been stopped")
     }
 
