@@ -31,7 +31,7 @@ class ClientRouterTest {
     }
 
     @BeforeEach
-    fun setupRouter(vertx: Vertx, testContext: VertxTestContext) {
+    fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val context = createTestAppContext(vertx, Module(clientRepository))
         vertx.deployVerticle(HttpServerVerticle(context))
             .onComplete { testContext.completeNow() }
