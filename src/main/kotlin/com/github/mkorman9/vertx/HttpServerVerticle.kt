@@ -1,12 +1,9 @@
 package com.github.mkorman9.vertx
 
-import com.fasterxml.jackson.databind.util.StdDateFormat
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.github.mkorman9.vertx.utils.JsonCodecConfig
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
@@ -19,8 +16,6 @@ class HttpServerVerticle(
     private var server: HttpServer? = null
 
     override suspend fun start() {
-        configureJsonCodec()
-
         val configRetriever = context.injector.getInstance(ConfigRetriever::class.java)
         val config = configRetriever.config.await()
 
@@ -45,11 +40,7 @@ class HttpServerVerticle(
         log.info("HttpServerVerticle has been stopped")
     }
 
-    private fun configureJsonCodec() {
-        val objectMapper = DatabindCodec.mapper()
-        objectMapper.registerModule(KotlinModule.Builder().build())
-        objectMapper.registerModule(JavaTimeModule())
-
-        objectMapper.dateFormat = StdDateFormat()
+    companion object {
+        val codecConfig = JsonCodecConfig()  // to make sure JsonCodecConfig is initialized by JVM
     }
 }
