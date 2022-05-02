@@ -34,9 +34,9 @@ class ClientRouterTest {
     @Test
     @DisplayName("should return client when queried by id")
     fun testFindById(vertx: Vertx, testContext: VertxTestContext) {
-        val id = "c9720047-b769-4345-9c60-a94339f46e08"
+        val id = UUID.randomUUID().toString()
         val client = Client(
-            id = UUID.randomUUID(),
+            id = UUID.fromString(id),
             firstName = "Test",
             lastName = "User"
         )
@@ -64,7 +64,7 @@ class ClientRouterTest {
     @Test
     @DisplayName("should return 404 when queried by id of non-existing client")
     fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) {
-        val id = "c9720047-b769-4345-9c60-a94339f46e08"
+        val id = UUID.randomUUID().toString()
 
         every { clientRepository.findById(id) } returns Future.succeededFuture(null)
 
