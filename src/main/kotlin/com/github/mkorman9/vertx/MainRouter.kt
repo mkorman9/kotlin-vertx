@@ -18,7 +18,7 @@ class MainRouter(
     private val router = Router.router(context.vertx).apply {
         mountSubRouter("/health", createHealthcheckRouter(context))
 
-        mountSubRouter("/client", createClientRouter(context, clientRepository))
+        mountSubRouter("/api/v1/client", createClientRouter(context, clientRepository))
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(StatusDTO(
