@@ -55,6 +55,14 @@ dependencies {
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
     implementation "org.hibernate.validator:hibernate-validator:$hibernateVersion"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
+    testImplementation "io.vertx:vertx-junit5:$vertxVersion"
+    testImplementation 'io.mockk:mockk:1.12.3'
+}
+
+test {
+    useJUnitPlatform()
 }
 
 shadowJar {

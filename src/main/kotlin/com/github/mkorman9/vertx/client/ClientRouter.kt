@@ -9,14 +9,12 @@ import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
-fun createClientRouter(context: AppContext): Router {
-    val clientsRepository = ClientRepository(context.sessionFactory)
-
+fun createClientRouter(context: AppContext, clientRepository: ClientRepository): Router {
     return Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
 
-            clientsRepository.findPaged(
+            clientRepository.findPaged(
                 filtering = params.filtering,
                 paging = params.paging,
                 sorting = params.sorting
@@ -28,7 +26,7 @@ fun createClientRouter(context: AppContext): Router {
         get("/:id").handler { ctx ->
             val id = ctx.pathParam("id")
 
-            clientsRepository.findById(id)
+            clientRepository.findById(id)
                 .onSuccess { client ->
                     if (client != null) {
                         ctx.response().endWithJson(client)
@@ -44,7 +42,7 @@ fun createClientRouter(context: AppContext): Router {
 
         post("/").handler { ctx ->
             ctx.handleJsonBody<ClientAddPayload>(context.validator) { payload ->
-                clientsRepository.add(payload)
+                clientRepository.add(payload)
                     .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
@@ -54,7 +52,7 @@ fun createClientRouter(context: AppContext): Router {
             ctx.handleJsonBody<ClientUpdatePayload>(context.validator) { payload ->
                 val id = ctx.pathParam("id")
 
-                clientsRepository.update(id, payload)
+                clientRepository.update(id, payload)
                     .onSuccess { client ->
                         if (client != null) {
                             ctx.response().endWithJson(StatusDTO(
@@ -74,7 +72,7 @@ fun createClientRouter(context: AppContext): Router {
         delete("/:id").handler { ctx ->
             val id = ctx.pathParam("id")
 
-            clientsRepository.delete(id)
+            clientRepository.delete(id)
                 .onSuccess { deleted ->
                     if (deleted) {
                         ctx.response().endWithJson(StatusDTO(
