@@ -24,7 +24,7 @@ class ClientRouterTest {
     @MockK
     private lateinit var clientRepository: ClientRepository
 
-    private class Module(private val clientRepository: ClientRepository) : KotlinModule() {
+    inner class Module() : KotlinModule() {
         override fun configure() {
             bind<ClientRepository>().toInstance(clientRepository)
         }
@@ -32,7 +32,7 @@ class ClientRouterTest {
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
-        val context = createTestAppContext(vertx, Module(clientRepository))
+        val context = createTestAppContext(vertx, Module())
         vertx.deployVerticle(HttpServerVerticle(context))
             .onComplete { testContext.completeNow() }
     }
