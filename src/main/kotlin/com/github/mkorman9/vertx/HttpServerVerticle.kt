@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -15,6 +16,8 @@ class HttpServerVerticle(
 ): CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
 
+    private var server: HttpServer? = null
+
     override suspend fun start() {
         configureJsonCodec()
 
@@ -23,7 +26,7 @@ class HttpServerVerticle(
 
         val mainRouter = MainRouter(context)
 
-        vertx
+        server = vertx
             .createHttpServer(
                 httpServerOptionsOf(
                     host = config.getJsonObject("server")?.getString("host") ?: "0.0.0.0",
@@ -35,6 +38,11 @@ class HttpServerVerticle(
             .await()
 
         log.info("HttpServerVerticle has been deployed successfully")
+    }
+
+    override suspend fun stop() {
+        server?.close()?.await()
+        log.info("HttpServerVerticle has been stopped")
     }
 
     private fun configureJsonCodec() {
