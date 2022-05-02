@@ -24,7 +24,7 @@ class ClientRouterTest {
     @MockK
     private lateinit var clientRepository: ClientRepository
 
-    inner class Module() : KotlinModule() {
+    inner class Module : KotlinModule() {
         override fun configure() {
             bind<ClientRepository>().toInstance(clientRepository)
         }
