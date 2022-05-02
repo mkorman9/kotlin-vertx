@@ -5,6 +5,7 @@ import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router
+import io.vertx.micrometer.PrometheusScrapingHandler
 
 class MainRouter(
     private val context: AppContext
@@ -13,6 +14,7 @@ class MainRouter(
 
     val router: Router = Router.router(context.vertx).apply {
         mountSubRouter("/health", HealthcheckRouter(context).router)
+        route("/metrics").handler(PrometheusScrapingHandler.create())
 
         mountSubRouter("/api/v1/client", ClientRouter(context).router)
 
