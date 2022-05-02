@@ -11,13 +11,10 @@ import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import org.hibernate.reactive.mutiny.Mutiny
-import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
 import javax.persistence.Persistence
-import javax.validation.Validation
-import javax.validation.Validator
 
 class BootstrapVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(BootstrapVerticle::class.java)
@@ -26,12 +23,10 @@ class BootstrapVerticle : CoroutineVerticle() {
         try {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
-
             val sessionFactory = startHibernate(config).await()
-            val validator = createBeanValidator()
             val version = readVersionFromManifest().await()
 
-            val module = AppModule(sessionFactory, validator, configRetriever)
+            val module = AppModule(configRetriever, sessionFactory)
             val injector = Guice.createInjector(module)
 
             val appContext = AppContext(
@@ -83,14 +78,6 @@ class BootstrapVerticle : CoroutineVerticle() {
 
                 call.complete(sessionFactory)
             }
-    }
-
-    private fun createBeanValidator(): Validator {
-        return Validation.byDefaultProvider()
-            .configure()
-            .messageInterpolator(ParameterMessageInterpolator())
-            .buildValidatorFactory()
-            .validator
     }
 
     private fun readVersionFromManifest(): Future<String> {

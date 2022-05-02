@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.*
+import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
@@ -8,10 +8,8 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
-import javax.validation.Validator
 
 class ClientRouter(context: AppContext) {
-    private val validator = context.injector.getInstance(Validator::class.java)
     private val clientRepository = context.injector.getInstance(ClientRepository::class.java)
 
     val router: Router = Router.router(context.vertx).apply {
@@ -45,7 +43,7 @@ class ClientRouter(context: AppContext) {
         }
 
         post("/").handler { ctx ->
-            ctx.handleJsonBody<ClientAddPayload>(validator) { payload ->
+            ctx.handleJsonBody<ClientAddPayload> { payload ->
                 clientRepository.add(payload)
                     .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
                     .onFailure { failure -> ctx.fail(500, failure) }
@@ -53,7 +51,7 @@ class ClientRouter(context: AppContext) {
         }
 
         put("/:id").handler { ctx ->
-            ctx.handleJsonBody<ClientUpdatePayload>(validator) { payload ->
+            ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                 val id = ctx.pathParam("id")
 
                 clientRepository.update(id, payload)
