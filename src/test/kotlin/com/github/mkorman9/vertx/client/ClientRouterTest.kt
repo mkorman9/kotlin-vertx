@@ -25,7 +25,7 @@ class ClientRouterTest {
     @BeforeEach
     fun setupRouter(vertx: Vertx, testContext: VertxTestContext) {
         val context = createTestAppContext(vertx)
-        val clientRouter = createClientRouter(context, clientRepository)
+        val clientRouter = ClientRouter(context, clientRepository).router
 
         createTestHttpServer(vertx, testContext, clientRouter)
     }

@@ -9,8 +9,11 @@ import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
-fun createClientRouter(context: AppContext, clientRepository: ClientRepository): Router {
-    return Router.router(context.vertx).apply {
+class ClientRouter(
+    private val context: AppContext,
+    private val clientRepository: ClientRepository
+) {
+    val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
 
@@ -88,80 +91,80 @@ fun createClientRouter(context: AppContext, clientRepository: ClientRepository):
                 .onFailure { failure -> ctx.fail(500, failure) }
         }
     }
-}
 
-private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {
-    var genderFilter = request.getParam("filter[gender]")
-    if (!hashSetOf("-", "M", "F").contains(genderFilter)) {
-        genderFilter = null
-    }
-
-    val firstNameFilter = request.getParam("filter[firstName]")
-    val lastNameFilter = request.getParam("filter[lastName]")
-    val addressFilter = request.getParam("filter[address]")
-    val phoneNumberFilter = request.getParam("filter[phoneNumber]")
-    val emailFilter = request.getParam("filter[email]")
-    val bornAfterFilter = try {
-        val v = request.getParam("filter[bornAfter]")
-        if (v == null) {
-            null
-        } else {
-            LocalDateTime.parse(v)
+    private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {
+        var genderFilter = request.getParam("filter[gender]")
+        if (!hashSetOf("-", "M", "F").contains(genderFilter)) {
+            genderFilter = null
         }
-    } catch (e: DateTimeParseException) {
-        null
-    }
-    val bornBeforeFilter = try {
-        val v = request.getParam("filter[bornBefore]")
-        if (v == null) {
+
+        val firstNameFilter = request.getParam("filter[firstName]")
+        val lastNameFilter = request.getParam("filter[lastName]")
+        val addressFilter = request.getParam("filter[address]")
+        val phoneNumberFilter = request.getParam("filter[phoneNumber]")
+        val emailFilter = request.getParam("filter[email]")
+        val bornAfterFilter = try {
+            val v = request.getParam("filter[bornAfter]")
+            if (v == null) {
+                null
+            } else {
+                LocalDateTime.parse(v)
+            }
+        } catch (e: DateTimeParseException) {
             null
-        } else {
-            LocalDateTime.parse(v)
         }
-    } catch (e: DateTimeParseException) {
-        null
-    }
-    val creditCardFilter = request.getParam("filter[creditCard]")
+        val bornBeforeFilter = try {
+            val v = request.getParam("filter[bornBefore]")
+            if (v == null) {
+                null
+            } else {
+                LocalDateTime.parse(v)
+            }
+        } catch (e: DateTimeParseException) {
+            null
+        }
+        val creditCardFilter = request.getParam("filter[creditCard]")
 
-    var page = request.getParam("page", "1").toInt()
-    if (page < 1) {
-        page = 1
-    }
+        var page = request.getParam("page", "1").toInt()
+        if (page < 1) {
+            page = 1
+        }
 
-    var pageSize = request.getParam("pageSize", "10").toInt()
-    if (pageSize < 1) {
-        pageSize = 10
-    }
-    if (pageSize > 100) {
-        pageSize = 100
-    }
+        var pageSize = request.getParam("pageSize", "10").toInt()
+        if (pageSize < 1) {
+            pageSize = 10
+        }
+        if (pageSize > 100) {
+            pageSize = 100
+        }
 
-    var sortBy = request.getParam("sortBy", "id")
-    if (!hashSetOf("id", "gender", "firstName", "lastName", "address", "phoneNumber", "email", "birthDate").contains(sortBy)) {
-        sortBy = "id"
-    }
+        var sortBy = request.getParam("sortBy", "id")
+        if (!hashSetOf("id", "gender", "firstName", "lastName", "address", "phoneNumber", "email", "birthDate").contains(sortBy)) {
+            sortBy = "id"
+        }
 
-    val sortReverse = request.params().contains("sortReverse")
+        val sortReverse = request.params().contains("sortReverse")
 
-    return FindClientsParams(
-        filtering = ClientsFilteringOptions(
-            gender = genderFilter,
-            firstName = firstNameFilter,
-            lastName = lastNameFilter,
-            address = addressFilter,
-            phoneNumber = phoneNumberFilter,
-            email = emailFilter,
-            bornAfter = bornAfterFilter,
-            bornBefore = bornBeforeFilter,
-            creditCard = creditCardFilter
-        ),
-        paging = ClientsPagingOptions(
-            pageNumber = page,
-            pageSize = pageSize
-        ),
-        sorting = ClientsSortingOptions(
-            sortBy = sortBy,
-            sortReverse = sortReverse
+        return FindClientsParams(
+            filtering = ClientsFilteringOptions(
+                gender = genderFilter,
+                firstName = firstNameFilter,
+                lastName = lastNameFilter,
+                address = addressFilter,
+                phoneNumber = phoneNumberFilter,
+                email = emailFilter,
+                bornAfter = bornAfterFilter,
+                bornBefore = bornBeforeFilter,
+                creditCard = creditCardFilter
+            ),
+            paging = ClientsPagingOptions(
+                pageNumber = page,
+                pageSize = pageSize
+            ),
+            sorting = ClientsSortingOptions(
+                sortBy = sortBy,
+                sortReverse = sortReverse
+            )
         )
-    )
+    }
 }

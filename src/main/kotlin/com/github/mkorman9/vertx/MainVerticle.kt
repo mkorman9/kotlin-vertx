@@ -120,7 +120,7 @@ class MainVerticle : CoroutineVerticle() {
                     logActivity = true
                 )
             )
-            .requestHandler { mainRouter.handle(it) }
+            .requestHandler { mainRouter.router.handle(it) }
             .listen()
     }
 }
