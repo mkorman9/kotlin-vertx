@@ -45,6 +45,8 @@ dependencies {
     implementation "io.vertx:vertx-web:$vertxVersion"
     implementation "io.vertx:vertx-lang-kotlin:$vertxVersion"
     implementation "io.vertx:vertx-lang-kotlin-coroutines:$vertxVersion"
+    implementation "io.vertx:vertx-config:$vertxVersion"
+    implementation "io.vertx:vertx-config-yaml:$vertxVersion"
 
     implementation 'org.slf4j:slf4j-log4j12:1.7.36'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.13.2.2"
@@ -55,6 +57,7 @@ dependencies {
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
     implementation "org.hibernate.validator:hibernate-validator:$hibernateVersion"
+    implementation 'dev.misfitlabs.kotlinguice4:kotlin-guice:1.6.0'
 
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
     testImplementation "io.vertx:vertx-junit5:$vertxVersion"

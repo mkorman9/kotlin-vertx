@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.client.ClientRepository
 import com.github.mkorman9.vertx.client.ClientRouter
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
@@ -12,12 +11,10 @@ class MainRouter(
 ) {
     private val log = LoggerFactory.getLogger(MainRouter::class.java)
 
-    private val clientRepository = ClientRepository(context.sessionFactory)
-
     val router: Router = Router.router(context.vertx).apply {
         mountSubRouter("/health", HealthcheckRouter(context).router)
 
-        mountSubRouter("/api/v1/client", ClientRouter(context, clientRepository).router)
+        mountSubRouter("/api/v1/client", ClientRouter(context).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(StatusDTO(

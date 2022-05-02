@@ -1,8 +1,13 @@
 package com.github.mkorman9.vertx
 
+import com.google.inject.Guice
+import io.vertx.config.ConfigRetriever
+import io.vertx.config.ConfigRetrieverOptions
+import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Future
 import io.vertx.core.impl.launcher.commands.RunCommand
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import org.hibernate.reactive.mutiny.Mutiny
@@ -19,15 +24,19 @@ class BootstrapVerticle : CoroutineVerticle() {
 
     override suspend fun start() {
         try {
-            val config = readConfig().await()
+            val configRetriever = createConfigRetriever()
+            val config = configRetriever.config.await()
+
             val sessionFactory = startHibernate(config).await()
             val validator = createBeanValidator()
             val version = readVersionFromManifest().await()
+
+            val module = AppModule(sessionFactory, validator, configRetriever)
+            val injector = Guice.createInjector(module)
+
             val appContext = AppContext(
                 vertx = vertx,
-                config = config,
-                sessionFactory = sessionFactory,
-                validator = validator,
+                injector = injector,
                 version = version,
                 startupTime = LocalDateTime.now()
             )
@@ -41,18 +50,29 @@ class BootstrapVerticle : CoroutineVerticle() {
         }
     }
 
-    private fun readConfig(): Future<Config> {
-        return vertx
-            .fileSystem()
-            .readFile(System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
-            .map { parseConfig(it) }
+    private fun createConfigRetriever(): ConfigRetriever {
+        val store = ConfigStoreOptions()
+            .setType("file")
+            .setFormat("yaml")
+            .setConfig(JsonObject()
+                .put("path", System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
+            )
+
+        return ConfigRetriever.create(vertx, ConfigRetrieverOptions().addStore(store))
     }
 
-    private fun startHibernate(config: Config): Future<Mutiny.SessionFactory> {
+    private fun startHibernate(config: JsonObject): Future<Mutiny.SessionFactory> {
+        val uri = config.getJsonObject("db")?.getString("uri")
+            ?: throw RuntimeException("db.uri is missing from config")
+        val user = config.getJsonObject("db")?.getString("user")
+            ?: throw RuntimeException("db.user is missing from config")
+        val password = config.getJsonObject("db")?.getString("password")
+            ?: throw RuntimeException("db.password is missing from config")
+
         val props = mapOf(
-            "javax.persistence.jdbc.url" to config.db.uri,
-            "javax.persistence.jdbc.user" to config.db.user,
-            "javax.persistence.jdbc.password" to config.db.password
+            "javax.persistence.jdbc.url" to uri,
+            "javax.persistence.jdbc.user" to user,
+            "javax.persistence.jdbc.password" to password
         )
 
         return vertx

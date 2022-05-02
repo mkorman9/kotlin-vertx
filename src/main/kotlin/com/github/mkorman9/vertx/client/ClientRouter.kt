@@ -8,11 +8,12 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
+import javax.validation.Validator
 
-class ClientRouter(
-    private val context: AppContext,
-    private val clientRepository: ClientRepository
-) {
+class ClientRouter(context: AppContext) {
+    private val validator = context.injector.getInstance(Validator::class.java)
+    private val clientRepository = context.injector.getInstance(ClientRepository::class.java)
+
     val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
@@ -44,7 +45,7 @@ class ClientRouter(
         }
 
         post("/").handler { ctx ->
-            ctx.handleJsonBody<ClientAddPayload>(context.validator) { payload ->
+            ctx.handleJsonBody<ClientAddPayload>(validator) { payload ->
                 clientRepository.add(payload)
                     .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
                     .onFailure { failure -> ctx.fail(500, failure) }
@@ -52,7 +53,7 @@ class ClientRouter(
         }
 
         put("/:id").handler { ctx ->
-            ctx.handleJsonBody<ClientUpdatePayload>(context.validator) { payload ->
+            ctx.handleJsonBody<ClientUpdatePayload>(validator) { payload ->
                 val id = ctx.pathParam("id")
 
                 clientRepository.update(id, payload)

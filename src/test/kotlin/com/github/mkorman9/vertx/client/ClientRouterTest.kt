@@ -1,7 +1,8 @@
 package com.github.mkorman9.vertx.client
 
+import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.createTestAppContext
-import com.github.mkorman9.vertx.createTestHttpServer
+import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -23,12 +24,17 @@ class ClientRouterTest {
     @MockK
     private lateinit var clientRepository: ClientRepository
 
+    private class Module(private val clientRepository: ClientRepository) : KotlinModule() {
+        override fun configure() {
+            bind<ClientRepository>().toInstance(clientRepository)
+        }
+    }
+
     @BeforeEach
     fun setupRouter(vertx: Vertx, testContext: VertxTestContext) {
-        val context = createTestAppContext(vertx)
-        val clientRouter = ClientRouter(context, clientRepository).router
-
-        createTestHttpServer(vertx, testContext, clientRouter)
+        val context = createTestAppContext(vertx, Module(clientRepository))
+        vertx.deployVerticle(HttpServerVerticle(context))
+            .onComplete { testContext.completeNow() }
     }
 
     @Test
@@ -44,7 +50,7 @@ class ClientRouterTest {
         every { clientRepository.findById(id) } returns Future.succeededFuture(client)
 
         val httpClient = vertx.createHttpClient()
-        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/${id}")
+        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
             .compose { it.send() }
             .onSuccess { result ->
                 assertThat(result.statusCode()).isEqualTo(200)
@@ -69,7 +75,7 @@ class ClientRouterTest {
         every { clientRepository.findById(id) } returns Future.succeededFuture(null)
 
         val httpClient = vertx.createHttpClient()
-        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/${id}")
+        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
             .compose { it.send() }
             .onSuccess { result ->
                 assertThat(result.statusCode()).isEqualTo(404)
