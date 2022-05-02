@@ -18,4 +18,6 @@ fun main() {
     )
 
     vertx.deployVerticle(BootstrapVerticle::class.java.name)
+
+    ShutdownHook.register(vertx)
 }
