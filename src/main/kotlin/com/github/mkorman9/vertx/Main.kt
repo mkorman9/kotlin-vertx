@@ -7,5 +7,5 @@ fun main() {
     System.setProperty("user.timezone", "UTC")
 
     val vertx = Vertx.vertx()
-    vertx.deployVerticle(MainVerticle())
+    vertx.deployVerticle(BootstrapVerticle())
 }

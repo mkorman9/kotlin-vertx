@@ -71,7 +71,7 @@ shadowJar {
     mainClassName = 'io.vertx.core.Launcher'
 
     manifest {
-        attributes 'Main-Verticle': 'com.github.mkorman9.vertx.MainVerticle',
+        attributes 'Main-Verticle': 'com.github.mkorman9.vertx.BootstrapVerticle',
                    'Version': project.version
     }
     mergeServiceFiles {
