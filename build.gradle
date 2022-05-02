@@ -31,8 +31,10 @@ scmVersion {
 
 group 'com.github.mkorman9.vertx'
 version scmVersion.version
-sourceCompatibility = '11'
-targetCompatibility = '11'
+
+def javaVersion = '11'
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
 
 repositories {
     mavenCentral()
@@ -63,6 +65,20 @@ dependencies {
     testImplementation "io.vertx:vertx-junit5:$vertxVersion"
     testImplementation 'io.mockk:mockk:1.12.3'
     testImplementation 'org.assertj:assertj-core:3.22.0'
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = javaVersion
+    }
+    sourceCompatibility = javaVersion
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = javaVersion
+    }
+    sourceCompatibility = javaVersion
 }
 
 test {
