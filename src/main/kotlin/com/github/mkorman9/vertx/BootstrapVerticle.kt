@@ -4,6 +4,7 @@ import com.google.inject.Guice
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
+import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.impl.launcher.commands.RunCommand
 import io.vertx.core.impl.logging.LoggerFactory
@@ -19,6 +20,10 @@ import javax.persistence.Persistence
 class BootstrapVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(BootstrapVerticle::class.java)
 
+    companion object {
+        lateinit var cachedContext: AppContext
+    }
+
     override suspend fun start() {
         try {
             val configRetriever = createConfigRetriever()
@@ -29,7 +34,7 @@ class BootstrapVerticle : CoroutineVerticle() {
             val module = AppModule(configRetriever, sessionFactory)
             val injector = Guice.createInjector(module)
 
-            val appContext = AppContext(
+            cachedContext = AppContext(
                 vertx = vertx,
                 injector = injector,
                 version = version,
@@ -38,7 +43,9 @@ class BootstrapVerticle : CoroutineVerticle() {
 
             log.info("BootstrapVerticle has been deployed successfully")
 
-            vertx.deployVerticle(HttpServerVerticle(appContext))
+            vertx.deployVerticle(HttpServerVerticle::class.java.name, DeploymentOptions()
+                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
+            )
         } catch (e: Exception) {
             log.error("Failed to deploy BootstrapVerticle", e)
             throw e

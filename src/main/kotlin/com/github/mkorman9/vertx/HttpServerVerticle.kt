@@ -9,10 +9,11 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 class HttpServerVerticle(
-    private val context: AppContext
+    passedContext: AppContext? = null
 ): CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
 
+    private val context: AppContext = passedContext ?: BootstrapVerticle.cachedContext
     private var server: HttpServer? = null
 
     override suspend fun start() {
@@ -41,6 +42,8 @@ class HttpServerVerticle(
     }
 
     companion object {
-        val codecConfig = JsonCodecConfig()  // to make sure JsonCodecConfig is initialized by JVM
+        init {
+            JsonCodecConfig()
+        }
     }
 }
