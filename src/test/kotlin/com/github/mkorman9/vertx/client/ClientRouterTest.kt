@@ -12,6 +12,7 @@ import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
@@ -31,6 +32,7 @@ class ClientRouterTest {
     }
 
     @Test
+    @DisplayName("should return client when queried by id")
     fun testFindById(vertx: Vertx, testContext: VertxTestContext) {
         val id = "c9720047-b769-4345-9c60-a94339f46e08"
         val client = Client(
@@ -60,6 +62,7 @@ class ClientRouterTest {
     }
 
     @Test
+    @DisplayName("should return 404 when queried by id of non-existing client")
     fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) {
         val id = "c9720047-b769-4345-9c60-a94339f46e08"
 
