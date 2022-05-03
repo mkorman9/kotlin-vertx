@@ -22,6 +22,18 @@ class SessionRepository(
         }
     }
 
+    fun delete(sessionObject: Session): Future<Boolean> {
+        return withTransaction(sessionFactory) { session, _ ->
+            val query = session.createQuery<Void>("delete from Session s where s.id = :id")
+            query.setParameter("id", sessionObject.id)
+
+            query.executeUpdate()
+                .onItem().ifNotNull().transform { deletedRecords ->
+                    deletedRecords > 0
+                }
+        }
+    }
+
     fun deleteExpired(): Future<Int> {
         return withTransaction(sessionFactory) { session, _ ->
             val query = session.createQuery<Void>("delete from Session s where s.expiresAt < current_timestamp()")

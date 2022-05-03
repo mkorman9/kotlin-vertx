@@ -15,6 +15,7 @@ class SessionRouter(
 
     private val accountRepository: AccountRepository = context.injector.getInstance(AccountRepository::class.java)
     private val sessionRepository: SessionRepository = context.injector.getInstance(SessionRepository::class.java)
+    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance(AuthorizationMiddleware::class.java)
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
     val router = Router.router(context.vertx).apply {
@@ -23,8 +24,7 @@ class SessionRouter(
                 accountRepository.findByCredentialsEmail(payload.email)
                     .onSuccess { account ->
                         if (account == null) {
-                            ctx.response().setStatusCode(401).endWithJson(
-                                StatusDTO(
+                            ctx.response().setStatusCode(401).endWithJson(StatusDTO(
                                 status = "error",
                                 message = "invalid credentials",
                                 causes = listOf(Cause("credentials", "invalid"))
@@ -50,12 +50,11 @@ class SessionRouter(
                         }
                             .onSuccess { result ->
                                 if (!result.verified) {
-                                    ctx.response().setStatusCode(401).endWithJson(
-                                        StatusDTO(
+                                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
                                             status = "error",
                                             message = "invalid credentials",
                                             causes = listOf(Cause("credentials", "invalid"))
-                                        ))
+                                    ))
 
                                     return@onSuccess
                                 }
@@ -81,5 +80,23 @@ class SessionRouter(
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
         }
+
+        delete("/")
+            .handler { ctx -> authorizationMiddleware.authorize(ctx) }
+            .handler { ctx ->
+                val session = authorizationMiddleware.getActiveSession(ctx)
+                sessionRepository.delete(session)
+                    .onSuccess { deleted ->
+                        if (deleted) {
+                            ctx.response().endWithJson(StatusDTO(status = "ok"))
+                        } else {
+                            ctx.response().setStatusCode(500).endWithJson(StatusDTO(
+                                status = "error",
+                                message = "failed to revoke session"
+                            ))
+                        }
+                    }
+                    .onFailure { failure -> ctx.fail(500, failure) }
+            }
     }
 }
