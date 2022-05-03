@@ -12,7 +12,7 @@ class AccountRepository(
             val query = session.createQuery("from Account a where a.credentials.email = :email", Account::class.java)
             query.setParameter("email", email)
 
-            query.singleResult
+            query.singleResultOrNull
                 .onItem().ifNotNull().transform { account ->
                     if (account.deleted) {
                         null

@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.AppContext
+import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
@@ -11,6 +12,7 @@ import java.time.format.DateTimeParseException
 
 class ClientRouter(context: AppContext) {
     private val clientRepository = context.injector.getInstance(ClientRepository::class.java)
+    private val authorizationMiddleware = context.injector.getInstance(AuthorizationMiddleware::class.java)
 
     val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
@@ -42,21 +44,47 @@ class ClientRouter(context: AppContext) {
                 .onFailure { failure -> ctx.fail(500, failure) }
         }
 
-        post("/").handler { ctx ->
-            ctx.handleJsonBody<ClientAddPayload> { payload ->
-                clientRepository.add(payload)
-                    .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+        post("/")
+            .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
+            .handler { ctx ->
+                ctx.handleJsonBody<ClientAddPayload> { payload ->
+                    clientRepository.add(payload)
+                        .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
+                        .onFailure { failure -> ctx.fail(500, failure) }
+                }
             }
-        }
 
-        put("/:id").handler { ctx ->
-            ctx.handleJsonBody<ClientUpdatePayload> { payload ->
+        put("/:id")
+            .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
+            .handler { ctx ->
+                ctx.handleJsonBody<ClientUpdatePayload> { payload ->
+                    val id = ctx.pathParam("id")
+
+                    clientRepository.update(id, payload)
+                        .onSuccess { client ->
+                            if (client != null) {
+                                ctx.response().endWithJson(StatusDTO(
+                                    status = "ok"
+                                ))
+                            } else {
+                                ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                                    status = "error",
+                                    message = "client not found"
+                                ))
+                            }
+                        }
+                        .onFailure { failure -> ctx.fail(500, failure) }
+                }
+            }
+
+        delete("/:id")
+            .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
+            .handler { ctx ->
                 val id = ctx.pathParam("id")
 
-                clientRepository.update(id, payload)
-                    .onSuccess { client ->
-                        if (client != null) {
+                clientRepository.delete(id)
+                    .onSuccess { deleted ->
+                        if (deleted) {
                             ctx.response().endWithJson(StatusDTO(
                                 status = "ok"
                             ))
@@ -69,26 +97,6 @@ class ClientRouter(context: AppContext) {
                     }
                     .onFailure { failure -> ctx.fail(500, failure) }
             }
-        }
-
-        delete("/:id").handler { ctx ->
-            val id = ctx.pathParam("id")
-
-            clientRepository.delete(id)
-                .onSuccess { deleted ->
-                    if (deleted) {
-                        ctx.response().endWithJson(StatusDTO(
-                            status = "ok"
-                        ))
-                    } else {
-                        ctx.response().setStatusCode(404).endWithJson(StatusDTO(
-                            status = "error",
-                            message = "client not found"
-                        ))
-                    }
-                }
-                .onFailure { failure -> ctx.fail(500, failure) }
-        }
     }
 
     private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {
