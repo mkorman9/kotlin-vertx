@@ -65,7 +65,7 @@ class LoginRouter(
                                     accountId = account.id,
                                     token = SecureRandomGenerator.generate(sessionTokenLength),
                                     rolesString = account.rolesString,
-                                    ip = ctx.request().remoteAddress().host(),
+                                    ip = ctx.request().getClientIp(),
                                     issuedAt = LocalDateTime.now(),
                                     duration = sessionDurationSeconds,
                                     expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong()),

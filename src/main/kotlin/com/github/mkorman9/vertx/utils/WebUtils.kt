@@ -2,11 +2,16 @@ package com.github.mkorman9.vertx.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.Json
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
+
+fun HttpServerRequest.getClientIp(): String{
+    return getHeader("X-Forwarded-IP") ?: remoteAddress().host()
+}
 
 fun HttpServerResponse.endWithJson(obj: Any) {
     putHeader("Content-Type", "application/json")
