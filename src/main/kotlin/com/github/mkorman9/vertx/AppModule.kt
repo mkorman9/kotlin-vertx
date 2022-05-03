@@ -5,6 +5,7 @@ import com.github.mkorman9.vertx.security.AccountRepository
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareImpl
 import com.github.mkorman9.vertx.security.SessionRepository
+import com.github.mkorman9.vertx.utils.AdvisoryLock
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -16,6 +17,7 @@ class AppModule(
     override fun configure() {
         bind<ConfigRetriever>().toInstance(configRetriever)
         bind<SessionFactory>().toInstance(sessionFactory)
+        bind<AdvisoryLock>().toInstance(AdvisoryLock(sessionFactory))
 
         val clientRepository = ClientRepository(sessionFactory)
         val accountRepository = AccountRepository(sessionFactory)
