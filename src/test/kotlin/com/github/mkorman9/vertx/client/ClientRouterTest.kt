@@ -2,6 +2,9 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.createTestAppContext
+import com.github.mkorman9.vertx.security.AuthorizationMiddleware
+import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
+import com.github.mkorman9.vertx.security.MockSessionProvider
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -23,12 +26,15 @@ import java.util.*
 class ClientRouterTest {
     @MockK
     private lateinit var clientRepository: ClientRepository
+    @MockK
+    private lateinit var sessionProvider: MockSessionProvider
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val context = createTestAppContext(vertx, object : KotlinModule() {
             override fun configure() {
                 bind<ClientRepository>().toInstance(clientRepository)
+                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
             }
         })
 
