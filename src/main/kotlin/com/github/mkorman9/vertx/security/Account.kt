@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.security
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.*
@@ -16,6 +17,7 @@ data class Account(
     var username: String,
 
     @Column(name = "roles")
+    @JsonIgnore
     var rolesString: String,
 
     @Column(name = "active")
@@ -39,6 +41,7 @@ data class Account(
         cascade = [CascadeType.ALL],
         orphanRemoval = true
     )
+    @JsonIgnore
     var credentials: AccountCredentials
 ) {
     var roles: Set<String>

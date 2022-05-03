@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.security
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.*
@@ -18,6 +19,7 @@ data class Session(
     var token: String,
 
     @Column(name = "roles")
+    @JsonIgnore
     var rolesString: String,
 
     @Column(name = "ip")
@@ -34,6 +36,7 @@ data class Session(
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false, insertable = false, updatable = false)
+    @JsonIgnore
     val account: Account
 ) {
     var roles: Set<String>

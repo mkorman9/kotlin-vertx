@@ -1,5 +1,8 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.client.ClientRepository
+import com.github.mkorman9.vertx.security.AccountRepository
+import com.github.mkorman9.vertx.security.SessionRepository
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.vertx.config.ConfigRetriever
@@ -15,6 +18,10 @@ class TestModuleBase(
     override fun configure() {
         bind<SessionFactory>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
+
+        bind<ClientRepository>().toInstance(mockk())
+        bind<AccountRepository>().toInstance(mockk())
+        bind<SessionRepository>().toInstance(mockk())
     }
 
     private fun createConfigRetriever(): ConfigRetriever {

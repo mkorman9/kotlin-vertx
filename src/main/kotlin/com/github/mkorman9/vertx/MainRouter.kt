@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientRouter
+import com.github.mkorman9.vertx.security.LoginRouter
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import io.vertx.core.impl.logging.LoggerFactory
@@ -17,6 +18,8 @@ class MainRouter(
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
         mountSubRouter("/api/v1/client", ClientRouter(context).router)
+
+        mountSubRouter("/api/v1/login", LoginRouter(context).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(StatusDTO(
