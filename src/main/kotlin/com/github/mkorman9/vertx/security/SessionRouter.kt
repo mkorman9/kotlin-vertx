@@ -6,7 +6,7 @@ import com.github.mkorman9.vertx.utils.*
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 
-class LoginRouter(
+class SessionRouter(
     private val context: AppContext
 ) {
     private val sessionIdLength: Long = 24
@@ -19,7 +19,7 @@ class LoginRouter(
 
     val router = Router.router(context.vertx).apply {
         post("/").handler { ctx ->
-            ctx.handleJsonBody<LoginPayload> { payload ->
+            ctx.handleJsonBody<StartSessionPayload> { payload ->
                 accountRepository.findByCredentialsEmail(payload.email)
                     .onSuccess { account ->
                         if (account == null) {

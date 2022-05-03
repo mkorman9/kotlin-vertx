@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientRouter
-import com.github.mkorman9.vertx.security.LoginRouter
+import com.github.mkorman9.vertx.security.SessionRouter
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import io.vertx.core.impl.logging.LoggerFactory
@@ -19,7 +19,7 @@ class MainRouter(
 
         mountSubRouter("/api/v1/client", ClientRouter(context).router)
 
-        mountSubRouter("/api/v1/login", LoginRouter(context).router)
+        mountSubRouter("/api/v1/session", SessionRouter(context).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(StatusDTO(
