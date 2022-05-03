@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
 import com.google.inject.Guice
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
@@ -46,6 +47,8 @@ class BootstrapVerticle : CoroutineVerticle() {
             vertx.deployVerticle(HttpServerVerticle::class.java.name, DeploymentOptions()
                 .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
             )
+
+            vertx.deployVerticle(ExpiredSessionsCleanerVerticle::class.java, DeploymentOptions())
         } catch (e: Exception) {
             log.error("Failed to deploy BootstrapVerticle", e)
             throw e

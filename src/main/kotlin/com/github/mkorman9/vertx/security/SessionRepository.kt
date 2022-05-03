@@ -21,4 +21,11 @@ class SessionRepository(
             session.merge(sessionObject)
         }
     }
+
+    fun deleteExpired(): Future<Int> {
+        return withTransaction(sessionFactory) { session, _ ->
+            val query = session.createQuery<Void>("delete from Session s where s.expiresAt < current_timestamp()")
+            query.executeUpdate()
+        }
+    }
 }
