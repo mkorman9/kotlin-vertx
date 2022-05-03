@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientRepository
 import com.github.mkorman9.vertx.security.AccountRepository
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
+import com.github.mkorman9.vertx.security.AuthorizationMiddlewareImpl
 import com.github.mkorman9.vertx.security.SessionRepository
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
@@ -24,6 +25,6 @@ class AppModule(
         bind<AccountRepository>().toInstance(accountRepository)
         bind<SessionRepository>().toInstance(sessionRepository)
 
-        bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddleware(sessionRepository))
+        bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareImpl(sessionRepository))
     }
 }
