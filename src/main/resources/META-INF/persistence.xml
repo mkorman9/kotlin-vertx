@@ -8,6 +8,9 @@
 
         <class>com.github.mkorman9.vertx.client.Client</class>
         <class>com.github.mkorman9.vertx.client.CreditCard</class>
+        <class>com.github.mkorman9.vertx.security.Account</class>
+        <class>com.github.mkorman9.vertx.security.AccountCredentials</class>
+        <class>com.github.mkorman9.vertx.security.Session</class>
 
         <properties>
             <property name="javax.persistence.jdbc.url" value="" />
