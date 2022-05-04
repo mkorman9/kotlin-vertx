@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
-class ClientRouterTest {
+class ClientApiTest {
     @MockK
     private lateinit var clientRepository: ClientRepository
     @MockK

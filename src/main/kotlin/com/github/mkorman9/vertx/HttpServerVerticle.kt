@@ -21,7 +21,7 @@ class HttpServerVerticle(
         val configRetriever = context.injector.getInstance<ConfigRetriever>()
         val config = configRetriever.config.await()
 
-        val mainRouter = MainRouter(context)
+        val api = Api(context)
 
         server = vertx
             .createHttpServer(
@@ -30,7 +30,7 @@ class HttpServerVerticle(
                     port = config.getJsonObject("server")?.getInteger("port") ?: 8080
                 )
             )
-            .requestHandler { mainRouter.router.handle(it) }
+            .requestHandler { api.router.handle(it) }
             .listen()
             .await()
 

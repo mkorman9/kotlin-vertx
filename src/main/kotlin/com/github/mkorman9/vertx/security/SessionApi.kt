@@ -7,7 +7,7 @@ import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 
-class SessionRouter(
+class SessionApi(
     private val context: AppContext
 ) {
     private val sessionIdLength: Long = 24
@@ -19,7 +19,7 @@ class SessionRouter(
     private val authorizationMiddleware = context.injector.getInstance<AuthorizationMiddleware>()
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
-    val router = Router.router(context.vertx).apply {
+    val router: Router = Router.router(context.vertx).apply {
         post("/").handler { ctx ->
             ctx.handleJsonBody<StartSessionPayload> { payload ->
                 accountRepository.findByCredentialsEmail(payload.email)
