@@ -11,14 +11,14 @@ class ExpiredSessionsCleanerVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
 
     private val lockId: Long = 1000
-    private val taskDelayMs: Long = 30 * 60 * 1000  // 30 min
+    private val taskDelayMs: Int = 30 * 60 * 1000  // 30 min
 
     private val context: AppContext = BootstrapVerticle.cachedContext
     private val advisoryLock = context.injector.getInstance<AdvisoryLock>()
     private val sessionRepository = context.injector.getInstance<SessionRepository>()
 
     override suspend fun start() {
-        context.vertx.setPeriodic(taskDelayMs) {
+        context.vertx.setPeriodic(taskDelayMs.toLong()) {
             advisoryLock.acquire(lockId) { promise ->
                 log.info("Starting ExpiredSessionsCleaner task")
 
