@@ -82,6 +82,17 @@ class SessionApi(
             }
         }
 
+        put("/")
+            .handler { ctx -> authorizationMiddleware.authorize(ctx) }
+            .handler { ctx ->
+                val session = authorizationMiddleware.getActiveSession(ctx)
+                sessionRepository.refresh(session)
+                    .onSuccess { refreshedSession ->
+                        ctx.response().endWithJson(refreshedSession)
+                    }
+                    .onFailure { failure -> ctx.fail(500, failure) }
+            }
+
         delete("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
             .handler { ctx ->

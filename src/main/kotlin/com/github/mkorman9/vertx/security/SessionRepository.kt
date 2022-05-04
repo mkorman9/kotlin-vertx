@@ -4,6 +4,7 @@ import com.github.mkorman9.vertx.utils.withSession
 import com.github.mkorman9.vertx.utils.withTransaction
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import java.time.LocalDateTime
 
 class SessionRepository(
     private val sessionFactory: SessionFactory
@@ -18,6 +19,17 @@ class SessionRepository(
 
     fun add(sessionObject: Session): Future<Session> {
         return withTransaction(sessionFactory) { session, _ ->
+            session.merge(sessionObject)
+        }
+    }
+
+    fun refresh(sessionObject: Session): Future<Session> {
+        if (sessionObject.duration == null) {
+            return Future.succeededFuture(sessionObject)
+        }
+
+        return withTransaction(sessionFactory) { session, _ ->
+            sessionObject.expiresAt = LocalDateTime.now().plusSeconds(sessionObject.duration!!.toLong())
             session.merge(sessionObject)
         }
     }
