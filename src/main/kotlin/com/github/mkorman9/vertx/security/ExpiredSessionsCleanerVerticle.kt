@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx.security
 import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.utils.AdvisoryLock
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 
@@ -13,8 +14,8 @@ class ExpiredSessionsCleanerVerticle : CoroutineVerticle() {
     private val taskDelayMs: Long = 30 * 60 * 1000  // 30 min
 
     private val context: AppContext = BootstrapVerticle.cachedContext
-    private val advisoryLock = context.injector.getInstance(AdvisoryLock::class.java)
-    private val sessionRepository = context.injector.getInstance(SessionRepository::class.java)
+    private val advisoryLock = context.injector.getInstance<AdvisoryLock>()
+    private val sessionRepository = context.injector.getInstance<SessionRepository>()
 
     override suspend fun start() {
         context.vertx.setPeriodic(taskDelayMs) {

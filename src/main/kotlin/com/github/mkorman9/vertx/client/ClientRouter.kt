@@ -5,14 +5,15 @@ import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
 class ClientRouter(context: AppContext) {
-    private val clientRepository = context.injector.getInstance(ClientRepository::class.java)
-    private val authorizationMiddleware = context.injector.getInstance(AuthorizationMiddleware::class.java)
+    private val clientRepository = context.injector.getInstance<ClientRepository>()
+    private val authorizationMiddleware = context.injector.getInstance<AuthorizationMiddleware>()
 
     val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->

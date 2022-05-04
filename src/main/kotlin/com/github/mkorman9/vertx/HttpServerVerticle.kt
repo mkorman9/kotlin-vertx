@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.JsonCodecConfig
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
@@ -17,7 +18,7 @@ class HttpServerVerticle(
     private lateinit var server: HttpServer
 
     override suspend fun start() {
-        val configRetriever = context.injector.getInstance(ConfigRetriever::class.java)
+        val configRetriever = context.injector.getInstance<ConfigRetriever>()
         val config = configRetriever.config.await()
 
         val mainRouter = MainRouter(context)

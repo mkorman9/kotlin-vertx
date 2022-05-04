@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx.security
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.utils.*
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 
@@ -13,9 +14,9 @@ class SessionRouter(
     private val sessionTokenLength: Long = 48
     private val sessionDurationSeconds: Int = 4 * 60 * 60
 
-    private val accountRepository: AccountRepository = context.injector.getInstance(AccountRepository::class.java)
-    private val sessionRepository: SessionRepository = context.injector.getInstance(SessionRepository::class.java)
-    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance(AuthorizationMiddleware::class.java)
+    private val accountRepository = context.injector.getInstance<AccountRepository>()
+    private val sessionRepository  = context.injector.getInstance<SessionRepository>()
+    private val authorizationMiddleware = context.injector.getInstance<AuthorizationMiddleware>()
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
     val router = Router.router(context.vertx).apply {
