@@ -44,15 +44,20 @@ class BootstrapVerticle : CoroutineVerticle() {
 
             log.info("BootstrapVerticle has been deployed successfully")
 
-            vertx.deployVerticle(HttpServerVerticle::class.java.name, DeploymentOptions()
-                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
-            )
-
-            vertx.deployVerticle(ExpiredSessionsCleanerVerticle::class.java, DeploymentOptions())
+            deployVerticles(config)
         } catch (e: Exception) {
             log.error("Failed to deploy BootstrapVerticle", e)
             throw e
         }
+    }
+
+    private fun deployVerticles(config: JsonObject) {
+        vertx.deployVerticle(
+            HttpServerVerticle::class.java.name, DeploymentOptions()
+                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
+        )
+
+        vertx.deployVerticle(ExpiredSessionsCleanerVerticle::class.java, DeploymentOptions())
     }
 
     private fun createConfigRetriever(): ConfigRetriever {
