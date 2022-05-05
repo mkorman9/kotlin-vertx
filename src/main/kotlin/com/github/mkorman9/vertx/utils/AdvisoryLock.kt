@@ -26,6 +26,10 @@ class AdvisoryLock(
                         func.accept(promise)
                     } catch (t: Throwable) {
                         log.debug("Advisory lock handler for lock '${lockId}' has thrown exception", t)
+
+                        if (!promise.future().isComplete) {
+                            promise.complete()
+                        }
                     }
 
                     promise.future().onComplete {
