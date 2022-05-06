@@ -12,7 +12,7 @@ import io.mockk.junit5.MockKExtension
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
-import io.vertx.core.json.jackson.DatabindCodec
+import io.vertx.core.json.Json
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import org.assertj.core.api.Assertions.assertThat
@@ -62,7 +62,7 @@ class ClientApiTest {
 
                 result.body()
                     .onSuccess { body ->
-                        val receivedClient = DatabindCodec.mapper().readValue(body.bytes, Client::class.java)
+                        val receivedClient = Json.decodeValue(body, Client::class.java)
                         assertThat(receivedClient).isEqualTo(client)
 
                         testContext.completeNow()

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.Json
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 
@@ -21,7 +20,7 @@ fun HttpServerResponse.endWithJson(obj: Any) {
 inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
     request().bodyHandler { body ->
         val payload = try {
-            DatabindCodec.mapper().readValue(body.bytes, T::class.java)
+            Json.decodeValue(body, T::class.java)
         } catch (e: JsonMappingException) {
             val field = buildJsonExceptionPath(e.path)
             val code =
