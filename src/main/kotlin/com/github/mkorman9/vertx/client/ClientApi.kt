@@ -14,6 +14,7 @@ import java.time.format.DateTimeParseException
 class ClientApi(context: AppContext) {
     private val clientRepository = context.injector.getInstance<ClientRepository>()
     private val authorizationMiddleware = context.injector.getInstance<AuthorizationMiddleware>()
+    private val clientEventsPublisher = context.injector.getInstance<ClientEventsPublisher>()
 
     val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
@@ -48,9 +49,21 @@ class ClientApi(context: AppContext) {
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .handler { ctx ->
+                val session = authorizationMiddleware.getActiveSession(ctx)
+
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
                     clientRepository.add(payload)
-                        .onSuccess { client -> ctx.response().endWithJson(ClientAddResponse(id = client.id.toString())) }
+                        .onSuccess { client ->
+                            clientEventsPublisher.publish(
+                                ClientEvent(
+                                    operation = ClientEventOperation.ADDED,
+                                    clientId = client.id.toString(),
+                                    author = session.account.id.toString()
+                                )
+                            )
+
+                            ctx.response().endWithJson(ClientAddResponse(id = client.id.toString()))
+                        }
                         .onFailure { failure -> ctx.fail(500, failure) }
                 }
             }
@@ -58,12 +71,22 @@ class ClientApi(context: AppContext) {
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .handler { ctx ->
+                val session = authorizationMiddleware.getActiveSession(ctx)
+
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                     val id = ctx.pathParam("id")
 
                     clientRepository.update(id, payload)
                         .onSuccess { client ->
                             if (client != null) {
+                                clientEventsPublisher.publish(
+                                    ClientEvent(
+                                        operation = ClientEventOperation.UPDATED,
+                                        clientId = client.id.toString(),
+                                        author = session.account.id.toString()
+                                    )
+                                )
+
                                 ctx.response().endWithJson(StatusDTO(
                                     status = "ok"
                                 ))
@@ -83,9 +106,19 @@ class ClientApi(context: AppContext) {
             .handler { ctx ->
                 val id = ctx.pathParam("id")
 
+                val session = authorizationMiddleware.getActiveSession(ctx)
+
                 clientRepository.delete(id)
                     .onSuccess { deleted ->
                         if (deleted) {
+                            clientEventsPublisher.publish(
+                                ClientEvent(
+                                    operation = ClientEventOperation.DELETED,
+                                    clientId = id,
+                                    author = session.account.id.toString()
+                                )
+                            )
+
                             ctx.response().endWithJson(StatusDTO(
                                 status = "ok"
                             ))

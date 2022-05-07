@@ -36,7 +36,7 @@ class HttpServerVerticle(
             .listen()
             .await()
 
-        log.info("HttpServerVerticle has been deployed successfully")
+        log.info("HttpServerVerticle has been deployed")
     }
 
     override suspend fun stop() {

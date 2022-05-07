@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
 import com.google.inject.Guice
 import io.vertx.config.ConfigRetriever
@@ -45,7 +46,7 @@ class BootstrapVerticle : CoroutineVerticle() {
                 startupTime = LocalDateTime.now()
             )
 
-            log.info("BootstrapVerticle has been deployed successfully")
+            log.info("BootstrapVerticle has been deployed")
 
             deployVerticles(config)
         } catch (e: Exception) {
@@ -61,6 +62,7 @@ class BootstrapVerticle : CoroutineVerticle() {
         )
 
         vertx.deployVerticle(ExpiredSessionsCleanerVerticle::class.java, DeploymentOptions())
+        vertx.deployVerticle(ClientEventsVerticle::class.java, DeploymentOptions())
     }
 
     private fun createConfigRetriever(): ConfigRetriever {

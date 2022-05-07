@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.client.ClientEventsPublisher
 import com.github.mkorman9.vertx.client.ClientRepository
 import com.github.mkorman9.vertx.security.AccountRepository
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
@@ -27,6 +28,8 @@ class TestModuleBase(
         bind<SessionRepository>().toInstance(mockk())
 
         bind<AuthorizationMiddleware>().toInstance(mockk())
+
+        bind<ClientEventsPublisher>().toInstance(mockk())
     }
 
     private fun createConfigRetriever(): ConfigRetriever {
