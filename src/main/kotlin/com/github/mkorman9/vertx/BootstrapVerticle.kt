@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
 import com.google.inject.Guice
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -53,6 +54,10 @@ class BootstrapVerticle : CoroutineVerticle() {
             log.error("Failed to deploy BootstrapVerticle", e)
             throw e
         }
+    }
+
+    override suspend fun stop() {
+        cachedContext.injector.getInstance<RabbitMQClient>().stop().await()
     }
 
     private fun deployVerticles(config: JsonObject) {
