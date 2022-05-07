@@ -122,9 +122,9 @@ class BootstrapVerticle : CoroutineVerticle() {
 
         val client = RabbitMQClient.create(vertx, RabbitMQOptions()
             .setUri(uri)
-            .setAutomaticRecoveryEnabled(true)
+            .setAutomaticRecoveryEnabled(false)
             .setReconnectAttempts(Integer.MAX_VALUE)
-            .setReconnectInterval(500)
+            .setReconnectInterval(1000)
         )
 
         return client.start().map { client }
