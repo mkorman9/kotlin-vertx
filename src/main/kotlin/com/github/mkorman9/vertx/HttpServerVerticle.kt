@@ -22,6 +22,7 @@ class HttpServerVerticle(
         val config = configRetriever.config.await()
 
         val api = Api(context)
+        val websocketHandler = WebsocketHandler(context)
 
         server = vertx
             .createHttpServer(
@@ -31,6 +32,7 @@ class HttpServerVerticle(
                 )
             )
             .requestHandler { api.router.handle(it) }
+            .webSocketHandler { websocketHandler.handle(it) }
             .listen()
             .await()
 
