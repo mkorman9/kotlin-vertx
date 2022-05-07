@@ -8,15 +8,18 @@ import com.github.mkorman9.vertx.security.SessionRepository
 import com.github.mkorman9.vertx.utils.AdvisoryLock
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
+import io.vertx.rabbitmq.RabbitMQClient
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 
 class AppModule(
     private val configRetriever: ConfigRetriever,
-    private val sessionFactory: SessionFactory
+    private val sessionFactory: SessionFactory,
+    private val rabbitMQClient: RabbitMQClient
 ) : KotlinModule() {
     override fun configure() {
         bind<ConfigRetriever>().toInstance(configRetriever)
         bind<SessionFactory>().toInstance(sessionFactory)
+        bind<RabbitMQClient>().toInstance(rabbitMQClient)
         bind<AdvisoryLock>().toInstance(AdvisoryLock(sessionFactory))
 
         val clientRepository = ClientRepository(sessionFactory)

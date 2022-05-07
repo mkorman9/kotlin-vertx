@@ -6,3 +6,6 @@ db:
   uri: jdbc:postgresql://localhost:5432/kotlinvertx
   user: username
   password: password
+
+rabbitmq:
+  uri: amqp://username:password@localhost:5672

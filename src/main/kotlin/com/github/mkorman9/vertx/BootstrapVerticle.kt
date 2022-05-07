@@ -12,6 +12,8 @@ import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
+import io.vertx.rabbitmq.RabbitMQClient
+import io.vertx.rabbitmq.RabbitMQOptions
 import org.hibernate.reactive.mutiny.Mutiny
 import java.io.IOException
 import java.time.LocalDateTime
@@ -30,9 +32,10 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
             val sessionFactory = startHibernate(config).await()
+            val rabbitMQClient = connectToRabbitMQ(config).await()
             val version = readVersionFromManifest().await()
 
-            val module = AppModule(configRetriever, sessionFactory)
+            val module = AppModule(configRetriever, sessionFactory, rabbitMQClient)
             val injector = Guice.createInjector(module)
 
             cachedContext = AppContext(
@@ -93,6 +96,20 @@ class BootstrapVerticle : CoroutineVerticle() {
 
                 call.complete(sessionFactory)
             }
+    }
+
+    private fun connectToRabbitMQ(config: JsonObject): Future<RabbitMQClient> {
+        val uri = config.getJsonObject("rabbitmq")?.getString("uri")
+            ?: throw RuntimeException("rabbitmq.uri is missing from config")
+
+        val client = RabbitMQClient.create(vertx, RabbitMQOptions()
+            .setUri(uri)
+            .setAutomaticRecoveryEnabled(true)
+            .setReconnectAttempts(Integer.MAX_VALUE)
+            .setReconnectInterval(500)
+        )
+
+        return client.start().map { client }
     }
 
     private fun readVersionFromManifest(): Future<String> {

@@ -11,6 +11,7 @@ import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import io.vertx.rabbitmq.RabbitMQClient
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 
 class TestModuleBase(
@@ -18,6 +19,7 @@ class TestModuleBase(
 ) : KotlinModule() {
     override fun configure() {
         bind<SessionFactory>().toInstance(mockk())
+        bind<RabbitMQClient>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
 
         bind<ClientRepository>().toInstance(mockk())
