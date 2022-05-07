@@ -69,11 +69,22 @@ class BootstrapVerticle : CoroutineVerticle() {
         val store = ConfigStoreOptions()
             .setType("file")
             .setFormat("yaml")
+            .setOptional(true)
             .setConfig(JsonObject()
                 .put("path", System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
             )
+        val secretsStore = ConfigStoreOptions()
+            .setType("file")
+            .setFormat("yaml")
+            .setOptional(true)
+            .setConfig(JsonObject()
+                .put("path", System.getenv().getOrDefault("SECRETS_FILE", "./secrets.yml"))
+            )
 
-        return ConfigRetriever.create(vertx, ConfigRetrieverOptions().addStore(store))
+        return ConfigRetriever.create(vertx, ConfigRetrieverOptions()
+            .addStore(store)
+            .addStore(secretsStore)
+        )
     }
 
     private fun startHibernate(config: JsonObject): Future<Mutiny.SessionFactory> {
