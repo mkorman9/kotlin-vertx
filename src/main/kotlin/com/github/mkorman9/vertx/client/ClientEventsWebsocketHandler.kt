@@ -1,10 +1,9 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.AppContext
+import com.github.mkorman9.vertx.utils.WebsocketStore
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 class ClientEventsWebsocketHandler(
     private val context: AppContext
@@ -12,17 +11,16 @@ class ClientEventsWebsocketHandler(
     private val log = LoggerFactory.getLogger(ClientEventsWebsocketHandler::class.java)
 
     companion object {
-        val ClientEventsWebsockets = ConcurrentHashMap<UUID, ServerWebSocket>()
+        val Websockets = WebsocketStore()
     }
 
     fun handle(ws: ServerWebSocket) {
-        val id = UUID.randomUUID()
+        val id = Websockets.add(ws)
 
-        ClientEventsWebsockets[id] = ws
         log.info("Websocket '$id' connected")
 
         ws.endHandler {
-            ClientEventsWebsockets.remove(id)
+            Websockets.remove(id)
             log.info("Websocket '$id' disconnected")
         }
 
