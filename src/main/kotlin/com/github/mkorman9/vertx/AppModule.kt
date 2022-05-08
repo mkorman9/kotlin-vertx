@@ -1,7 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.security.AuthorizationMiddlewareImpl
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
@@ -31,8 +29,13 @@ class AppModule(
         bind<RabbitMQClient>().toInstance(rabbitMQClient)
 
         getInjectableClasses()
-            .forEach { bind(it) }
+            .forEach { c ->
+                bind(c)
 
-        bind<AuthorizationMiddleware>().to(AuthorizationMiddlewareImpl::class.java)
+                c.genericInterfaces.forEach { i ->
+                    @Suppress("UNCHECKED_CAST")
+                    bind(Class.forName(i.typeName) as Class<Any>).to(c)
+                }
+            }
     }
 }
