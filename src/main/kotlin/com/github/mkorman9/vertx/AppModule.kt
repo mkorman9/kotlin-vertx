@@ -17,9 +17,11 @@ class AppModule(
     companion object {
         private const val packageName = "com.github.mkorman9.vertx"
 
-        private fun getInjectableClasses(): Set<Class<*>> {
+        fun getInjectableClasses(): Set<Class<Any>> {
             val packageReflections = Reflections(packageName)
-            return packageReflections.getTypesAnnotatedWith(Singleton::class.java)
+
+            @Suppress("UNCHECKED_CAST")
+            return packageReflections.getTypesAnnotatedWith(Singleton::class.java) as Set<Class<Any>>
         }
     }
 

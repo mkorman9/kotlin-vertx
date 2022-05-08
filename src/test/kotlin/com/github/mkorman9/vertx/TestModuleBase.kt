@@ -1,12 +1,8 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.client.ClientEventsPublisher
-import com.github.mkorman9.vertx.client.ClientRepository
-import com.github.mkorman9.vertx.security.AccountRepository
-import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.security.SessionRepository
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
+import io.mockk.mockkClass
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -14,6 +10,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.rabbitmq.RabbitMQClient
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
     private val vertx: Vertx
@@ -23,13 +20,11 @@ class TestModuleBase(
         bind<RabbitMQClient>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
 
-        bind<ClientRepository>().toInstance(mockk())
-        bind<AccountRepository>().toInstance(mockk())
-        bind<SessionRepository>().toInstance(mockk())
-
-        bind<AuthorizationMiddleware>().toInstance(mockk())
-
-        bind<ClientEventsPublisher>().toInstance(mockk())
+        AppModule.getInjectableClasses()
+            .forEach {
+                val kclass = Reflection.createKotlinClass(Class.forName(it.name))
+                bind(it).toInstance(mockkClass(kclass))
+            }
     }
 
     private fun createConfigRetriever(): ConfigRetriever {
