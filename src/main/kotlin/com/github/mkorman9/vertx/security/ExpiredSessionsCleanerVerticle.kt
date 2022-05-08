@@ -7,13 +7,15 @@ import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 
-class ExpiredSessionsCleanerVerticle : CoroutineVerticle() {
+class ExpiredSessionsCleanerVerticle(
+    passedInjector: Injector? = null
+) : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
 
     private val lockId: Long = 1000
     private val taskDelayMs: Int = 30 * 60 * 1000  // 30 min
 
-    private val injector: Injector = BootstrapVerticle.injector
+    private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private val advisoryLock = injector.getInstance<AdvisoryLock>()
     private val sessionRepository = injector.getInstance<SessionRepository>()
 

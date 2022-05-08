@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.BootstrapVerticle
+import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
@@ -10,10 +11,12 @@ import io.vertx.rabbitmq.RabbitMQClient
 import io.vertx.rabbitmq.RabbitMQMessage
 import java.util.*
 
-class ClientEventsVerticle : CoroutineVerticle() {
+class ClientEventsVerticle(
+    passedInjector: Injector? = null
+) : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
-    private val injector = BootstrapVerticle.injector
+    private val injector = passedInjector ?: BootstrapVerticle.injector
     private val rabbitMQClient = injector.getInstance<RabbitMQClient>()
 
     private val exchangeName = "client.events"
