@@ -11,7 +11,7 @@ import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
-@DeployVerticle(name = "server")
+@DeployVerticle(configKey = "server")
 class HttpServerVerticle(
     passedInjector: Injector? = null
 ): CoroutineVerticle() {

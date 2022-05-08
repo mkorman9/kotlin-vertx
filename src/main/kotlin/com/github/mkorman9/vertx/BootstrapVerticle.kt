@@ -64,11 +64,11 @@ class BootstrapVerticle : CoroutineVerticle() {
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
             .forEach { c ->
-                val verticleName = c.annotations.filterIsInstance<DeployVerticle>()
+                val verticleConfigKey = c.annotations.filterIsInstance<DeployVerticle>()
                     .first()
-                    .name
+                    .configKey
                     .ifEmpty { c.name }
-                val verticleConfig = config.getJsonObject(verticleName)
+                val verticleConfig = config.getJsonObject(verticleConfigKey)
 
                 vertx.deployVerticle(c.name, DeploymentOptions()
                     .setInstances(verticleConfig?.getInteger("instances") ?: 1)
