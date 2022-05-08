@@ -3,7 +3,6 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Guice
 import com.google.inject.Injector
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -14,14 +13,10 @@ import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import io.vertx.rabbitmq.RabbitMQClient
-import io.vertx.rabbitmq.RabbitMQOptions
-import org.hibernate.reactive.mutiny.Mutiny
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
-import javax.persistence.Persistence
 
 class BootstrapVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(BootstrapVerticle::class.java)
@@ -29,6 +24,9 @@ class BootstrapVerticle : CoroutineVerticle() {
     companion object {
         lateinit var injector: Injector
     }
+
+    private val hibernateInitializer = HibernateInitializer()
+    private val rabbitMQInitializer = RabbitMQInitializer()
 
     override suspend fun start() {
         try {
@@ -41,8 +39,8 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val sessionFactory = startHibernate(config).await()
-            val rabbitMQClient = connectToRabbitMQ(config).await()
+            val sessionFactory = hibernateInitializer.start(vertx, config).await()
+            val rabbitMQClient = rabbitMQInitializer.start(vertx, config).await()
 
             val module = AppModule(vertx, context, configRetriever, sessionFactory, rabbitMQClient)
             injector = Guice.createInjector(module)
@@ -57,7 +55,8 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        injector.getInstance<RabbitMQClient>().stop().await()
+        hibernateInitializer.stop().await()
+        rabbitMQInitializer.stop().await()
     }
 
     private fun deployVerticles(config: JsonObject) {
@@ -96,44 +95,6 @@ class BootstrapVerticle : CoroutineVerticle() {
             .addStore(store)
             .addStore(secretsStore)
         )
-    }
-
-    private fun startHibernate(config: JsonObject): Future<Mutiny.SessionFactory> {
-        val uri = config.getJsonObject("db")?.getString("uri")
-            ?: throw RuntimeException("db.uri is missing from config")
-        val user = config.getJsonObject("db")?.getString("user")
-            ?: throw RuntimeException("db.user is missing from config")
-        val password = config.getJsonObject("db")?.getString("password")
-            ?: throw RuntimeException("db.password is missing from config")
-
-        val props = mapOf(
-            "javax.persistence.jdbc.url" to uri,
-            "javax.persistence.jdbc.user" to user,
-            "javax.persistence.jdbc.password" to password
-        )
-
-        return vertx
-            .executeBlocking { call ->
-                val sessionFactory = Persistence
-                    .createEntityManagerFactory("default", props)
-                    .unwrap(Mutiny.SessionFactory::class.java)
-
-                call.complete(sessionFactory)
-            }
-    }
-
-    private fun connectToRabbitMQ(config: JsonObject): Future<RabbitMQClient> {
-        val uri = config.getJsonObject("rabbitmq")?.getString("uri")
-            ?: throw RuntimeException("rabbitmq.uri is missing from config")
-
-        val client = RabbitMQClient.create(vertx, RabbitMQOptions()
-            .setUri(uri)
-            .setAutomaticRecoveryEnabled(false)
-            .setReconnectAttempts(Integer.MAX_VALUE)
-            .setReconnectInterval(1000)
-        )
-
-        return client.start().map { client }
     }
 
     private fun readVersionFromManifest(): Future<String> {
