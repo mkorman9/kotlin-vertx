@@ -3,12 +3,14 @@ package com.github.mkorman9.vertx
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.Vertx
 import io.vertx.rabbitmq.RabbitMQClient
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.reflections.Reflections
 
 class AppModule(
-    private val context: AppContext,
+    private val vertx: Vertx,
+    private val context: DeploymentContext,
     private val configRetriever: ConfigRetriever,
     private val sessionFactory: SessionFactory,
     private val rabbitMQClient: RabbitMQClient
@@ -25,7 +27,8 @@ class AppModule(
     }
 
     override fun configure() {
-        bind<AppContext>().toInstance(context)
+        bind<Vertx>().toInstance(vertx)
+        bind<DeploymentContext>().toInstance(context)
         bind<ConfigRetriever>().toInstance(configRetriever)
         bind<SessionFactory>().toInstance(sessionFactory)
         bind<RabbitMQClient>().toInstance(rabbitMQClient)

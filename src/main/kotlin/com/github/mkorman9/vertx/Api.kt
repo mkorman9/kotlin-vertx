@@ -6,20 +6,21 @@ import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router
 import io.vertx.micrometer.PrometheusScrapingHandler
 
 @Singleton
 class Api @Inject constructor(
-    private val context: AppContext,
+    private val vertx: Vertx,
     private val healthcheckApi: HealthcheckApi,
     private val clientApi: ClientApi,
     private val sessionApi: SessionApi
 ) {
     private val log = LoggerFactory.getLogger(Api::class.java)
 
-    val router: Router = Router.router(context.vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         mountSubRouter("/health", healthcheckApi.router)
         route("/metrics").handler(PrometheusScrapingHandler.create())
 

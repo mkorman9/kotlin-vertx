@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.utils.AdvisoryLock
 import com.google.inject.Injector
@@ -15,12 +14,11 @@ class ExpiredSessionsCleanerVerticle : CoroutineVerticle() {
     private val taskDelayMs: Int = 30 * 60 * 1000  // 30 min
 
     private val injector: Injector = BootstrapVerticle.injector
-    private val context = injector.getInstance<AppContext>()
     private val advisoryLock = injector.getInstance<AdvisoryLock>()
     private val sessionRepository = injector.getInstance<SessionRepository>()
 
     override suspend fun start() {
-        context.vertx.setPeriodic(taskDelayMs.toLong()) {
+        vertx.setPeriodic(taskDelayMs.toLong()) {
             advisoryLock.acquire(lockId) { promise ->
                 log.info("Starting ExpiredSessionsCleaner task")
 

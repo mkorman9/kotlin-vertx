@@ -1,16 +1,16 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.utils.*
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 
 @Singleton
 class SessionApi @Inject constructor(
-    private val context: AppContext,
+    private val vertx: Vertx,
     private val accountRepository: AccountRepository,
     private val sessionRepository: SessionRepository,
     private val authorizationMiddleware: AuthorizationMiddleware
@@ -21,7 +21,7 @@ class SessionApi @Inject constructor(
 
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
-    val router: Router = Router.router(context.vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         post("/").handler { ctx ->
             ctx.handleJsonBody<StartSessionPayload> { payload ->
                 accountRepository.findByCredentialsEmail(payload.email)
@@ -46,7 +46,7 @@ class SessionApi @Inject constructor(
                             return@onSuccess
                         }
 
-                        context.vertx.executeBlocking<BCrypt.Result> { call ->
+                        vertx.executeBlocking<BCrypt.Result> { call ->
                             call.complete(
                                 bcryptVerifier.verify(payload.password.toCharArray(), account.credentials.passwordBcrypt)
                             )

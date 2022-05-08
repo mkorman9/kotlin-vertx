@@ -8,11 +8,10 @@ import io.vertx.core.Vertx
 import java.time.LocalDateTime
 
 fun createTestInjector(vertx: Vertx, module: KotlinModule): Injector {
-    val context = AppContext(
-        vertx = vertx,
+    val context = DeploymentContext(
         version = "test",
         startupTime = LocalDateTime.now()
     )
 
-    return Guice.createInjector(Modules.override(TestModuleBase(context)).with(module))
+    return Guice.createInjector(Modules.override(TestModuleBase(vertx, context)).with(module))
 }

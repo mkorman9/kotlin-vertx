@@ -1,12 +1,12 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
@@ -14,12 +14,12 @@ import java.time.format.DateTimeParseException
 
 @Singleton
 class ClientApi @Inject constructor(
-    private val context: AppContext,
+    private val vertx: Vertx,
     private val clientRepository: ClientRepository,
     private val authorizationMiddleware: AuthorizationMiddleware,
     private val clientEventsPublisher: ClientEventsPublisher
 ) {
-    val router: Router = Router.router(context.vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         get("/").handler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
 

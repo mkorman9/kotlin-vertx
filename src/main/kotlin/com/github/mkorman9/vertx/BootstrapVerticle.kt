@@ -32,8 +32,7 @@ class BootstrapVerticle : CoroutineVerticle() {
 
     override suspend fun start() {
         try {
-            val context = AppContext(
-                vertx = vertx,
+            val context = DeploymentContext(
                 version = readVersionFromManifest().await(),
                 startupTime = LocalDateTime.now()
             )
@@ -44,7 +43,7 @@ class BootstrapVerticle : CoroutineVerticle() {
             val sessionFactory = startHibernate(config).await()
             val rabbitMQClient = connectToRabbitMQ(config).await()
 
-            val module = AppModule(context, configRetriever, sessionFactory, rabbitMQClient)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory, rabbitMQClient)
             injector = Guice.createInjector(module)
 
             log.info("BootstrapVerticle has been deployed")
