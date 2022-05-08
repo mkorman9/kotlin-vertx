@@ -6,8 +6,8 @@ import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 
 @Singleton
-class ClientEventsWebsocketHandler {
-    private val log = LoggerFactory.getLogger(ClientEventsWebsocketHandler::class.java)
+class ClientEventsWebsocketApi {
+    private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
 
     companion object {
         val Websockets = WebsocketStore()

@@ -26,7 +26,7 @@ class HttpServerVerticle(
             val config = configRetriever.config.await()
 
             val api = injector.getInstance<Api>()
-            val websocketHandler = injector.getInstance<WebsocketHandler>()
+            val websocketApi = injector.getInstance<WebsocketApi>()
 
             server = vertx
                 .createHttpServer(
@@ -36,7 +36,7 @@ class HttpServerVerticle(
                     )
                 )
                 .requestHandler { api.router.handle(it) }
-                .webSocketHandler { websocketHandler.handle(it) }
+                .webSocketHandler { websocketApi.handle(it) }
                 .listen()
                 .await()
 

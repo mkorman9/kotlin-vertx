@@ -62,7 +62,7 @@ class ClientEventsVerticle(
 
         log.info("ClientEvent has been received $event")
 
-        ClientEventsWebsocketHandler.Websockets.list().forEach { ws ->
+        ClientEventsWebsocketApi.Websockets.list().forEach { ws ->
             ws.writeTextMessage(Json.encode(event))
         }
     }
