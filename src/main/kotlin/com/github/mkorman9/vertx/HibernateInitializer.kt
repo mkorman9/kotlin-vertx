@@ -37,7 +37,10 @@ class HibernateInitializer {
             }
     }
 
-    fun stop(): Future<Void> {
-        return Future.succeededFuture()
+    fun stop(vertx: Vertx): Future<Void> {
+        return vertx.executeBlocking { promise ->
+            sessionFactory.close()
+            promise.complete()
+        }
     }
 }

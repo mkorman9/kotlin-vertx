@@ -55,8 +55,8 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        hibernateInitializer.stop().await()
         rabbitMQInitializer.stop().await()
+        hibernateInitializer.stop(vertx).await()
     }
 
     private fun deployVerticles(config: JsonObject) {
