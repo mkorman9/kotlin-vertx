@@ -2,11 +2,13 @@ package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.utils.AdvisoryLock
+import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 
+@DeployVerticle
 class ExpiredSessionsCleanerVerticle(
     passedInjector: Injector? = null
 ) : CoroutineVerticle() {

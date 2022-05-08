@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.client.ClientEventsVerticle
-import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
+import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Guice
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -18,6 +17,7 @@ import io.vertx.kotlin.coroutines.await
 import io.vertx.rabbitmq.RabbitMQClient
 import io.vertx.rabbitmq.RabbitMQOptions
 import org.hibernate.reactive.mutiny.Mutiny
+import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
@@ -61,13 +61,19 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     private fun deployVerticles(config: JsonObject) {
-        vertx.deployVerticle(
-            HttpServerVerticle::class.java.name, DeploymentOptions()
-                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
-        )
+        val packageReflections = Reflections(AppModule.packageName)
+        packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
+            .forEach { c ->
+                val verticleName = c.annotations.filterIsInstance<DeployVerticle>()
+                    .first()
+                    .name
+                    .ifEmpty { c.name }
+                val verticleConfig = config.getJsonObject(verticleName)
 
-        vertx.deployVerticle(ExpiredSessionsCleanerVerticle::class.java, DeploymentOptions())
-        vertx.deployVerticle(ClientEventsVerticle::class.java, DeploymentOptions())
+                vertx.deployVerticle(c.name, DeploymentOptions()
+                    .setInstances(verticleConfig?.getInteger("instances") ?: 1)
+                )
+            }
     }
 
     private fun createConfigRetriever(): ConfigRetriever {

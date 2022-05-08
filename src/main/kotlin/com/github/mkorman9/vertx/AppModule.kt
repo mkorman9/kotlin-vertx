@@ -16,7 +16,7 @@ class AppModule(
     private val rabbitMQClient: RabbitMQClient
 ) : KotlinModule() {
     companion object {
-        private const val packageName = "com.github.mkorman9.vertx"
+        const val packageName = "com.github.mkorman9.vertx"
 
         fun getInjectableClasses(): Set<Class<Any>> {
             val packageReflections = Reflections(packageName)
