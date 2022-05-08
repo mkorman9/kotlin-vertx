@@ -13,12 +13,6 @@
         <class>com.github.mkorman9.vertx.security.Session</class>
 
         <properties>
-            <property name="javax.persistence.jdbc.url" value="" />
-            <property name="javax.persistence.jdbc.user" value="" />
-            <property name="javax.persistence.jdbc.password" value="" />
-
-            <property name="hibernate.connection.pool_size" value="5" />
-
             <property name="javax.persistence.schema-generation.database.action" value="validate" />
 
             <property name="hibernate.show_sql" value="false" />

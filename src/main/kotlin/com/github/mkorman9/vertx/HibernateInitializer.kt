@@ -17,10 +17,14 @@ class HibernateInitializer {
         val password = config.getJsonObject("db")?.getString("password")
             ?: throw RuntimeException("db.password is missing from config")
 
+        val poolSize = config.getJsonObject("db")?.getJsonObject("pool")?.getInteger("size") ?: 5
+
         val props = mapOf(
             "javax.persistence.jdbc.url" to uri,
             "javax.persistence.jdbc.user" to user,
-            "javax.persistence.jdbc.password" to password
+            "javax.persistence.jdbc.password" to password,
+
+            "hibernate.connection.pool_size" to poolSize
         )
 
         return vertx
