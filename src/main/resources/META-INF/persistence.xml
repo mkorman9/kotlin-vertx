@@ -14,12 +14,7 @@
 
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="validate" />
-
-            <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.format_sql" value="false" />
-            <property name="hibernate.highlight_sql" value="false" />
         </properties>
-
     </persistence-unit>
 
 </persistence>
