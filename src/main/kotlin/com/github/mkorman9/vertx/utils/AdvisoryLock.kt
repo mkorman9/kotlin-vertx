@@ -1,11 +1,14 @@
 package com.github.mkorman9.vertx.utils
 
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.core.Promise
 import io.vertx.core.impl.logging.LoggerFactory
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import java.util.function.Consumer
 
-class AdvisoryLock(
+@Singleton
+class AdvisoryLock @Inject constructor(
     private val sessionFactory: SessionFactory
 ) {
     private val log = LoggerFactory.getLogger(AdvisoryLock::class.java)

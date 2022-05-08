@@ -63,6 +63,7 @@ dependencies {
     implementation 'dev.misfitlabs.kotlinguice4:kotlin-guice:1.6.0'
     implementation "io.micrometer:micrometer-registry-prometheus:1.8.5"
     implementation 'at.favre.lib:bcrypt:0.9.0'
+    implementation 'org.reflections:reflections:0.10.2'
 
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
     testImplementation "io.vertx:vertx-junit5:$vertxVersion"

@@ -2,11 +2,14 @@ package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.utils.withSession
 import com.github.mkorman9.vertx.utils.withTransaction
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import java.time.LocalDateTime
 
-class SessionRepository(
+@Singleton
+class SessionRepository @Inject constructor(
     private val sessionFactory: SessionFactory
 ) {
     fun findByToken(token: String): Future<Session?> {

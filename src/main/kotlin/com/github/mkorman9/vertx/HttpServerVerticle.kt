@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.client.ClientEventsPublisher
 import com.github.mkorman9.vertx.utils.JsonCodecConfig
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
@@ -18,25 +19,30 @@ class HttpServerVerticle(
     private lateinit var server: HttpServer
 
     override suspend fun start() {
-        val configRetriever = context.injector.getInstance<ConfigRetriever>()
-        val config = configRetriever.config.await()
+        try {
+            val configRetriever = context.injector.getInstance<ConfigRetriever>()
+            val config = configRetriever.config.await()
 
-        val api = Api(context)
-        val websocketHandler = WebsocketHandler(context)
+            val api = Api(context)
+            val websocketHandler = WebsocketHandler(context)
 
-        server = vertx
-            .createHttpServer(
-                httpServerOptionsOf(
-                    host = config.getJsonObject("server")?.getString("host") ?: "0.0.0.0",
-                    port = config.getJsonObject("server")?.getInteger("port") ?: 8080
+            server = vertx
+                .createHttpServer(
+                    httpServerOptionsOf(
+                        host = config.getJsonObject("server")?.getString("host") ?: "0.0.0.0",
+                        port = config.getJsonObject("server")?.getInteger("port") ?: 8080
+                    )
                 )
-            )
-            .requestHandler { api.router.handle(it) }
-            .webSocketHandler { websocketHandler.handle(it) }
-            .listen()
-            .await()
+                .requestHandler { api.router.handle(it) }
+                .webSocketHandler { websocketHandler.handle(it) }
+                .listen()
+                .await()
 
-        log.info("HttpServerVerticle has been deployed")
+            log.info("HttpServerVerticle has been deployed")
+        } catch (e: Exception) {
+            log.error("Failed to deploy HttpServerVerticle", e)
+            throw e
+        }
     }
 
     override suspend fun stop() {

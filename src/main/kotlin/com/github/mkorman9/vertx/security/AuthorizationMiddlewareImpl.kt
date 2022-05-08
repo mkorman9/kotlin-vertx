@@ -2,10 +2,13 @@ package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.RoutingContext
 
-class AuthorizationMiddlewareImpl(
+@Singleton
+class AuthorizationMiddlewareImpl @Inject constructor(
     private val sessionRepository: SessionRepository
 ) : AuthorizationMiddleware {
     private val sessionObjectKey = "activeSession"

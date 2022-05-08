@@ -1,9 +1,12 @@
 package com.github.mkorman9.vertx.client
 
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.core.json.Json
 import io.vertx.rabbitmq.RabbitMQClient
 
-class ClientEventsPublisher(
+@Singleton
+class ClientEventsPublisher @Inject constructor(
     private val rabbitMQClient: RabbitMQClient
 ) {
     private val exchangeName = "client.events"
