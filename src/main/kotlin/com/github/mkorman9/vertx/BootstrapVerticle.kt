@@ -6,6 +6,7 @@ import com.google.inject.Injector
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
+import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.impl.launcher.commands.RunCommand
@@ -13,6 +14,8 @@ import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
+import io.vertx.rabbitmq.RabbitMQClient
+import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
@@ -39,8 +42,12 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val sessionFactory = hibernateInitializer.start(vertx, config).await()
-            val rabbitMQClient = rabbitMQInitializer.start(vertx, config).await()
+            val init = CompositeFuture.all(
+                hibernateInitializer.start(vertx, config),
+                rabbitMQInitializer.start(vertx, config)
+            ).await()
+            val sessionFactory = init.resultAt<SessionFactory>(0)
+            val rabbitMQClient = init.resultAt<RabbitMQClient>(1)
 
             val module = AppModule(vertx, context, configRetriever, sessionFactory, rabbitMQClient)
             injector = Guice.createInjector(module)
@@ -55,8 +62,10 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        rabbitMQInitializer.stop().await()
-        hibernateInitializer.stop(vertx).await()
+        CompositeFuture.all(
+            rabbitMQInitializer.stop(),
+            hibernateInitializer.stop(vertx)
+        ).await()
     }
 
     private fun deployVerticles(config: JsonObject) {
