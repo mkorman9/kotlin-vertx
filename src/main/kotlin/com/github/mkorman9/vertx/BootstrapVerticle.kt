@@ -34,7 +34,8 @@ class BootstrapVerticle : CoroutineVerticle() {
         try {
             val context = DeploymentContext(
                 version = readVersionFromManifest().await(),
-                startupTime = LocalDateTime.now()
+                startupTime = LocalDateTime.now(),
+                environment = System.getenv("ENVIRONMENT_NAME") ?: "default"
             )
 
             val configRetriever = createConfigRetriever()

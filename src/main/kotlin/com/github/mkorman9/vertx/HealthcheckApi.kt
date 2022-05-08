@@ -16,7 +16,8 @@ class HealthcheckApi @Inject constructor(
             ctx.response().endWithJson(HealthcheckResponse(
                 status = "healthy",
                 version = context.version,
-                startupTime = context.startupTime
+                startupTime = context.startupTime,
+                environment = context.environment
             ))
         }
     }

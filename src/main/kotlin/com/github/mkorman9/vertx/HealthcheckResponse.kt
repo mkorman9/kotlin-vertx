@@ -5,5 +5,6 @@ import java.time.LocalDateTime
 data class HealthcheckResponse(
     val status: String,
     val version: String,
-    val startupTime: LocalDateTime
+    val startupTime: LocalDateTime,
+    val environment: String
 )
