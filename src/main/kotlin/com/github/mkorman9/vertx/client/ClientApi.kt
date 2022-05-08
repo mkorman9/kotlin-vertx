@@ -5,17 +5,20 @@ import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.StatusDTO
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
-import dev.misfitlabs.kotlinguice4.getInstance
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
-class ClientApi(context: AppContext) {
-    private val clientRepository = context.injector.getInstance<ClientRepository>()
-    private val authorizationMiddleware = context.injector.getInstance<AuthorizationMiddleware>()
-    private val clientEventsPublisher = context.injector.getInstance<ClientEventsPublisher>()
-
+@Singleton
+class ClientApi @Inject constructor(
+    private val context: AppContext,
+    private val clientRepository: ClientRepository,
+    private val authorizationMiddleware: AuthorizationMiddleware,
+    private val clientEventsPublisher: ClientEventsPublisher
+) {
     val router: Router = Router.router(context.vertx).apply {
         get("/").handler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())

@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
 import com.google.inject.Guice
+import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
@@ -26,26 +27,25 @@ class BootstrapVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(BootstrapVerticle::class.java)
 
     companion object {
-        lateinit var cachedContext: AppContext
+        lateinit var injector: Injector
     }
 
     override suspend fun start() {
         try {
-            val configRetriever = createConfigRetriever()
-            val config = configRetriever.config.await()
-            val sessionFactory = startHibernate(config).await()
-            val rabbitMQClient = connectToRabbitMQ(config).await()
-            val version = readVersionFromManifest().await()
-
-            val module = AppModule(configRetriever, sessionFactory, rabbitMQClient)
-            val injector = Guice.createInjector(module)
-
-            cachedContext = AppContext(
+            val context = AppContext(
                 vertx = vertx,
-                injector = injector,
-                version = version,
+                version = readVersionFromManifest().await(),
                 startupTime = LocalDateTime.now()
             )
+
+            val configRetriever = createConfigRetriever()
+            val config = configRetriever.config.await()
+
+            val sessionFactory = startHibernate(config).await()
+            val rabbitMQClient = connectToRabbitMQ(config).await()
+
+            val module = AppModule(context, configRetriever, sessionFactory, rabbitMQClient)
+            injector = Guice.createInjector(module)
 
             log.info("BootstrapVerticle has been deployed")
 
@@ -57,7 +57,7 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        cachedContext.injector.getInstance<RabbitMQClient>().stop().await()
+        injector.getInstance<RabbitMQClient>().stop().await()
     }
 
     private fun deployVerticles(config: JsonObject) {

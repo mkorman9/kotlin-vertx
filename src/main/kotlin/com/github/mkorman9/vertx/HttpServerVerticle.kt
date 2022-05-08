@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.client.ClientEventsPublisher
 import com.github.mkorman9.vertx.utils.JsonCodecConfig
+import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpServer
@@ -11,20 +11,20 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 class HttpServerVerticle(
-    passedContext: AppContext? = null
+    passedInjector: Injector? = null
 ): CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
 
-    private val context: AppContext = passedContext ?: BootstrapVerticle.cachedContext
+    private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private lateinit var server: HttpServer
 
     override suspend fun start() {
         try {
-            val configRetriever = context.injector.getInstance<ConfigRetriever>()
+            val configRetriever = injector.getInstance<ConfigRetriever>()
             val config = configRetriever.config.await()
 
-            val api = Api(context)
-            val websocketHandler = WebsocketHandler(context)
+            val api = injector.getInstance<Api>()
+            val websocketHandler = injector.getInstance<WebsocketHandler>()
 
             server = vertx
                 .createHttpServer(

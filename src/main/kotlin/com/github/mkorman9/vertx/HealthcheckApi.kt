@@ -1,9 +1,12 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.endWithJson
+import com.google.inject.Inject
+import com.google.inject.Singleton
 import io.vertx.ext.web.Router
 
-class HealthcheckApi(
+@Singleton
+class HealthcheckApi @Inject constructor(
     private val context: AppContext
 ) {
     val router: Router = Router.router(context.vertx).apply {

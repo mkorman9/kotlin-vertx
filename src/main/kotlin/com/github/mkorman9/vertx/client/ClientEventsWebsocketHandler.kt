@@ -1,13 +1,12 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.AppContext
 import com.github.mkorman9.vertx.utils.WebsocketStore
+import com.google.inject.Singleton
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 
-class ClientEventsWebsocketHandler(
-    private val context: AppContext
-) {
+@Singleton
+class ClientEventsWebsocketHandler {
     private val log = LoggerFactory.getLogger(ClientEventsWebsocketHandler::class.java)
 
     companion object {

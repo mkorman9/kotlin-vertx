@@ -8,6 +8,7 @@ import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.reflections.Reflections
 
 class AppModule(
+    private val context: AppContext,
     private val configRetriever: ConfigRetriever,
     private val sessionFactory: SessionFactory,
     private val rabbitMQClient: RabbitMQClient
@@ -24,6 +25,7 @@ class AppModule(
     }
 
     override fun configure() {
+        bind<AppContext>().toInstance(context)
         bind<ConfigRetriever>().toInstance(configRetriever)
         bind<SessionFactory>().toInstance(sessionFactory)
         bind<RabbitMQClient>().toInstance(rabbitMQClient)

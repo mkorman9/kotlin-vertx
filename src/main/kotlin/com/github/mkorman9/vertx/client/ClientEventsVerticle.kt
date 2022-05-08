@@ -13,8 +13,8 @@ import java.util.*
 class ClientEventsVerticle : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
-    private val context = BootstrapVerticle.cachedContext
-    private val rabbitMQClient = context.injector.getInstance<RabbitMQClient>()
+    private val injector = BootstrapVerticle.injector
+    private val rabbitMQClient = injector.getInstance<RabbitMQClient>()
 
     private val exchangeName = "client.events"
     private val queueName = "client.events.${UUID.randomUUID()}"
