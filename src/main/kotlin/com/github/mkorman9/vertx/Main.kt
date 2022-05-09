@@ -10,6 +10,7 @@ fun main() {
     System.setProperty("user.timezone", "UTC")
 
     val vertx = Vertx.vertx(VertxOptions()
+        .setPreferNativeTransport(true)
         .setMetricsOptions(
             MicrometerMetricsOptions()
                 .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true))

@@ -2,6 +2,7 @@ buildscript {
     ext {
         kotlinVersion = '1.5.31'
         vertxVersion = '4.2.7'
+        nettyVersion = '4.1.74.Final'  // must match the version used by vertx
         jacksonVersion = '2.13.2'
         mutinyVersion = '2.21.0'
         hibernateVersion = '6.0.0.Final'
@@ -52,6 +53,7 @@ dependencies {
     implementation "io.vertx:vertx-micrometer-metrics:$vertxVersion"
     implementation "io.vertx:vertx-rabbitmq-client:$vertxVersion"
 
+    implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
     implementation 'org.slf4j:slf4j-log4j12:1.7.36'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.13.2.2"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
