@@ -20,6 +20,7 @@ class ClientEventsVerticle(
 
     private val injector = passedInjector ?: BootstrapVerticle.injector
     private val rabbitMQClient = injector.getInstance<RabbitMQClient>()
+    private val clientEventsWebsocketApi = injector.getInstance<ClientEventsWebsocketApi>()
 
     private val exchangeName = "client.events"
     private val queueName = "client.events.${UUID.randomUUID()}"
@@ -62,8 +63,6 @@ class ClientEventsVerticle(
 
         log.info("ClientEvent has been received $event")
 
-        ClientEventsWebsocketApi.Websockets.list().forEach { ws ->
-            ws.writeTextMessage(Json.encode(event))
-        }
+        clientEventsWebsocketApi.onEvent(event)
     }
 }
