@@ -72,14 +72,17 @@ class BootstrapVerticle : CoroutineVerticle() {
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
             .forEach { c ->
-                val verticleConfig = c.annotations.filterIsInstance<DeployVerticle>()
-                    .map { it.configKey }
-                    .filter { it.isNotEmpty() }
-                    .map { config.getJsonObject(it) }
-                    .firstOrNull()
+                val annotation = c.annotations.filterIsInstance<DeployVerticle>()
+                    .first()
+                val verticleConfig =
+                    if (annotation.configKey.isNotEmpty()) config.getJsonObject(annotation.configKey)
+                    else null
 
                 vertx.deployVerticle(c.name, DeploymentOptions()
                     .setInstances(verticleConfig?.getInteger("instances") ?: 1)
+                    .setWorker(annotation.worker)
+                    .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
+                    .setWorkerPoolSize(annotation.workerPoolSize)
                 )
             }
     }
