@@ -10,9 +10,7 @@ import io.vertx.core.json.Json
 class ClientEventsWebsocketApi {
     private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
 
-    companion object {
-        private val websockets = WebsocketStore()
-    }
+    private val websockets = WebsocketStore()
 
     fun handle(ws: ServerWebSocket) {
         val id = websockets.add(ws)
