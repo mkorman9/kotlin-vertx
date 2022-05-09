@@ -24,22 +24,24 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
         val payload = try {
             Json.decodeValue(body, T::class.java)
         } catch (e: DecodeException) {
-            response().setStatusCode(400).endWithJson(
-                StatusDTO(
-                    status = "error",
-                    message = "error while mapping request body",
-                    causes = listOf(parseJsonExceptionCause(e))
-                )
-            )
+            val cause = parseJsonExceptionCause(e)
 
-            return@bodyHandler
-        } catch (e: Exception) {
-            response().setStatusCode(400).endWithJson(
-                StatusDTO(
-                    status = "error",
-                    message = "malformed request body"
+            if (cause.field.isEmpty()) {
+                response().setStatusCode(400).endWithJson(
+                    StatusDTO(
+                        status = "error",
+                        message = "malformed request body"
+                    )
                 )
-            )
+            } else {
+                response().setStatusCode(400).endWithJson(
+                    StatusDTO(
+                        status = "error",
+                        message = "error while mapping request body",
+                        causes = listOf(cause)
+                    )
+                )
+            }
 
             return@bodyHandler
         }
