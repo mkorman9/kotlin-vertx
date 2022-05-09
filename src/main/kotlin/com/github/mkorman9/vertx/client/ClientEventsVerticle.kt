@@ -50,9 +50,9 @@ class ClientEventsVerticle(
         try {
             val consumer = rabbitMQClient.basicConsumer(queueName).await()
             consumer.handler { messageHandler(it) }
-        } catch (t: Throwable) {
-            log.error("Failed to define a consumer for ClientEvents", t)
-            throw t
+        } catch (e: Exception) {
+            log.error("Failed to define a consumer for ClientEvents", e)
+            throw e
         }
 
         log.info("ClientEventsVerticle has been deployed")
