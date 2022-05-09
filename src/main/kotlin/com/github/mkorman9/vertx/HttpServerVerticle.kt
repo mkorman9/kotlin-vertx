@@ -25,8 +25,8 @@ class HttpServerVerticle(
             val configRetriever = injector.getInstance<ConfigRetriever>()
             val config = configRetriever.config.await()
 
-            val api = injector.getInstance<Api>()
-            val websocketApi = injector.getInstance<WebsocketApi>()
+            val api = Api(injector)
+            val websocketApi = WebsocketApi(injector)
 
             server = vertx
                 .createHttpServer(

@@ -34,7 +34,6 @@ class ClientApiTest {
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(vertx, object : KotlinModule() {
             override fun configure() {
-                bind<Api>()
                 bind<ClientApi>()
                 bind<ClientRepository>().toInstance(clientRepository)
                 bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
