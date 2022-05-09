@@ -1,9 +1,11 @@
 package com.github.mkorman9.vertx.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
+import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
 import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
@@ -21,19 +23,12 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
     request().bodyHandler { body ->
         val payload = try {
             Json.decodeValue(body, T::class.java)
-        } catch (e: JsonMappingException) {
-            val field = buildJsonExceptionPath(e.path)
-            val code =
-                if (e is MissingKotlinParameterException || e.cause is MissingKotlinParameterException) "required"
-                else "format"
-
+        } catch (e: DecodeException) {
             response().setStatusCode(400).endWithJson(
                 StatusDTO(
                     status = "error",
                     message = "error while mapping request body",
-                    causes = listOf(
-                        Cause(field, code)
-                    )
+                    causes = listOf(parseJsonExceptionCause(e))
                 )
             )
 
@@ -66,6 +61,17 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
 
         func.accept(payload)
     }
+}
+
+fun parseJsonExceptionCause(e: DecodeException): Cause {
+    val field = buildJsonExceptionPath((e.cause as JsonMappingException).path)
+    val code = when (e.cause) {
+        is MissingKotlinParameterException -> "required"
+        is InvalidFormatException -> "format"
+        else -> "invalid"
+    }
+
+    return Cause(field, code)
 }
 
 fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
