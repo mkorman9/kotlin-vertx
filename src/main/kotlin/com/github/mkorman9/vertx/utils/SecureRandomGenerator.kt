@@ -4,7 +4,7 @@ import java.security.SecureRandom
 
 class SecureRandomGenerator {
     companion object {
-        private val random = SecureRandom.getInstanceStrong()
+        private val random = SecureRandom.getInstance("NativePRNGNonBlocking")
         private const val charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
         fun generate(length: Long): String {
