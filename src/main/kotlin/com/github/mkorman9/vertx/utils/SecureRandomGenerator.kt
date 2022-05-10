@@ -16,7 +16,7 @@ class SecureRandomGenerator {
         }
 
         private fun getPRNGAlgorithm(): String {
-            return if (System.getProperty("os.name").contains("win")) {
+            return if (System.getProperty("os.name").lowercase().contains("win")) {
                 "SHA1PRNG"
             } else {
                 "NativePRNGNonBlocking"
