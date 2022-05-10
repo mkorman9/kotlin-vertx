@@ -5,4 +5,4 @@ WORKDIR /app
 
 ADD build/libs/app.jar /app
 
-CMD ["java", "-Djava.net.preferIPv4Stack=true", "-jar", "app.jar"]
+CMD ["java", "-Djava.net.preferIPv4Stack=true", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
