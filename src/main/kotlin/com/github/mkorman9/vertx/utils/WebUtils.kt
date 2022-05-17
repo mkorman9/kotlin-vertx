@@ -11,7 +11,7 @@ import io.vertx.ext.web.RoutingContext
 import java.util.function.Consumer
 
 fun HttpServerRequest.getClientIp(): String{
-    return getHeader("X-Forwarded-IP") ?: remoteAddress().host()
+    return getHeader("X-Forwarded-For") ?: remoteAddress().host()
 }
 
 fun HttpServerResponse.endWithJson(obj: Any) {
