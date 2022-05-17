@@ -214,7 +214,7 @@ kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data
 Retrieved credentials can be used to access the management console.
 Open a tunnel with
 ```bash
-kubectl port-forward broker-server-0 --namespace=messaging 15672:15672
+kubectl port-forward service/broker --namespace=messaging 15672:15672
 ```
 
 Open `http://localhost:15672` in a browser and log in.     
