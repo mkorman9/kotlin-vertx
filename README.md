@@ -211,7 +211,15 @@ kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data
 kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data.password}' | base64 --decode
 ```
 
-URL can be constructed from retrieved data
+Retrieved credentials can be used to access the management console.
+Open a tunnel with
+```bash
+kubectl port-forward broker-server-0 --namespace=messaging 15672:15672
+```
+
+Open `http://localhost:15672` in a browser and log in.     
+Then create new user under `Admin -> Users` and assign him permissions under
+`Admin -> Virtual Host -> /`. Use his credentials to construct the URL
 ```
 amqp://<username>:<password>@broker.messaging.svc.cluster.local:5672
 ```
