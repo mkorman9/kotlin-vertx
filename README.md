@@ -177,7 +177,8 @@ Create a namespace for the broker
 kubectl create namespace messaging
 ```
 
-Create `broker.yml` file. Adjust replicas count
+Create `broker.yml` file. Adjust replicas count.      
+(**NOTE:** Replicas count must be an odd number: 1, 3, 5, 7 etc.)
 ```
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
