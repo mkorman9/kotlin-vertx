@@ -177,7 +177,9 @@ Create a namespace for the broker
 kubectl create namespace messaging
 ```
 
-Create `broker.yml` file. Adjust replicas count.      
+Create `broker.yml` file. Adjust deployment parameters such as CPU, memory and disk quota.
+Additionally, `storageClassName` can be defined under `persistance`to specify type of storage to deploy.
+You can get a list of supported storage classes by running `kubectl get storageclass`     
 (**NOTE:** Replicas count must be an odd number: 1, 3, 5, 7 etc.)
 ```
 apiVersion: rabbitmq.com/v1beta1
@@ -187,6 +189,15 @@ metadata:
   namespace: messaging
 spec:
   replicas: 1
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  persistence:
+    storage: 5Gi
 ```
 
 Deploy it
