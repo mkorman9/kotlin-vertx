@@ -12,10 +12,11 @@ timeout="${DEPLOYMENT_TIMEOUT:-3m0s}"
 
 echo "Creating RabbitMQ cluster..."
 
-kubectl apply -f "$SCRIPTPATH/broker.yml" --namespace="$namespace"
+kubectl create namespace messaging
+kubectl apply -f "$SCRIPTPATH/broker.yml"
 sleep 3
-rabbitmq_username="$(kubectl get secret broker-default-user --namespace="$namespace" -o jsonpath='{.data.username}' | base64 --decode)"
-rabbitmq_password="$(kubectl get secret broker-default-user --namespace="$namespace" -o jsonpath='{.data.password}' | base64 --decode)"
+rabbitmq_username="$(kubectl get secret broker-default-user --namespace="messaging" -o jsonpath='{.data.username}' | base64 --decode)"
+rabbitmq_password="$(kubectl get secret broker-default-user --namespace="messaging" -o jsonpath='{.data.password}' | base64 --decode)"
 
 echo "Creating ConfigMaps..."
 

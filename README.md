@@ -172,12 +172,18 @@ kubectl create secret generic gitlab-docker-registry --namespace=kube-system \
 
 ### RabbitMQ cluster
 
+Create a namespace for the broker
+```bash
+kubectl create namespace messaging
+```
+
 Create `broker.yml` file. Adjust replicas count
 ```
 apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
   name: broker
+  namespace: messaging
 spec:
   replicas: 1
 ```
@@ -189,13 +195,13 @@ kubectl apply -f broker.yml
 
 Retrieve default username and password
 ```bash
-kubectl get secret broker-default-user -o jsonpath='{.data.username}' | base64 --decode
-kubectl get secret broker-default-user -o jsonpath='{.data.password}' | base64 --decode
+kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data.username}' | base64 --decode
+kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data.password}' | base64 --decode
 ```
 
 URL can be constructed from retrieved data
 ```
-amqp://<username>:<password>@broker.kotlin-vertx.svc.cluster.local:5672
+amqp://<username>:<password>@broker.messaging.svc.cluster.local:5672
 ```
 
 ### App secrets
