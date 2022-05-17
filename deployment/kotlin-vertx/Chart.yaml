@@ -1,0 +1,5 @@
+apiVersion: v2
+name: kotlin-vertx
+description: Stack for kotlin-vertx project
+type: application
+version: 0.1.0

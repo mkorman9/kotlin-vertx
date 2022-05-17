@@ -1,0 +1,42 @@
+app:
+  name: kotlin-vertx
+  version: latest
+  imageName: mkorman/kotlin-vertx
+  port: 8080
+  replicas: 1
+  historicRevisions: 3
+
+  configMap: config
+  secrets: secrets
+
+  health:
+    endpoint: /health
+    readiness:
+      initialDelaySeconds: 5
+      periodSeconds: 20
+    liveness:
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 5
+
+  metrics:
+    endpoint: /metrics
+
+gitlab:
+  project: ""
+  environment: ""
+
+images:
+  pullPolicy: IfNotPresent
+  pullSecret: ""
+
+ingress:
+  name: ingress
+  hostname: localhost
+
+  useHttps: false
+  tlsCertName: ""
+  strictHostCheck: false
+
+  proxyReadTimeout: 3600
+  proxySendTimeout: 3600
