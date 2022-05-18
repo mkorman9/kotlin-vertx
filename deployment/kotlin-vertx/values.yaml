@@ -9,6 +9,13 @@ app:
   configMap: config
   secrets: secrets
 
+  config:
+    server:
+      instances: 4
+    db:
+      pool:
+        size: 5
+
   health:
     endpoint: /health
     readiness:
