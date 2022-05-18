@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx.utils
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
+import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.DecodeException
@@ -12,7 +13,6 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.util.function.Consumer
 
 fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
     GlobalScope.launch(it.vertx().dispatcher()) {
@@ -20,6 +20,20 @@ fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
             func(it)
         } catch (t: Throwable) {
             it.fail(500, t)
+        }
+    }
+}
+
+fun RoutingContext.asyncBodyHandler(func: suspend (Buffer) -> Unit) {
+    request().bodyHandler { body ->
+        val ctx = this
+
+        GlobalScope.launch(ctx.vertx().dispatcher()) {
+            try {
+                func(body)
+            } catch (t: Throwable) {
+                ctx.fail(500, t)
+            }
         }
     }
 }
@@ -33,8 +47,8 @@ fun HttpServerResponse.endWithJson(obj: Any) {
         .end(Json.encode(obj))
 }
 
-inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
-    request().bodyHandler { body ->
+suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: suspend (T) -> Unit) {
+    asyncBodyHandler { body ->
         val payload = try {
             Json.decodeValue(body, T::class.java)
         } catch (e: DecodeException) {
@@ -57,7 +71,7 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
                 )
             }
 
-            return@bodyHandler
+            return@asyncBodyHandler
         }
 
         val violations = CommonValidator.validate(payload)
@@ -72,10 +86,10 @@ inline fun <reified T> RoutingContext.handleJsonBody(func: Consumer<T>) {
                 )
             )
 
-            return@bodyHandler
+            return@asyncBodyHandler
         }
 
-        func.accept(payload)
+        func(payload)
     }
 }
 

@@ -6,6 +6,7 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
+import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 
 @Singleton
@@ -22,95 +23,83 @@ class SessionApi @Inject constructor(
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
     val router: Router = Router.router(vertx).apply {
-        post("/").handler { ctx ->
+        post("/").asyncHandler { ctx ->
             ctx.handleJsonBody<StartSessionPayload> { payload ->
-                accountRepository.findByCredentialsEmail(payload.email)
-                    .onSuccess { account ->
-                        if (account == null) {
-                            ctx.response().setStatusCode(401).endWithJson(StatusDTO(
-                                status = "error",
-                                message = "invalid credentials",
-                                causes = listOf(Cause("credentials", "invalid"))
-                            ))
+                val account = accountRepository.findByCredentialsEmail(payload.email).await()
+                if (account == null) {
+                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        status = "error",
+                        message = "invalid credentials",
+                        causes = listOf(Cause("credentials", "invalid"))
+                    ))
 
-                            return@onSuccess
-                        }
+                    return@handleJsonBody
+                }
 
-                        if (!account.active) {
-                            ctx.response().setStatusCode(401).endWithJson(StatusDTO(
-                                status = "error",
-                                message = "account is not active",
-                                causes = listOf(Cause("account", "inactive"))
-                            ))
+                if (!account.active) {
+                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        status = "error",
+                        message = "account is not active",
+                        causes = listOf(Cause("account", "inactive"))
+                    ))
 
-                            return@onSuccess
-                        }
+                    return@handleJsonBody
+                }
 
-                        vertx.executeBlocking<BCrypt.Result> { call ->
-                            call.complete(
-                                bcryptVerifier.verify(payload.password.toCharArray(), account.credentials.passwordBcrypt)
-                            )
-                        }
-                            .onSuccess { result ->
-                                if (!result.verified) {
-                                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
-                                            status = "error",
-                                            message = "invalid credentials",
-                                            causes = listOf(Cause("credentials", "invalid"))
-                                    ))
+                val verificationResult = vertx.executeBlocking<BCrypt.Result> { call ->
+                    call.complete(
+                        bcryptVerifier.verify(payload.password.toCharArray(), account.credentials.passwordBcrypt)
+                    )
+                }.await()
 
-                                    return@onSuccess
-                                }
+                if (!verificationResult.verified) {
+                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        status = "error",
+                        message = "invalid credentials",
+                        causes = listOf(Cause("credentials", "invalid"))
+                    ))
 
-                                val session = Session(
-                                    id = SecureRandomGenerator.generate(sessionIdLength),
-                                    accountId = account.id,
-                                    token = SecureRandomGenerator.generate(sessionTokenLength),
-                                    rolesString = account.rolesString,
-                                    ip = ctx.request().getClientIp(),
-                                    issuedAt = LocalDateTime.now(),
-                                    duration = sessionDurationSeconds,
-                                    expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong()),
-                                    account = account
-                                )
+                    return@handleJsonBody
+                }
 
-                                sessionRepository.add(session)
-                                    .onSuccess { ctx.response().endWithJson(it) }
-                                    .onFailure { failure -> ctx.fail(500, failure) }
-                            }
-                            .onFailure { failure -> ctx.fail(500, failure) }
-                    }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+                val session = Session(
+                    id = SecureRandomGenerator.generate(sessionIdLength),
+                    accountId = account.id,
+                    token = SecureRandomGenerator.generate(sessionTokenLength),
+                    rolesString = account.rolesString,
+                    ip = ctx.request().getClientIp(),
+                    issuedAt = LocalDateTime.now(),
+                    duration = sessionDurationSeconds,
+                    expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong()),
+                    account = account
+                )
+
+                val newSession = sessionRepository.add(session).await()
+                ctx.response().endWithJson(newSession)
             }
         }
 
         put("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .handler { ctx ->
+            .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
-                sessionRepository.refresh(session)
-                    .onSuccess { refreshedSession ->
-                        ctx.response().endWithJson(refreshedSession)
-                    }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+                val refreshedSession = sessionRepository.refresh(session).await()
+                ctx.response().endWithJson(refreshedSession)
             }
 
         delete("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .handler { ctx ->
+            .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
-                sessionRepository.delete(session)
-                    .onSuccess { deleted ->
-                        if (deleted) {
-                            ctx.response().endWithJson(StatusDTO(status = "ok"))
-                        } else {
-                            ctx.response().setStatusCode(500).endWithJson(StatusDTO(
-                                status = "error",
-                                message = "failed to revoke session"
-                            ))
-                        }
-                    }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+                val deleted = sessionRepository.delete(session).await()
+                if (deleted) {
+                    ctx.response().endWithJson(StatusDTO(status = "ok"))
+                } else {
+                    ctx.response().setStatusCode(500).endWithJson(StatusDTO(
+                        status = "error",
+                        message = "failed to revoke session"
+                    ))
+                }
             }
     }
 }

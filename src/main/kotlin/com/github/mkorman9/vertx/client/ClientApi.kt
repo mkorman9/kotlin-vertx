@@ -50,88 +50,80 @@ class ClientApi @Inject constructor(
 
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .handler { ctx ->
+            .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
-                    clientRepository.add(payload)
-                        .onSuccess { client ->
-                            clientEventsPublisher.publish(
-                                ClientEvent(
-                                    operation = ClientEventOperation.ADDED,
-                                    clientId = client.id.toString(),
-                                    author = session.account.id.toString()
-                                )
-                            )
+                    val client = clientRepository.add(payload).await()
 
-                            ctx.response().endWithJson(ClientAddResponse(id = client.id.toString()))
-                        }
-                        .onFailure { failure -> ctx.fail(500, failure) }
+                    clientEventsPublisher.publish(
+                        ClientEvent(
+                            operation = ClientEventOperation.ADDED,
+                            clientId = client.id.toString(),
+                            author = session.account.id.toString()
+                        )
+                    )
+
+                    ctx.response().endWithJson(ClientAddResponse(id = client.id.toString()))
                 }
             }
 
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .handler { ctx ->
+            .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                     val id = ctx.pathParam("id")
 
-                    clientRepository.update(id, payload)
-                        .onSuccess { client ->
-                            if (client != null) {
-                                clientEventsPublisher.publish(
-                                    ClientEvent(
-                                        operation = ClientEventOperation.UPDATED,
-                                        clientId = client.id.toString(),
-                                        author = session.account.id.toString()
-                                    )
-                                )
+                    val client = clientRepository.update(id, payload).await()
+                    if (client != null) {
+                        clientEventsPublisher.publish(
+                            ClientEvent(
+                                operation = ClientEventOperation.UPDATED,
+                                clientId = client.id.toString(),
+                                author = session.account.id.toString()
+                            )
+                        )
 
-                                ctx.response().endWithJson(StatusDTO(
-                                    status = "ok"
-                                ))
-                            } else {
-                                ctx.response().setStatusCode(404).endWithJson(StatusDTO(
-                                    status = "error",
-                                    message = "client not found"
-                                ))
-                            }
-                        }
-                        .onFailure { failure -> ctx.fail(500, failure) }
+                        ctx.response().endWithJson(StatusDTO(
+                            status = "ok"
+                        ))
+                    } else {
+                        ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                            status = "error",
+                            message = "client not found"
+                        ))
+                    }
                 }
             }
 
         delete("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .handler { ctx ->
+            .asyncHandler { ctx ->
                 val id = ctx.pathParam("id")
 
                 val session = authorizationMiddleware.getActiveSession(ctx)
 
-                clientRepository.delete(id)
-                    .onSuccess { deleted ->
-                        if (deleted) {
-                            clientEventsPublisher.publish(
-                                ClientEvent(
-                                    operation = ClientEventOperation.DELETED,
-                                    clientId = id,
-                                    author = session.account.id.toString()
-                                )
-                            )
+                val deleted = clientRepository.delete(id).await()
+                if (deleted) {
+                    clientEventsPublisher.publish(
+                        ClientEvent(
+                            operation = ClientEventOperation.DELETED,
+                            clientId = id,
+                            author = session.account.id.toString()
+                        )
+                    )
 
-                            ctx.response().endWithJson(StatusDTO(
-                                status = "ok"
-                            ))
-                        } else {
-                            ctx.response().setStatusCode(404).endWithJson(StatusDTO(
-                                status = "error",
-                                message = "client not found"
-                            ))
-                        }
-                    }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+                    ctx.response().endWithJson(StatusDTO(
+                        status = "ok"
+                    ))
+                } else {
+                    ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                        status = "error",
+                        message = "client not found"
+                    ))
+                }
             }
     }
 
