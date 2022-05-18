@@ -17,7 +17,7 @@ class ClientEventsWebsocketApi {
 
         log.info("Websocket '$id' connected")
 
-        ws.endHandler {
+        ws.closeHandler {
             websockets.remove(id)
             log.info("Websocket '$id' disconnected")
         }
