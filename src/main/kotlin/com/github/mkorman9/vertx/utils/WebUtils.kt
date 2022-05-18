@@ -7,8 +7,22 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
+import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.function.Consumer
+
+fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
+    GlobalScope.launch(it.vertx().dispatcher()) {
+        try {
+            func(it)
+        } catch (t: Throwable) {
+            it.fail(500, t)
+        }
+    }
+}
 
 fun HttpServerRequest.getClientIp(): String{
     return getHeader("X-Forwarded-For") ?: remoteAddress().host()

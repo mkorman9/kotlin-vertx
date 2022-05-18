@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.StatusDTO
+import com.github.mkorman9.vertx.utils.asyncHandler
 import com.github.mkorman9.vertx.utils.endWithJson
 import com.github.mkorman9.vertx.utils.handleJsonBody
 import com.google.inject.Inject
@@ -9,6 +10,7 @@ import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
+import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
@@ -20,33 +22,30 @@ class ClientApi @Inject constructor(
     private val clientEventsPublisher: ClientEventsPublisher
 ) {
     val router: Router = Router.router(vertx).apply {
-        get("/").handler { ctx ->
+        get("/").asyncHandler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
 
-            clientRepository.findPaged(
+            val clientsPage = clientRepository.findPaged(
                 filtering = params.filtering,
                 paging = params.paging,
                 sorting = params.sorting
-            )
-                .onSuccess { clientsPage -> ctx.response().endWithJson(clientsPage) }
-                .onFailure { failure -> ctx.fail(500, failure) }
+            ).await()
+
+            ctx.response().endWithJson(clientsPage)
         }
 
-        get("/:id").handler { ctx ->
+        get("/:id").asyncHandler { ctx ->
             val id = ctx.pathParam("id")
 
-            clientRepository.findById(id)
-                .onSuccess { client ->
-                    if (client != null) {
-                        ctx.response().endWithJson(client)
-                    } else {
-                        ctx.response().setStatusCode(404).endWithJson(StatusDTO(
-                            status = "error",
-                            message = "client not found"
-                        ))
-                    }
-                }
-                .onFailure { failure -> ctx.fail(500, failure) }
+            val client = clientRepository.findById(id).await()
+            if (client != null) {
+                ctx.response().endWithJson(client)
+            } else {
+                ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                    status = "error",
+                    message = "client not found"
+                ))
+            }
         }
 
         post("/")
