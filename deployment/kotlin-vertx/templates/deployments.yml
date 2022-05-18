@@ -51,6 +51,13 @@ spec:
             initialDelaySeconds: {{ .Values.app.health.liveness.initialDelaySeconds }}
             periodSeconds: {{ .Values.app.health.liveness.periodSeconds }}
             timeoutSeconds: {{ .Values.app.health.liveness.timeoutSeconds }}
+          resources:
+            requests:
+              cpu: {{ .Values.app.resources.cpu.request }}
+              memory: {{ .Values.app.resources.memory.request }}
+            limits:
+              cpu: {{ .Values.app.resources.cpu.limit }}
+              memory: {{ .Values.app.resources.memory.limit }}
           volumeMounts:
             - name: config
               mountPath: /app/config.yml

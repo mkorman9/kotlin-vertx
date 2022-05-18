@@ -22,6 +22,14 @@ app:
   metrics:
     endpoint: /metrics
 
+  resources:
+    cpu:
+      request: 250m
+      limit: 1
+    memory:
+      request: 256Mi
+      limit: 512Mi
+
 gitlab:
   project: ""
   environment: ""
