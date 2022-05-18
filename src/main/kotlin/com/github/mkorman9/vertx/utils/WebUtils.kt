@@ -3,13 +3,13 @@ package com.github.mkorman9.vertx.utils
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
-import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -24,20 +24,6 @@ fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
     }
 }
 
-fun RoutingContext.asyncBodyHandler(func: suspend (Buffer) -> Unit) {
-    request().bodyHandler { body ->
-        val ctx = this
-
-        GlobalScope.launch(ctx.vertx().dispatcher()) {
-            try {
-                func(body)
-            } catch (t: Throwable) {
-                ctx.fail(500, t)
-            }
-        }
-    }
-}
-
 fun HttpServerRequest.getClientIp(): String{
     return getHeader("X-Forwarded-For") ?: remoteAddress().host()
 }
@@ -48,49 +34,49 @@ fun HttpServerResponse.endWithJson(obj: Any) {
 }
 
 suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: suspend (T) -> Unit) {
-    asyncBodyHandler { body ->
-        val payload = try {
-            Json.decodeValue(body, T::class.java)
-        } catch (e: DecodeException) {
-            val cause = parseJsonExceptionCause(e)
+    val body = request().body().await()
 
-            if (cause.field.isEmpty()) {
-                response().setStatusCode(400).endWithJson(
-                    StatusDTO(
-                        status = "error",
-                        message = "malformed request body"
-                    )
-                )
-            } else {
-                response().setStatusCode(400).endWithJson(
-                    StatusDTO(
-                        status = "error",
-                        message = "error while mapping request body",
-                        causes = listOf(cause)
-                    )
-                )
-            }
+    val payload = try {
+        Json.decodeValue(body, T::class.java)
+    } catch (e: DecodeException) {
+        val cause = parseJsonExceptionCause(e)
 
-            return@asyncBodyHandler
-        }
-
-        val violations = CommonValidator.validate(payload)
-        if (violations.isNotEmpty()) {
+        if (cause.field.isEmpty()) {
             response().setStatusCode(400).endWithJson(
                 StatusDTO(
                     status = "error",
-                    message = "validation error",
-                    causes = violations.map {
-                        Cause(it.propertyPath.toString(), it.message)
-                    }
+                    message = "malformed request body"
                 )
             )
-
-            return@asyncBodyHandler
+        } else {
+            response().setStatusCode(400).endWithJson(
+                StatusDTO(
+                    status = "error",
+                    message = "error while mapping request body",
+                    causes = listOf(cause)
+                )
+            )
         }
 
-        func(payload)
+        return
     }
+
+    val violations = CommonValidator.validate(payload)
+    if (violations.isNotEmpty()) {
+        response().setStatusCode(400).endWithJson(
+            StatusDTO(
+                status = "error",
+                message = "validation error",
+                causes = violations.map {
+                    Cause(it.propertyPath.toString(), it.message)
+                }
+            )
+        )
+
+        return
+    }
+
+    func(payload)
 }
 
 fun parseJsonExceptionCause(e: DecodeException): Cause {
