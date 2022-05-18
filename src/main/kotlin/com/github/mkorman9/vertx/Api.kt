@@ -22,13 +22,20 @@ class Api (injector: Injector) {
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
+    private val healthcheckPath = config
+        .getJsonObject("server")
+        ?.getJsonObject("endpoints")
+        ?.getString("health")
+        ?: "/health"
+    private val metricsPath = config
+        .getJsonObject("server")
+        ?.getJsonObject("endpoints")
+        ?.getString("metrics")
+        ?: "/metrics"
+
     val router: Router = Router.router(vertx).apply {
-        mountSubRouter(
-            config.getJsonObject("server")?.getJsonObject("endpoints")?.getString("health") ?: "/health",
-            healthcheckApi.router
-        )
-        route(config.getJsonObject("server")?.getJsonObject("endpoints")?.getString("metrics") ?: "/metrics")
-            .handler(PrometheusScrapingHandler.create())
+        mountSubRouter(healthcheckPath, healthcheckApi.router)
+        route(metricsPath).handler(PrometheusScrapingHandler.create())
 
         mountSubRouter("/api/v1/client", clientApi.router)
 
