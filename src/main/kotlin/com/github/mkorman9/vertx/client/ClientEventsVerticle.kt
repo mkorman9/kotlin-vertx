@@ -23,7 +23,6 @@ class ClientEventsVerticle(
     private val clientEventsWebsocketApi = injector.getInstance<ClientEventsWebsocketApi>()
 
     private val exchangeName = "client.events"
-    private val queueName = "client.events.${UUID.randomUUID()}"
 
     override suspend fun start() {
         rabbitMQClient.addConnectionEstablishedCallback { promise ->
@@ -35,7 +34,7 @@ class ClientEventsVerticle(
             )
                 .compose {
                     rabbitMQClient.queueDeclare(
-                        queueName,
+                        "",
                         false,
                         true,
                         true
@@ -43,16 +42,14 @@ class ClientEventsVerticle(
                 }
                 .compose { declare ->
                     rabbitMQClient.queueBind(declare.queue, exchangeName, "")
+                        .map { declare.queue }
                 }
+                .compose { queue ->
+                    rabbitMQClient.basicConsumer(queue)
+                }
+                .onSuccess { consumer -> consumer.handler { messageHandler(it) } }
+                .onFailure { failure -> log.error("Failed to define a consumer for ClientEvents", failure) }
                 .onComplete { promise.complete() }
-        }
-
-        try {
-            val consumer = rabbitMQClient.basicConsumer(queueName).await()
-            consumer.handler { messageHandler(it) }
-        } catch (e: Exception) {
-            log.error("Failed to define a consumer for ClientEvents", e)
-            throw e
         }
 
         log.info("ClientEventsVerticle has been deployed")
