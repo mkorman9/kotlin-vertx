@@ -21,7 +21,7 @@ java -jar build/libs/app.jar
 
 Cleanup docker-compose stack:
 ```bash
-docker-compose down && rm -rf _docker_compose_volumes
+docker-compose down
 ```
 
 ## Deploy to Kubernetes in Docker Desktop

@@ -1,3 +1,5 @@
+TRUNCATE TABLE public.clients CASCADE;
+
 COPY public.clients (id, gender, first_name, last_name, home_address, phone_number, email, birth_date) FROM stdin;
 1b3f2a11-09a8-4afd-9af0-1ab8b6485e31	F	Amelia	Pierce	Queens Road 1482, Bristol, Cambridgeshire ST7 9GA	0744-910-818	amelia.pierce@example.com	1982-07-22 20:30:05.836000
 54616218-3441-4c1d-beac-6297db20a490	M	Daniel	Hidalgo	Calle de Bravo Murillo 3158, Guadalajara, Islas Baleares 22000	640-392-589	daniel.hidalgo@example.com	1994-08-12 08:15:29.881000

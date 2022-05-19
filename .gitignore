@@ -3,4 +3,3 @@
 .idea/
 build/
 *.iml
-_docker_compose_volumes/

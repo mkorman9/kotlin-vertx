@@ -1,3 +1,5 @@
+TRUNCATE TABLE public.accounts CASCADE;
+
 COPY public.accounts (id, username, roles, active, deleted, preferred_language, banned_until, created_at) FROM stdin;
 d9e40989-4892-49bf-a247-bf6f0c82378a	admin	CLIENTS_EDITOR;PERMISSIONS_ADMIN	t	f	en-US	1970-01-01 00:00:00.00000	2021-06-05 18:25:20.42222
 \.
