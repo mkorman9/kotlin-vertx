@@ -7,10 +7,8 @@ import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
 import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.await
 import io.vertx.rabbitmq.RabbitMQClient
 import io.vertx.rabbitmq.RabbitMQMessage
-import java.util.*
 
 @DeployVerticle
 class ClientEventsVerticle(
