@@ -21,6 +21,10 @@ class ClientApi @Inject constructor(
     private val authorizationMiddleware: AuthorizationMiddleware,
     private val clientEventsPublisher: ClientEventsPublisher
 ) {
+    private val allowedSortByValues = hashSetOf(
+        "id", "gender", "firstName", "lastName", "address", "phoneNumber", "email", "birthDate"
+    )
+
     val router: Router = Router.router(vertx).apply {
         get("/").asyncHandler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
@@ -174,7 +178,7 @@ class ClientApi @Inject constructor(
         }
 
         var sortBy = request.getParam("sortBy", "id")
-        if (!hashSetOf("id", "gender", "firstName", "lastName", "address", "phoneNumber", "email", "birthDate").contains(sortBy)) {
+        if (!allowedSortByValues.contains(sortBy)) {
             sortBy = "id"
         }
 
