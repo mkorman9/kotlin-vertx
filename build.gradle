@@ -54,6 +54,7 @@ dependencies {
     implementation "io.vertx:vertx-rabbitmq-client:$vertxVersion"
 
     implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
+    implementation "io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64"
     implementation 'org.slf4j:slf4j-log4j12:1.7.36'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.13.2.2"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
