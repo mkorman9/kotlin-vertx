@@ -47,52 +47,48 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return client when queried by id")
-    fun testFindById(vertx: Vertx, testContext: VertxTestContext) {
-        asyncTest(vertx, testContext) {
-            // given
-            val httpClient = vertx.createHttpClient()
-            val id = UUID.randomUUID().toString()
-            val client = Client(
-                id = UUID.fromString(id),
-                firstName = "Test",
-                lastName = "User"
-            )
+    fun testFindById(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val id = UUID.randomUUID().toString()
+        val client = Client(
+            id = UUID.fromString(id),
+            firstName = "Test",
+            lastName = "User"
+        )
 
-            every { clientRepository.findById(id) } returns Future.succeededFuture(client)
+        every { clientRepository.findById(id) } returns Future.succeededFuture(client)
 
-            // when
-            val result =
-                httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
-                    .await()
-                    .send()
-                    .await()
-            val returnedClient = Json.decodeValue(result.body().await(), Client::class.java)
+        // when
+        val result =
+            httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+                .await()
+                .send()
+                .await()
+        val returnedClient = Json.decodeValue(result.body().await(), Client::class.java)
 
-            // then
-            assertThat(result.statusCode()).isEqualTo(200)
-            assertThat(returnedClient).isEqualTo(client)
-        }
+        // then
+        assertThat(result.statusCode()).isEqualTo(200)
+        assertThat(returnedClient).isEqualTo(client)
     }
 
     @Test
     @DisplayName("should return 404 when queried by id of non-existing client")
-    fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) {
-        asyncTest(vertx, testContext) {
-            // given
-            val httpClient = vertx.createHttpClient()
-            val id = UUID.randomUUID().toString()
+    fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val id = UUID.randomUUID().toString()
 
-            every { clientRepository.findById(id) } returns Future.succeededFuture(null)
+        every { clientRepository.findById(id) } returns Future.succeededFuture(null)
 
-            // when
-            val result =
-                httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
-                    .await()
-                    .send()
-                    .await()
+        // when
+        val result =
+            httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+                .await()
+                .send()
+                .await()
 
-            // then
-            assertThat(result.statusCode()).isEqualTo(404)
-        }
+        // then
+        assertThat(result.statusCode()).isEqualTo(404)
     }
 }
