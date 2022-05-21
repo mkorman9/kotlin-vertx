@@ -32,7 +32,10 @@ class HttpServerVerticle(
                 .createHttpServer(
                     httpServerOptionsOf(
                         host = config.getJsonObject("server")?.getString("host") ?: "0.0.0.0",
-                        port = config.getJsonObject("server")?.getInteger("port") ?: 8080
+                        port = config.getJsonObject("server")?.getInteger("port") ?: 8080,
+                        tcpFastOpen = true,
+                        tcpCork = true,
+                        reusePort = true
                     )
                 )
                 .requestHandler { api.router.handle(it) }
