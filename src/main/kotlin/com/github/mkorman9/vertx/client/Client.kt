@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.BatchSize
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.*
@@ -43,5 +44,6 @@ data class Client(
         cascade = [CascadeType.ALL],
         orphanRemoval = true
     )
+    @BatchSize(size = 10)
     var creditCards: MutableList<CreditCard> = mutableListOf()
 )
