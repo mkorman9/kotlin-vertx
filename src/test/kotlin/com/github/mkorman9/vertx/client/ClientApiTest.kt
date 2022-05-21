@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.Api
 import com.github.mkorman9.vertx.HttpServerVerticle
+import com.github.mkorman9.vertx.asyncTest
 import com.github.mkorman9.vertx.createTestInjector
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
@@ -16,6 +16,7 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
+import io.vertx.kotlin.coroutines.await
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -47,48 +48,51 @@ class ClientApiTest {
     @Test
     @DisplayName("should return client when queried by id")
     fun testFindById(vertx: Vertx, testContext: VertxTestContext) {
-        val id = UUID.randomUUID().toString()
-        val client = Client(
-            id = UUID.fromString(id),
-            firstName = "Test",
-            lastName = "User"
-        )
+        asyncTest(vertx, testContext) {
+            // given
+            val httpClient = vertx.createHttpClient()
+            val id = UUID.randomUUID().toString()
+            val client = Client(
+                id = UUID.fromString(id),
+                firstName = "Test",
+                lastName = "User"
+            )
 
-        every { clientRepository.findById(id) } returns Future.succeededFuture(client)
+            every { clientRepository.findById(id) } returns Future.succeededFuture(client)
 
-        val httpClient = vertx.createHttpClient()
-        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
-            .compose { it.send() }
-            .onSuccess { result ->
-                assertThat(result.statusCode()).isEqualTo(200)
+            // when
+            val result =
+                httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+                    .await()
+                    .send()
+                    .await()
+            val returnedClient = Json.decodeValue(result.body().await(), Client::class.java)
 
-                result.body()
-                    .onSuccess { body ->
-                        val receivedClient = Json.decodeValue(body, Client::class.java)
-                        assertThat(receivedClient).isEqualTo(client)
-
-                        testContext.completeNow()
-                    }
-                    .onFailure { testContext.failNow(it) }
-            }
-            .onFailure { testContext.failNow(it) }
+            // then
+            assertThat(result.statusCode()).isEqualTo(200)
+            assertThat(returnedClient).isEqualTo(client)
+        }
     }
 
     @Test
     @DisplayName("should return 404 when queried by id of non-existing client")
     fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) {
-        val id = UUID.randomUUID().toString()
+        asyncTest(vertx, testContext) {
+            // given
+            val httpClient = vertx.createHttpClient()
+            val id = UUID.randomUUID().toString()
 
-        every { clientRepository.findById(id) } returns Future.succeededFuture(null)
+            every { clientRepository.findById(id) } returns Future.succeededFuture(null)
 
-        val httpClient = vertx.createHttpClient()
-        httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
-            .compose { it.send() }
-            .onSuccess { result ->
-                assertThat(result.statusCode()).isEqualTo(404)
+            // when
+            val result =
+                httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+                    .await()
+                    .send()
+                    .await()
 
-                testContext.completeNow()
-            }
-            .onFailure { testContext.failNow(it) }
+            // then
+            assertThat(result.statusCode()).isEqualTo(404)
+        }
     }
 }
