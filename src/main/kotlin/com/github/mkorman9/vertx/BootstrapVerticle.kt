@@ -9,7 +9,6 @@ import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
-import io.vertx.core.impl.launcher.commands.RunCommand
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -112,7 +111,7 @@ class BootstrapVerticle : CoroutineVerticle() {
     private fun readVersionFromManifest(): Future<String> {
         return vertx.executeBlocking { call ->
             try {
-                val resources = RunCommand::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
+                val resources = BootstrapVerticle::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
                 while (resources.hasMoreElements()) {
                     resources.nextElement().openStream().use { stream ->
                         val manifest = Manifest(stream)

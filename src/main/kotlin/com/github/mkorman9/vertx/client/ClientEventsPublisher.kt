@@ -24,6 +24,6 @@ class ClientEventsPublisher @Inject constructor(
     }
 
     fun publish(event: ClientEvent) {
-        rabbitMQClient.basicPublish("client.events", "", Json.encodeToBuffer(event))
+        rabbitMQClient.basicPublish(exchangeName, "", Json.encodeToBuffer(event))
     }
 }
