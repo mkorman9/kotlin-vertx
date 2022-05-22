@@ -249,7 +249,6 @@ class ClientApiTest {
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
-        println(result.body().await())
         val clientAddResponse = Json.decodeValue(result.body().await(), ClientAddResponse::class.java)
 
         // then
