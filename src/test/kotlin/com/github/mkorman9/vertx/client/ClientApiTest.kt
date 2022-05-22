@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx.client
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.asyncTest
 import com.github.mkorman9.vertx.createTestInjector
+import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
@@ -33,6 +34,8 @@ class ClientApiTest {
     private var clientRepository: ClientRepository = mockk()
     @MockK
     private lateinit var sessionProvider: MockSessionProvider
+    @SpyK
+    private var clientEventsPublisher: ClientEventsPublisher = mockk()
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
@@ -41,6 +44,7 @@ class ClientApiTest {
                 bind<ClientApi>()
                 bind<ClientRepository>().toInstance(clientRepository)
                 bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
+                bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
             }
         })
 
@@ -217,5 +221,47 @@ class ClientApiTest {
 
         // then
         assertThat(result.statusCode()).isEqualTo(404)
+    }
+
+    @Test
+    @DisplayName("should add new client when called with valid payload")
+    fun testAddClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = ClientAddPayload(
+            firstName = "Test",
+            lastName = "User"
+        )
+        val addedClient = Client(
+            id = UUID.randomUUID(),
+            firstName = payload.firstName,
+            lastName = payload.lastName
+        )
+        val activeSession = fakeSession("test.account")
+
+        every { clientRepository.add(payload) } returns Future.succeededFuture(addedClient)
+        every { sessionProvider.getSession() } returns activeSession
+        every { clientEventsPublisher.publish(any()) } returns Unit
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+        println(result.body().await())
+        val clientAddResponse = Json.decodeValue(result.body().await(), ClientAddResponse::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(200)
+        assertThat(clientAddResponse.id).isEqualTo(addedClient.id.toString())
+
+        verify { clientEventsPublisher.publish(
+            ClientEvent(
+                operation = ClientEventOperation.ADDED,
+                clientId = addedClient.id.toString(),
+                author = activeSession.account.id.toString()
+            )
+        ) }
     }
 }

@@ -42,7 +42,7 @@ data class Account(
         orphanRemoval = true
     )
     @JsonIgnore
-    var credentials: AccountCredentials
+    var credentials: AccountCredentials?
 ) {
     var roles: Set<String>
         get() = rolesString.split(";").toHashSet()

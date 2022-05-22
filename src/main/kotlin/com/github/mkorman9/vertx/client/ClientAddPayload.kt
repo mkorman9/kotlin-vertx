@@ -9,7 +9,7 @@ import javax.validation.constraints.Size
 
 data class ClientAddPayload(
     @field:Pattern(regexp = "^-|M|F$", message = "oneof")
-    val gender: String?,
+    val gender: String? = null,
 
     @field:NotNull(message = "required")
     @field:Size(min = 1, max = 255, message = "size")
@@ -20,19 +20,19 @@ data class ClientAddPayload(
     val lastName: String,
 
     @field:Size(min = 1, max = 1024, message = "size")
-    val address: String?,
+    val address: String? = null,
 
     @field:Size(min = 1, max = 64, message = "size")
-    val phoneNumber: String?,
+    val phoneNumber: String? = null,
 
     @field:Email(message = "email")
     @field:Size(min = 1, max = 64, message = "size")
-    val email: String?,
+    val email: String? = null,
 
-    val birthDate: LocalDateTime?,
+    val birthDate: LocalDateTime? = null,
 
     @field:Valid
-    val creditCards: List<ClientAddCreditCardPayload>?
+    val creditCards: List<ClientAddCreditCardPayload>? = null
 )
 
 data class ClientAddCreditCardPayload(
