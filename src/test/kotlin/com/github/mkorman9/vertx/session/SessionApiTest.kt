@@ -1,10 +1,7 @@
 package com.github.mkorman9.vertx.session
 
-import com.github.mkorman9.vertx.HttpServerVerticle
-import com.github.mkorman9.vertx.asyncTest
+import com.github.mkorman9.vertx.*
 import com.github.mkorman9.vertx.client.ClientsPage
-import com.github.mkorman9.vertx.createTestInjector
-import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.*
 import com.github.mkorman9.vertx.utils.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -31,6 +28,8 @@ class SessionApiTest {
     @SpyK
     private val sessionRepository: SessionRepository = mockk()
     @MockK
+    private lateinit var accountRepository: AccountRepository
+    @MockK
     private lateinit var sessionProvider: MockSessionProvider
 
     @BeforeEach
@@ -39,12 +38,85 @@ class SessionApiTest {
             override fun configure() {
                 bind<SessionApi>()
                 bind<SessionRepository>().toInstance(sessionRepository)
+                bind<AccountRepository>().toInstance(accountRepository)
                 bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
             }
         })
 
         vertx.deployVerticle(HttpServerVerticle(injector))
             .onComplete { testContext.completeNow() }
+    }
+
+    @Test
+    @DisplayName("should authorize user by credentials and start new session")
+    fun testStartNewSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = StartSessionPayload(
+            email = "test.user@example.com",
+            password = defaultTestPassword.plaintext
+        )
+        val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
+
+        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
+        every { sessionRepository.add(session) } returns Future.succeededFuture(session)
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(200)
+    }
+
+    @Test
+    @DisplayName("should deny authorization with invalid email")
+    fun testStartNewSessionInvalidEmail(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = StartSessionPayload(
+            email = "test.user@example.com",
+            password = defaultTestPassword.plaintext
+        )
+
+        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(null)
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(401)
+    }
+
+    @Test
+    @DisplayName("should deny authorization with invalid password")
+    fun testStartNewSessionInvalidPassword(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = StartSessionPayload(
+            email = "test.user@example.com",
+            password = "invalid_password"
+        )
+        val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
+
+        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(401)
     }
 
     @Test

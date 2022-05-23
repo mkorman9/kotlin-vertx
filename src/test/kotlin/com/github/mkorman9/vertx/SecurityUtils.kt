@@ -6,14 +6,21 @@ import com.github.mkorman9.vertx.security.Session
 import java.time.LocalDateTime
 import java.util.*
 
-// "password" string encoded with BCrypt
-const val defaultPasswordBcrypt = "\$2a\$10\$CYoenxLkI.J6uzP3oH2Iceh9Zm1n4XO51ngkSwm3Rk7BfmXawkWW2"
+data class TestPassword(
+    val plaintext: String,
+    val bcryptEncoded: String
+)
+
+val defaultTestPassword = TestPassword(
+    plaintext = "password",
+    bcryptEncoded = "\$2a\$10\$CYoenxLkI.J6uzP3oH2Iceh9Zm1n4XO51ngkSwm3Rk7BfmXawkWW2"
+)
 
 fun fakeSession(
     accountName: String,
     isBanned: Boolean = false,
     email: String = "test.user@example.com",
-    passwordBcrypt: String = defaultPasswordBcrypt
+    password: TestPassword = defaultTestPassword
 ): Session {
     val accountId = UUID.randomUUID()
     val session = Session(
@@ -41,7 +48,7 @@ fun fakeSession(
     session.account.credentials = AccountCredentials(
         accountId = accountId,
         email = email,
-        passwordBcrypt = passwordBcrypt,
+        passwordBcrypt = password.bcryptEncoded,
         lastChangeAt = session.account.createdAt,
         lastChangeIp = "127.0.0.1",
         account = session.account
