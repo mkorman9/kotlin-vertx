@@ -370,7 +370,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/${client.id.toString()}")
+            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/${client.id}")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -387,5 +387,60 @@ class ClientApiTest {
                 author = activeSession.account.id.toString()
             )
         ) }
+    }
+
+    @Test
+    @DisplayName("should delete existing client when called with valid id")
+    fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
+
+        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
+        every { sessionProvider.getSession() } returns activeSession
+        every { clientEventsPublisher.publish(any()) } returns Unit
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.DELETE, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+                .await()
+                .send()
+                .await()
+        val statusResponse = Json.decodeValue(result.body().await(), StatusDTO::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(200)
+        assertThat(statusResponse.status).isEqualTo("ok")
+
+        verify { clientEventsPublisher.publish(
+            ClientEvent(
+                operation = ClientEventOperation.DELETED,
+                clientId = clientId.toString(),
+                author = activeSession.account.id.toString()
+            )
+        ) }
+    }
+
+    @Test
+    @DisplayName("should return 404 when trying to delete non-existing client")
+    fun testDeleteNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
+
+        every { clientRepository.delete(any()) } returns Future.succeededFuture(false)
+        every { sessionProvider.getSession() } returns activeSession
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.DELETE, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+                .await()
+                .send()
+                .await()
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(404)
     }
 }
