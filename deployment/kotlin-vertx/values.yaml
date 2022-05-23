@@ -12,6 +12,7 @@ app:
   config:
     server:
       instances: 4
+      bodyLimit: 65536
     db:
       pool:
         size: 5

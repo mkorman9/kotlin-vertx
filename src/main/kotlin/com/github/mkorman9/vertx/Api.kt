@@ -33,9 +33,14 @@ class Api (injector: Injector) {
         ?.getJsonObject("endpoints")
         ?.getString("metrics")
         ?: "/metrics"
+    private val bodyLimit = config
+        .getJsonObject("server")
+        ?.getJsonObject("config")
+        ?.getLong("bodyLimit")
+        ?: -1
 
     fun createRouter(): Router = Router.router(vertx).apply {
-        route().handler(BodyHandler.create())
+        route().handler(BodyHandler.create().setBodyLimit(bodyLimit))
 
         route(healthcheckPath).handler(healthcheckHandler.create())
         route(metricsPath).handler(PrometheusScrapingHandler.create())
