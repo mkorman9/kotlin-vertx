@@ -7,6 +7,8 @@ import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
+import com.github.mkorman9.vertx.utils.Cause
+import com.github.mkorman9.vertx.utils.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -18,6 +20,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
+import io.vertx.core.json.JsonObject
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import io.vertx.kotlin.coroutines.await
@@ -262,5 +265,86 @@ class ClientApiTest {
                 author = activeSession.account.id.toString()
             )
         ) }
+    }
+
+    @Test
+    @DisplayName("should return 400 when trying to add client without firstName field")
+    fun testAddNoFirstName(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = JsonObject()
+            .put("lastName", "User")
+        val activeSession = fakeSession("test.account")
+
+        every { sessionProvider.getSession() } returns activeSession
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+                .await()
+                .send(payload.encode())
+                .await()
+        val statusResponse = Json.decodeValue(result.body().await(), StatusDTO::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(400)
+        assertThat(statusResponse.causes).isEqualTo(listOf(
+            Cause("firstName", "required")
+        ))
+    }
+
+    @Test
+    @DisplayName("should return 400 when trying to add client without lastName field")
+    fun testAddNoLastName(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = JsonObject()
+            .put("firstName", "Test")
+        val activeSession = fakeSession("test.account")
+
+        every { sessionProvider.getSession() } returns activeSession
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+                .await()
+                .send(payload.encode())
+                .await()
+        val statusResponse = Json.decodeValue(result.body().await(), StatusDTO::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(400)
+        assertThat(statusResponse.causes).isEqualTo(listOf(
+            Cause("lastName", "required")
+        ))
+    }
+
+    @Test
+    @DisplayName("should return 400 when trying to add client with invalid email")
+    fun testAddInvalidFields(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = ClientAddPayload(
+            firstName = "Test",
+            lastName = "User",
+            email = "xxx"
+        )
+        val activeSession = fakeSession("test.account")
+
+        every { sessionProvider.getSession() } returns activeSession
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+        val statusResponse = Json.decodeValue(result.body().await(), StatusDTO::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(400)
+        assertThat(statusResponse.causes).isEqualTo(listOf(
+            Cause("email", "email")
+        ))
     }
 }
