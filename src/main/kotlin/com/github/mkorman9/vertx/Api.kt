@@ -10,6 +10,7 @@ import io.vertx.config.ConfigRetriever
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.micrometer.PrometheusScrapingHandler
 
 class Api (injector: Injector) {
@@ -34,6 +35,8 @@ class Api (injector: Injector) {
         ?: "/metrics"
 
     fun createRouter(): Router = Router.router(vertx).apply {
+        route().handler(BodyHandler.create())
+
         route(healthcheckPath).handler(healthcheckHandler.create())
         route(metricsPath).handler(PrometheusScrapingHandler.create())
 

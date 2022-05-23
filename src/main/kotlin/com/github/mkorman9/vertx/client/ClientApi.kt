@@ -10,7 +10,6 @@ import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
@@ -54,7 +53,6 @@ class ClientApi @Inject constructor(
         }
 
         post("/")
-            .handler(BodyHandler.create())
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
@@ -75,7 +73,6 @@ class ClientApi @Inject constructor(
             }
 
         put("/:id")
-            .handler(BodyHandler.create())
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)

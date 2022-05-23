@@ -6,7 +6,6 @@ import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 
@@ -25,7 +24,6 @@ class SessionApi @Inject constructor(
 
     fun createRouter(): Router = Router.router(vertx).apply {
         post("/")
-            .handler(BodyHandler.create())
             .asyncHandler { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->
                     val account = accountRepository.findByCredentialsEmail(payload.email).await()
