@@ -11,7 +11,7 @@ app:
 
   config:
     server:
-      instances: 4
+      instances: 2
       bodyLimit: 65536
     db:
       pool:
@@ -32,11 +32,11 @@ app:
 
   resources:
     cpu:
-      request: 250m
-      limit: 1
+      request: 500m
+      limit: 2
     memory:
-      request: 256Mi
-      limit: 1Gi
+      request: 512Mi
+      limit: 2Gi
 
 gitlab:
   project: ""
