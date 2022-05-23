@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.utils
 
-import com.fasterxml.jackson.core.io.JsonEOFException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
