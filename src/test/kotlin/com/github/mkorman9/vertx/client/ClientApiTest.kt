@@ -347,4 +347,45 @@ class ClientApiTest {
             Cause("email", "email")
         ))
     }
+
+    @Test
+    @DisplayName("should update existing client when called with valid payload")
+    fun testUpdateClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = ClientUpdatePayload(
+            email = "test.user@example.com"
+        )
+        val client = Client(
+            id = UUID.randomUUID(),
+            firstName = "Test",
+            lastName = "User",
+            email = "test.user@example.com"
+        )
+        val activeSession = fakeSession("test.account")
+
+        every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
+        every { sessionProvider.getSession() } returns activeSession
+        every { clientEventsPublisher.publish(any()) } returns Unit
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/${client.id.toString()}")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+        val statusResponse = Json.decodeValue(result.body().await(), StatusDTO::class.java)
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(200)
+        assertThat(statusResponse.status).isEqualTo("ok")
+
+        verify { clientEventsPublisher.publish(
+            ClientEvent(
+                operation = ClientEventOperation.UPDATED,
+                clientId = client.id.toString(),
+                author = activeSession.account.id.toString()
+            )
+        ) }
+    }
 }
