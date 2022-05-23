@@ -1,15 +1,12 @@
 package com.github.mkorman9.vertx.session
 
 import com.github.mkorman9.vertx.*
-import com.github.mkorman9.vertx.client.ClientsPage
 import com.github.mkorman9.vertx.security.*
 import com.github.mkorman9.vertx.utils.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
@@ -25,8 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
 class SessionApiTest {
-    @SpyK
-    private val sessionRepository: SessionRepository = mockk()
+    @MockK
+    private lateinit var sessionRepository: SessionRepository
     @MockK
     private lateinit var accountRepository: AccountRepository
     @MockK
