@@ -390,6 +390,31 @@ class ClientApiTest {
     }
 
     @Test
+    @DisplayName("should return 404 when trying to update non-existing client")
+    fun testUpdateNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+        // given
+        val httpClient = vertx.createHttpClient()
+        val payload = ClientUpdatePayload(
+            email = "test.user@example.com"
+        )
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
+
+        every { clientRepository.update(clientId.toString(), payload) } returns Future.succeededFuture(null)
+        every { sessionProvider.getSession() } returns activeSession
+
+        // when
+        val result =
+            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+                .await()
+                .send(Json.encodeToBuffer(payload))
+                .await()
+
+        // then
+        assertThat(result.statusCode()).isEqualTo(404)
+    }
+
+    @Test
     @DisplayName("should delete existing client when called with valid id")
     fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
@@ -430,7 +455,7 @@ class ClientApiTest {
         val clientId = UUID.randomUUID()
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.delete(any()) } returns Future.succeededFuture(false)
+        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(false)
         every { sessionProvider.getSession() } returns activeSession
 
         // when
