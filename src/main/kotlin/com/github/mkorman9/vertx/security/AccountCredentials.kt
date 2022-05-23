@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import java.time.LocalDateTime
+import java.util.Objects
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -31,4 +32,8 @@ data class AccountCredentials(
     @OneToOne
     @JoinColumn(name = "account_id")
     val account: Account
-)
+) {
+    override fun hashCode(): Int {
+        return Objects.hash(accountId, email, passwordBcrypt, lastChangeAt, lastChangeIp)
+    }
+}

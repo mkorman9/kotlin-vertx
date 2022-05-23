@@ -1,13 +1,22 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.security.Account
+import com.github.mkorman9.vertx.security.AccountCredentials
 import com.github.mkorman9.vertx.security.Session
 import java.time.LocalDateTime
 import java.util.*
 
-fun fakeSession(accountName: String, isBanned: Boolean = false): Session {
+// "password" string encoded with BCrypt
+const val defaultPasswordBcrypt = "\$2a\$10\$CYoenxLkI.J6uzP3oH2Iceh9Zm1n4XO51ngkSwm3Rk7BfmXawkWW2"
+
+fun fakeSession(
+    accountName: String,
+    isBanned: Boolean = false,
+    email: String = "test.user@example.com",
+    passwordBcrypt: String = defaultPasswordBcrypt
+): Session {
     val accountId = UUID.randomUUID()
-    return Session(
+    val session = Session(
         id = UUID.randomUUID().toString(),
         accountId = accountId,
         token = UUID.randomUUID().toString(),
@@ -28,4 +37,15 @@ fun fakeSession(accountName: String, isBanned: Boolean = false): Session {
             credentials = null
         )
     )
+
+    session.account.credentials = AccountCredentials(
+        accountId = accountId,
+        email = email,
+        passwordBcrypt = passwordBcrypt,
+        lastChangeAt = session.account.createdAt,
+        lastChangeIp = "127.0.0.1",
+        account = session.account
+    )
+
+    return session
 }
