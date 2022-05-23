@@ -18,7 +18,7 @@ class Api (injector: Injector) {
     private val vertx = injector.getInstance<Vertx>()
     private val config = injector.getInstance<ConfigRetriever>().cachedConfig
 
-    private val healthcheckApi = injector.getInstance<HealthcheckApi>()
+    private val healthcheckHandler = injector.getInstance<HealthcheckHandler>()
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
@@ -34,12 +34,11 @@ class Api (injector: Injector) {
         ?: "/metrics"
 
     val router: Router = Router.router(vertx).apply {
-        mountSubRouter(healthcheckPath, healthcheckApi.router)
+        route(healthcheckPath).handler(healthcheckHandler.create())
         route(metricsPath).handler(PrometheusScrapingHandler.create())
 
-        mountSubRouter("/api/v1/client", clientApi.router)
-
-        mountSubRouter("/api/v1/session", sessionApi.router)
+        route("/api/v1/client*").subRouter(clientApi.createRouter())
+        route("/api/v1/session*").subRouter(sessionApi.createRouter())
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(StatusDTO(

@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.utils
 
+import com.fasterxml.jackson.core.io.JsonEOFException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.module.kotlin.MissingKotlinParameterException
@@ -9,7 +10,6 @@ import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
-import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,29 +34,39 @@ fun HttpServerResponse.endWithJson(obj: Any) {
 }
 
 suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: suspend (T) -> Unit) {
-    val body = request().body().await()
+    val buffer = body().buffer()
+    if (buffer == null) {
+        response().setStatusCode(400).endWithJson(
+            StatusDTO(
+                status = "error",
+                message = "empty request body"
+            )
+        )
+
+        return
+    }
 
     val payload = try {
-        Json.decodeValue(body, T::class.java)
+        Json.decodeValue(buffer, T::class.java)
     } catch (e: DecodeException) {
-        val cause = parseJsonExceptionCause(e)
-
-        if (cause.field.isEmpty()) {
+        if (e.cause !is JsonMappingException) {
             response().setStatusCode(400).endWithJson(
                 StatusDTO(
                     status = "error",
                     message = "malformed request body"
                 )
             )
-        } else {
-            response().setStatusCode(400).endWithJson(
-                StatusDTO(
-                    status = "error",
-                    message = "error while mapping request body",
-                    causes = listOf(cause)
-                )
-            )
+
+            return
         }
+
+        response().setStatusCode(400).endWithJson(
+            StatusDTO(
+                status = "error",
+                message = "error while mapping request body",
+                causes = listOf(parseJsonExceptionCause(e))
+            )
+        )
 
         return
     }
