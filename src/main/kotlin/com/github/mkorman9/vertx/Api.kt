@@ -33,7 +33,7 @@ class Api (injector: Injector) {
         ?.getString("metrics")
         ?: "/metrics"
 
-    val router: Router = Router.router(vertx).apply {
+    fun createRouter(): Router = Router.router(vertx).apply {
         route(healthcheckPath).handler(healthcheckHandler.create())
         route(metricsPath).handler(PrometheusScrapingHandler.create())
 
