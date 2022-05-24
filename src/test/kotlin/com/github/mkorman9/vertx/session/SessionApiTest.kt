@@ -56,7 +56,7 @@ class SessionApiTest {
         val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
 
         every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
-        every { sessionRepository.add(session) } returns Future.succeededFuture(session)
+        every { sessionRepository.add(any()) } returns Future.succeededFuture(session)
 
         // when
         val result =
