@@ -8,11 +8,13 @@
     <appender name="gelf" class="de.siegmar.logbackgelf.GelfUdpAppender">
         <graylogHost>${GRAYLOG_HOST:-localhost}</graylogHost>
         <graylogPort>${GRAYLOG_PORT:-12201}</graylogPort>
-        
+
         <encoder class="de.siegmar.logbackgelf.GelfEncoder">
             <originHost>${HOSTNAME:-localhost}</originHost>
             <includeLevelName>true</includeLevelName>
             <includeCallerData>true</includeCallerData>
+
+            <staticField>app_name:kotlin-vertx</staticField>
         </encoder>
     </appender>
 
