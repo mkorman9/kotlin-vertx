@@ -5,22 +5,31 @@
         </encoder>
     </appender>
 
-    <appender name="gelf" class="de.siegmar.logbackgelf.GelfUdpAppender">
-        <graylogHost>${GRAYLOG_HOST:-localhost}</graylogHost>
-        <graylogPort>${GRAYLOG_PORT:-12201}</graylogPort>
+    <if condition='isDefined("GRAYLOG_HOST")'>
+        <then>
+            <appender name="gelf" class="de.siegmar.logbackgelf.GelfUdpAppender">
+                <graylogHost>${GRAYLOG_HOST}</graylogHost>
+                <graylogPort>${GRAYLOG_PORT:-12201}</graylogPort>
 
-        <encoder class="de.siegmar.logbackgelf.GelfEncoder">
-            <originHost>${HOSTNAME:-localhost}</originHost>
-            <includeLevelName>true</includeLevelName>
-            <includeCallerData>true</includeCallerData>
+                <encoder class="de.siegmar.logbackgelf.GelfEncoder">
+                    <originHost>${HOSTNAME:-localhost}</originHost>
+                    <includeLevelName>true</includeLevelName>
+                    <includeCallerData>true</includeCallerData>
 
-            <staticField>app_name:kotlin-vertx</staticField>
-        </encoder>
-    </appender>
+                    <staticField>app_name:kotlin-vertx</staticField>
+                </encoder>
+            </appender>
+        </then>
+    </if>
 
     <root level="info">
         <appender-ref ref="stdout" />
-        <appender-ref ref="gelf" />
+
+        <if condition='isDefined("GRAYLOG_HOST")'>
+            <then>
+                <appender-ref ref="gelf" />
+            </then>
+        </if>
     </root>
 
     <logger name="io.vertx.rabbitmq.impl.RabbitMQClientImpl" level="error" />
