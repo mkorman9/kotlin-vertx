@@ -21,3 +21,6 @@ data:
     db:
       pool:
         size: {{ .Values.app.config.db.pool.size }}
+        connectTimeout: {{ .Values.app.config.db.pool.connectTimeout }}
+        idleTimeout: {{ .Values.app.config.db.pool.idleTimeout }}
+        cleanerPeriod: {{ .Values.app.config.db.pool.cleanerPeriod }}

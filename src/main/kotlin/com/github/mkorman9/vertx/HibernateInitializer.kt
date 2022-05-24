@@ -17,10 +17,42 @@ class HibernateInitializer {
         val password = config.getJsonObject("db")?.getString("password")
             ?: throw RuntimeException("db.password is missing from config")
 
-        val poolSize = config.getJsonObject("db")?.getJsonObject("pool")?.getInteger("size") ?: 5
-        val showSql = config.getJsonObject("db")?.getJsonObject("sql")?.getBoolean("show") ?: false
-        val formatSql = config.getJsonObject("db")?.getJsonObject("sql")?.getBoolean("format") ?: false
-        val highlightSql = config.getJsonObject("db")?.getJsonObject("sql")?.getBoolean("highlight") ?: false
+        val poolSize = config
+            .getJsonObject("db")
+            ?.getJsonObject("pool")
+            ?.getInteger("size")
+            ?: 5
+        val connectTimeout = config
+            .getJsonObject("db")
+            ?.getJsonObject("pool")
+            ?.getInteger("connectTimeout")
+            ?: 30_000
+        val idleTimeout = config
+            .getJsonObject("db")
+            ?.getJsonObject("pool")
+            ?.getInteger("idleTimeout")
+            ?: 0
+        val cleanerPeriod = config
+            .getJsonObject("db")
+            ?.getJsonObject("pool")
+            ?.getInteger("cleanerPeriod")
+            ?: 1000
+
+        val showSql = config
+            .getJsonObject("db")
+            ?.getJsonObject("sql")
+            ?.getBoolean("show")
+            ?: false
+        val formatSql = config
+            .getJsonObject("db")
+            ?.getJsonObject("sql")
+            ?.getBoolean("format")
+            ?: false
+        val highlightSql = config
+            .getJsonObject("db")
+            ?.getJsonObject("sql")
+            ?.getBoolean("highlight")
+            ?: false
 
         val props = mapOf(
             "hibernate.connection.url" to uri,
@@ -28,6 +60,10 @@ class HibernateInitializer {
             "hibernate.connection.password" to password,
 
             "hibernate.connection.pool_size" to poolSize,
+            "hibernate.vertx.pool.connect_timeout" to connectTimeout,
+            "hibernate.vertx.pool.idle_timeout" to idleTimeout,
+            "hibernate.vertx.pool.cleaner_period" to cleanerPeriod,
+
             "hibernate.show_sql" to showSql,
             "hibernate.format_sql" to formatSql,
             "hibernate.highlight_sql" to highlightSql

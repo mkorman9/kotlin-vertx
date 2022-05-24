@@ -13,10 +13,16 @@ class RabbitMQInitializer {
         val uri = config.getJsonObject("rabbitmq")?.getString("uri")
             ?: throw RuntimeException("rabbitmq.uri is missing from config")
 
-        val reconnectAttempts = config.getJsonObject("rabbitmq")?.getJsonObject("reconnect")
-            ?.getInteger("attempts") ?: Integer.MAX_VALUE
-        val reconnectInterval = config.getJsonObject("rabbitmq")?.getJsonObject("reconnect")
-            ?.getLong("interval") ?: 1000
+        val reconnectAttempts = config
+            .getJsonObject("rabbitmq")
+            ?.getJsonObject("reconnect")
+            ?.getInteger("attempts")
+            ?: Integer.MAX_VALUE
+        val reconnectInterval = config
+            .getJsonObject("rabbitmq")
+            ?.getJsonObject("reconnect")
+            ?.getLong("interval")
+            ?: 1000
 
         rabbitMQClient = RabbitMQClient.create(vertx, RabbitMQOptions()
             .setUri(uri)

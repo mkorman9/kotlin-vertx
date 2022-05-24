@@ -13,6 +13,7 @@
         <class>com.github.mkorman9.vertx.security.Session</class>
 
         <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL10Dialect" />
             <property name="javax.persistence.schema-generation.database.action" value="validate" />
         </properties>
     </persistence-unit>
