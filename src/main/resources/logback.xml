@@ -5,8 +5,21 @@
         </encoder>
     </appender>
 
+    <appender name="gelf" class="de.siegmar.logbackgelf.GelfUdpAppender">
+        <graylogHost>${GRAYLOG_HOST:-localhost}</graylogHost>
+        <graylogPort>${GRAYLOG_PORT:-12201}</graylogPort>
+        
+        <encoder class="de.siegmar.logbackgelf.GelfEncoder">
+            <originHost>${HOSTNAME:-localhost}</originHost>
+            <includeLevelName>true</includeLevelName>
+            <includeCallerData>true</includeCallerData>
+        </encoder>
+    </appender>
+
     <root level="info">
         <appender-ref ref="stdout" />
+        <appender-ref ref="gelf" />
     </root>
+
     <logger name="io.vertx.rabbitmq.impl.RabbitMQClientImpl" level="error" />
 </configuration>
