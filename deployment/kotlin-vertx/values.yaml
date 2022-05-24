@@ -5,6 +5,7 @@ app:
   port: 8080
   replicas: 1
   historicRevisions: 3
+  environment: default
 
   configMap: config
   secrets: secrets
@@ -16,6 +17,10 @@ app:
     db:
       pool:
         size: 5
+    graylog:
+      enabled: false
+      host: graylog.monitoring.svc.cluster.local
+      port: 12201
 
   health:
     endpoint: /health

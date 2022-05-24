@@ -67,6 +67,15 @@ spec:
               mountPath: /app/secrets.yml
               subPath: secrets.yml
               readOnly: true
+          env:
+            - name: ENVIRONMENT_NAME
+              value: {{ .Values.app.environment }}
+            {{- if .Values.app.config.graylog.enabled }}
+            - name: GRAYLOG_HOST
+              value: {{ .Values.app.config.graylog.host }}
+            - name: GRAYLOG_PORT
+              value: {{ .Values.app.config.graylog.port }}
+            {{- end }}
           securityContext:
             allowPrivilegeEscalation: false
       securityContext:
