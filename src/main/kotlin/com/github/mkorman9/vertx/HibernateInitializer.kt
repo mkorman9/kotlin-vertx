@@ -23,9 +23,9 @@ class HibernateInitializer {
         val highlightSql = config.getJsonObject("db")?.getJsonObject("sql")?.getBoolean("highlight") ?: false
 
         val props = mapOf(
-            "javax.persistence.jdbc.url" to uri,
-            "javax.persistence.jdbc.user" to user,
-            "javax.persistence.jdbc.password" to password,
+            "hibernate.connection.url" to uri,
+            "hibernate.connection.username" to user,
+            "hibernate.connection.password" to password,
 
             "hibernate.connection.pool_size" to poolSize,
             "hibernate.show_sql" to showSql,
