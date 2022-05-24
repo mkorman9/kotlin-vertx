@@ -17,42 +17,16 @@ class HibernateInitializer {
         val password = config.getJsonObject("db")?.getString("password")
             ?: throw RuntimeException("db.password is missing from config")
 
-        val poolSize = config
-            .getJsonObject("db")
-            ?.getJsonObject("pool")
-            ?.getInteger("size")
-            ?: 5
-        val connectTimeout = config
-            .getJsonObject("db")
-            ?.getJsonObject("pool")
-            ?.getInteger("connectTimeout")
-            ?: 30_000
-        val idleTimeout = config
-            .getJsonObject("db")
-            ?.getJsonObject("pool")
-            ?.getInteger("idleTimeout")
-            ?: 0
-        val cleanerPeriod = config
-            .getJsonObject("db")
-            ?.getJsonObject("pool")
-            ?.getInteger("cleanerPeriod")
-            ?: 1000
+        val poolConfig = config.getJsonObject("db")?.getJsonObject("pool")
+        val poolSize = poolConfig?.getInteger("size") ?: 5
+        val connectTimeout = poolConfig?.getInteger("connectTimeout") ?: 30_000
+        val idleTimeout = poolConfig?.getInteger("idleTimeout") ?: 0
+        val cleanerPeriod = poolConfig?.getInteger("cleanerPeriod") ?: 1000
 
-        val showSql = config
-            .getJsonObject("db")
-            ?.getJsonObject("sql")
-            ?.getBoolean("show")
-            ?: false
-        val formatSql = config
-            .getJsonObject("db")
-            ?.getJsonObject("sql")
-            ?.getBoolean("format")
-            ?: false
-        val highlightSql = config
-            .getJsonObject("db")
-            ?.getJsonObject("sql")
-            ?.getBoolean("highlight")
-            ?: false
+        val sqlConfig = config.getJsonObject("db")?.getJsonObject("sql")
+        val showSql = sqlConfig?.getBoolean("show") ?: false
+        val formatSql = sqlConfig?.getBoolean("format") ?: false
+        val highlightSql = sqlConfig?.getBoolean("highlight") ?: false
 
         val props = mapOf(
             "hibernate.connection.url" to uri,

@@ -23,20 +23,11 @@ class Api (injector: Injector) {
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
-    private val healthcheckPath = config
-        .getJsonObject("server")
-        ?.getJsonObject("endpoints")
-        ?.getString("health")
-        ?: "/health"
-    private val metricsPath = config
-        .getJsonObject("server")
-        ?.getJsonObject("endpoints")
-        ?.getString("metrics")
-        ?: "/metrics"
-    private val bodyLimit = config
-        .getJsonObject("server")
-        ?.getJsonObject("config")
-        ?.getLong("bodyLimit")
+    private val endpointsConfig = config.getJsonObject("server")?.getJsonObject("endpoints")
+    private val healthcheckPath = endpointsConfig?.getString("health") ?: "/health"
+    private val metricsPath = endpointsConfig?.getString("metrics") ?: "/metrics"
+
+    private val bodyLimit = config.getJsonObject("server")?.getJsonObject("config")?.getLong("bodyLimit")
         ?: -1
 
     fun createRouter(): Router = Router.router(vertx).apply {
