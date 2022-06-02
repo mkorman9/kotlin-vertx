@@ -23,6 +23,7 @@ import com.google.pubsub.v1.Topic
 import com.google.pubsub.v1.TopicName
 import io.grpc.ManagedChannelBuilder
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
@@ -32,6 +33,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GCPPubSubClient @Inject constructor(
+    private val vertx: Vertx,
     private val gcpSettings: GCPSettings,
     configRetriever: ConfigRetriever
 ) {
@@ -53,7 +55,7 @@ class GCPPubSubClient @Inject constructor(
         subscriptionAdminClient = createSubscriptionAdminClient()
     }
 
-    fun stop(vertx: Vertx) {
+    fun stop() {
         vertx.executeBlocking<Void> { call ->
             publishers.forEach {
                 it.shutdown()
@@ -91,48 +93,60 @@ class GCPPubSubClient @Inject constructor(
         topic: String,
         receiver: MessageReceiverWithAckResponse,
         subscriptionCustomizer: Handler<Subscription.Builder>? = null
-    ): Subscriber {
-        createSubscription(subscription, topic, subscriptionCustomizer)
+    ): Future<Subscriber> {
+        return vertx.executeBlocking { call ->
+            createSubscription(subscription, topic, subscriptionCustomizer)
 
-        val subscriptionName = ProjectSubscriptionName.newBuilder()
-            .setProject(gcpSettings.projectId)
-            .setSubscription(subscription)
-            .build()
+            val subscriptionName = ProjectSubscriptionName.newBuilder()
+                .setProject(gcpSettings.projectId)
+                .setSubscription(subscription)
+                .build()
 
-        val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
-            .setChannelProvider(channelProvider)
-            .setCredentialsProvider(gcpSettings.credentialsProvider)
-            .build()
+            val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
+                .setChannelProvider(channelProvider)
+                .setCredentialsProvider(gcpSettings.credentialsProvider)
+                .build()
 
-        subscribers.add(subscriber)
+            subscribers.add(subscriber)
 
-        return subscriber
+            subscriber
+                .startAsync()
+                .awaitRunning()
+
+            call.complete(subscriber)
+        }
     }
 
     fun createSubscriber(
         topic: String,
         receiver: MessageReceiverWithAckResponse,
         subscriptionCustomizer: Handler<Subscription.Builder>? = null
-    ): Subscriber {
-        val subscription = "$topic.${UUID.randomUUID()}"
+    ): Future<Subscriber> {
+        return vertx.executeBlocking { call ->
+            val subscription = "$topic.${UUID.randomUUID()}"
 
-        createSubscription(subscription, topic, subscriptionCustomizer)
+            createSubscription(subscription, topic, subscriptionCustomizer)
 
-        val subscriptionName = ProjectSubscriptionName.newBuilder()
-            .setProject(gcpSettings.projectId)
-            .setSubscription(subscription)
-            .build()
+            val subscriptionName = ProjectSubscriptionName.newBuilder()
+                .setProject(gcpSettings.projectId)
+                .setSubscription(subscription)
+                .build()
 
-        ephemeralSubscriptions.add(subscriptionName)
+            ephemeralSubscriptions.add(subscriptionName)
 
-        val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
-            .setChannelProvider(channelProvider)
-            .setCredentialsProvider(gcpSettings.credentialsProvider)
-            .build()
+            val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
+                .setChannelProvider(channelProvider)
+                .setCredentialsProvider(gcpSettings.credentialsProvider)
+                .build()
 
-        subscribers.add(subscriber)
+            subscribers.add(subscriber)
 
-        return subscriber
+            subscriber
+                .startAsync()
+                .awaitRunning()
+
+            call.complete(subscriber)
+        }
     }
 
     private fun createSubscription(
