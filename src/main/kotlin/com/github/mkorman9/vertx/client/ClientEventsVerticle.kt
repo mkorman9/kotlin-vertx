@@ -28,7 +28,7 @@ class ClientEventsVerticle(
     override suspend fun start() {
         try {
             vertx.executeBlocking<Void> { call ->
-                gcpPubSubClient.createSubscriber(topicName) { m, c -> messageHandler(m, c) }
+                gcpPubSubClient.createSubscriber(topicName, this::messageHandler)
                     .startAsync()
                     .awaitRunning()
 
