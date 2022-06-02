@@ -23,6 +23,7 @@ import com.google.pubsub.v1.Topic
 import com.google.pubsub.v1.TopicName
 import io.grpc.ManagedChannelBuilder
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import java.util.*
@@ -85,8 +86,13 @@ class GCPPubSubClient @Inject constructor(
         return publisher
     }
 
-    fun createSubscriber(subscription: String, topic: String, receiver: MessageReceiverWithAckResponse): Subscriber {
-        createSubscription(subscription, topic)
+    fun createSubscriber(
+        subscription: String,
+        topic: String,
+        receiver: MessageReceiverWithAckResponse,
+        subscriptionCustomizer: Handler<Subscription.Builder>? = null
+    ): Subscriber {
+        createSubscription(subscription, topic, subscriptionCustomizer)
 
         val subscriptionName = ProjectSubscriptionName.newBuilder()
             .setProject(gcpSettings.projectId)
@@ -103,10 +109,14 @@ class GCPPubSubClient @Inject constructor(
         return subscriber
     }
 
-    fun createSubscriber(topic: String, receiver: MessageReceiverWithAckResponse): Subscriber {
+    fun createSubscriber(
+        topic: String,
+        receiver: MessageReceiverWithAckResponse,
+        subscriptionCustomizer: Handler<Subscription.Builder>? = null
+    ): Subscriber {
         val subscription = "$topic.${UUID.randomUUID()}"
 
-        createSubscription(subscription, topic)
+        createSubscription(subscription, topic, subscriptionCustomizer)
 
         val subscriptionName = ProjectSubscriptionName.newBuilder()
             .setProject(gcpSettings.projectId)
@@ -125,18 +135,23 @@ class GCPPubSubClient @Inject constructor(
         return subscriber
     }
 
-    private fun createSubscription(name: String, topic: String): Subscription {
+    private fun createSubscription(
+        name: String,
+        topic: String,
+        subscriptionCustomizer: Handler<Subscription.Builder>?
+    ): Subscription {
         createTopic(topic)
 
         return try {
-            subscriptionAdminClient.createSubscription(
-                Subscription.newBuilder()
-                    .setName(SubscriptionName.of(gcpSettings.projectId, name).toString())
-                    .setTopic(TopicName.of(gcpSettings.projectId, topic).toString())
-                    .setPushConfig(PushConfig.getDefaultInstance())
-                    .setAckDeadlineSeconds(0)
-                    .build()
-            )
+            val subscriptionBuilder = Subscription.newBuilder()
+                .setName(SubscriptionName.of(gcpSettings.projectId, name).toString())
+                .setTopic(TopicName.of(gcpSettings.projectId, topic).toString())
+                .setPushConfig(PushConfig.getDefaultInstance())
+                .setAckDeadlineSeconds(0)
+
+            subscriptionCustomizer?.handle(subscriptionBuilder)
+
+            subscriptionAdminClient.createSubscription(subscriptionBuilder.build())
         } catch (e: ApiException) {
             if (e.statusCode.code == StatusCode.Code.ALREADY_EXISTS) {
                 subscriptionAdminClient.getSubscription(SubscriptionName.of(gcpSettings.projectId, name).toString())
