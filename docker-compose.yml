@@ -15,6 +15,14 @@ services:
       timeout: 5s
       retries: 5
 
+  firestore:
+    image: mtlynch/firestore-emulator
+    environment:
+      - FIRESTORE_PROJECT_ID=local-run
+      - PORT=8200
+    ports:
+      - "127.0.0.1:8200:8200"
+
   gcp-pubsub:
     image: bigtruedata/gcloud-pubsub-emulator:latest
     command: start --host-port 0.0.0.0:8538

@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.google.firebase.cloud.FirestoreClient
 import com.google.inject.Guice
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -40,12 +41,27 @@ class BootstrapVerticle : CoroutineVerticle() {
             val config = configRetriever.config.await()
 
             val sessionFactory = hibernateInitializer.start(vertx, config).await()
-            val gcpCredentials = GCPSettings.read(vertx, config)
+            val gcpSettings = GCPSettings.read(vertx, config)
+            val firestore = FirestoreInitializer(gcpSettings).initialize()
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpCredentials)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()
+
+            vertx.executeBlocking<Void> { call ->
+                val doc = firestore.collection("users").document("michal")
+                val data = mapOf<String, Any>(
+                    "firstName" to "Marcin",
+                    "lastName" to "Figlarz",
+                    "born" to "1960"
+                )
+                doc.set(data).get()
+
+                println(doc.get().get().data)
+
+                call.complete()
+            }.await()
 
             log.info("BootstrapVerticle has been deployed")
         } catch (e: Exception) {
