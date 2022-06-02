@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Guice
 import com.google.inject.Injector
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -54,7 +55,10 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
+        injector.getInstance<GCPPubSubClient>().stop(vertx)
         hibernateInitializer.stop(vertx).await()
+
+        log.info("BootstrapVerticle has been stopped")
     }
 
     private fun deployVerticles(config: JsonObject): Future<CompositeFuture> {

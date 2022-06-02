@@ -23,6 +23,7 @@ import com.google.pubsub.v1.Topic
 import com.google.pubsub.v1.TopicName
 import io.grpc.ManagedChannelBuilder
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import java.util.*
 import javax.inject.Inject
@@ -33,9 +34,13 @@ class GCPPubSubClient @Inject constructor(
     private val gcpSettings: GCPSettings,
     configRetriever: ConfigRetriever
 ) {
-    private val channelProvider: TransportChannelProvider?
+    private val channelProvider: TransportChannelProvider
     private val topicAdminClient: TopicAdminClient
     private val subscriptionAdminClient: SubscriptionAdminClient
+
+    private val publishers = mutableListOf<Publisher>()
+    private val subscribers = mutableListOf<Subscriber>()
+    private val ephemeralSubscriptions = mutableListOf<ProjectSubscriptionName>()
 
     init {
         val config = configRetriever.cachedConfig
@@ -47,14 +52,37 @@ class GCPPubSubClient @Inject constructor(
         subscriptionAdminClient = createSubscriptionAdminClient()
     }
 
+    fun stop(vertx: Vertx) {
+        vertx.executeBlocking<Void> { call ->
+            publishers.forEach {
+                it.shutdown()
+            }
+
+            subscribers.forEach {
+                it.stopAsync().awaitTerminated()
+            }
+
+            ephemeralSubscriptions.forEach {
+                subscriptionAdminClient.deleteSubscription(it.toString())
+            }
+
+            call.complete()
+        }
+    }
+
     fun createPublisher(topic: String): Publisher {
         createTopic(topic)
 
         val topicName = TopicName.of(gcpSettings.projectId, topic)
-        return Publisher.newBuilder(topicName)
+
+        val publisher = Publisher.newBuilder(topicName)
             .setChannelProvider(channelProvider)
             .setCredentialsProvider(gcpSettings.credentialsProvider)
             .build()
+
+        publishers.add(publisher)
+
+        return publisher
     }
 
     fun createSubscriber(subscription: String, topic: String, receiver: MessageReceiverWithAckResponse): Subscriber {
@@ -65,10 +93,14 @@ class GCPPubSubClient @Inject constructor(
             .setSubscription(subscription)
             .build()
 
-        return Subscriber.newBuilder(subscriptionName, receiver)
+        val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
             .setChannelProvider(channelProvider)
             .setCredentialsProvider(gcpSettings.credentialsProvider)
             .build()
+
+        subscribers.add(subscriber)
+
+        return subscriber
     }
 
     fun createSubscriber(topic: String, receiver: MessageReceiverWithAckResponse): Subscriber {
@@ -81,10 +113,16 @@ class GCPPubSubClient @Inject constructor(
             .setSubscription(subscription)
             .build()
 
-        return Subscriber.newBuilder(subscriptionName, receiver)
+        ephemeralSubscriptions.add(subscriptionName)
+
+        val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
             .setChannelProvider(channelProvider)
             .setCredentialsProvider(gcpSettings.credentialsProvider)
             .build()
+
+        subscribers.add(subscriber)
+
+        return subscriber
     }
 
     private fun createSubscription(name: String, topic: String): Subscription {
