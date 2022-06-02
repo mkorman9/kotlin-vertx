@@ -46,11 +46,6 @@ kubectl wait --namespace ingress-nginx \
   --timeout=120s
 ```
 
-Create RabbitMQ cluster operator
-```bash
-kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
-```
-
 Create a namespace for the project
 ```bash
 kubectl create namespace kotlin-vertx
@@ -134,13 +129,6 @@ data:
 EOF
 ```
 
-### RabbitMQ cluster operator
-
-Create RabbitMQ cluster operator
-```bash
-kubectl apply -f "https://github.com/rabbitmq/cluster-operator/releases/latest/download/cluster-operator.yml"
-```
-
 ### Project namespace
 
 Create a namespace for the project
@@ -170,60 +158,6 @@ kubectl create secret generic gitlab-docker-registry --namespace=kube-system \
 --from-file=.dockerconfigjson=./docker.json --type="kubernetes.io/dockerconfigjson"
 ```
 
-### RabbitMQ cluster
-
-Create a namespace for the broker
-```bash
-kubectl create namespace messaging
-```
-
-Create `broker.yml` file. Adjust deployment parameters such as CPU, memory and disk quota.
-Additionally, `storageClassName` can be defined under `persistance`to specify type of storage to deploy.
-You can get a list of supported storage classes by running `kubectl get storageclass`     
-(**NOTE:** Replicas count must be an odd number: 1, 3, 5, 7 etc.)
-```
-apiVersion: rabbitmq.com/v1beta1
-kind: RabbitmqCluster
-metadata:
-  name: broker
-  namespace: messaging
-spec:
-  replicas: 1
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 2Gi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-  persistence:
-    storage: 5Gi
-```
-
-Deploy it
-```
-kubectl apply -f broker.yml
-```
-
-Retrieve default username and password
-```bash
-kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data.username}' | base64 --decode
-kubectl get secret broker-default-user --namespace=messaging -o jsonpath='{.data.password}' | base64 --decode
-```
-
-Retrieved credentials can be used to access the management console.
-Open a tunnel with
-```bash
-kubectl port-forward service/broker --namespace=messaging 15672:15672
-```
-
-Open `http://localhost:15672` in a browser and log in.     
-Then create new user under `Admin -> Users` and assign him permissions under
-`Admin -> Virtual Host -> /`. Use his credentials to construct the URL
-```
-amqp://<username>:<password>@broker.messaging.svc.cluster.local:5672
-```
-
 ### App secrets
 
 Create `secrets.yml` file and populate it with data
@@ -232,8 +166,10 @@ db:
   uri: jdbc:postgresql://<POSTGRES_HOST>:5432/<POSTGRES_DB_NAME>
   user: <POSTGRES_USERNAME>
   password: <POSTGRES_PASSWORD>
-rabbitmq:
-  uri: <RABBITMQ_URL>
+gcp:
+  projectId: <GCP_PROJECT_ID>
+  credentials:
+    path: /app/credentials.json
 ```
 
 Upload it

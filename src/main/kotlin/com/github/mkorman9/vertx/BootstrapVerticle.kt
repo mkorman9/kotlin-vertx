@@ -6,15 +6,12 @@ import com.google.inject.Injector
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
-import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import io.vertx.rabbitmq.RabbitMQClient
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
@@ -28,7 +25,6 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     private val hibernateInitializer = HibernateInitializer()
-    private val rabbitMQInitializer = RabbitMQInitializer()
 
     override suspend fun start() {
         try {
@@ -41,14 +37,10 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val init = CompositeFuture.all(
-                hibernateInitializer.start(vertx, config),
-                rabbitMQInitializer.start(vertx, config)
-            ).await()
-            val sessionFactory = init.resultAt<SessionFactory>(0)
-            val rabbitMQClient = init.resultAt<RabbitMQClient>(1)
+            val sessionFactory = hibernateInitializer.start(vertx, config).await()
+            val gcpCredentials = GCPSettings.read(vertx, config)
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory, rabbitMQClient)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpCredentials)
             injector = Guice.createInjector(module)
 
             log.info("BootstrapVerticle has been deployed")
@@ -61,10 +53,7 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        CompositeFuture.all(
-            rabbitMQInitializer.stop(),
-            hibernateInitializer.stop(vertx)
-        ).await()
+        hibernateInitializer.stop(vertx).await()
     }
 
     private fun deployVerticles(config: JsonObject) {

@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.google.api.gax.core.NoCredentialsProvider
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -8,7 +9,6 @@ import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.rabbitmq.RabbitMQClient
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.jvm.internal.Reflection
 
@@ -20,7 +20,7 @@ class TestModuleBase(
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
         bind<SessionFactory>().toInstance(mockk())
-        bind<RabbitMQClient>().toInstance(mockk())
+        bind<GCPSettings>().toInstance(GCPSettings("tests", NoCredentialsProvider.create()))
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
 
         AppModule.getInjectableClasses()

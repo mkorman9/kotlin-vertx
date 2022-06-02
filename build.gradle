@@ -62,6 +62,7 @@ dependencies {
     implementation "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
     implementation "com.google.protobuf:protobuf-kotlin:3.21.1"
 
+    implementation "com.google.cloud:google-cloud-pubsub:1.119.0"
     implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64"
     implementation 'org.slf4j:slf4j-api:1.7.36'

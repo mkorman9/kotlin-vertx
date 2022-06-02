@@ -15,14 +15,11 @@ services:
       timeout: 5s
       retries: 5
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    environment:
-      RABBITMQ_DEFAULT_USER: username
-      RABBITMQ_DEFAULT_PASS: password
+  gcp-pubsub:
+    image: bigtruedata/gcloud-pubsub-emulator:latest
+    command: start --host-port 0.0.0.0:8538
     ports:
-      - "127.0.0.1:5672:5672"
-      - "127.0.0.1:15672:15672"
+      - "127.0.0.1:8538:8538"
 
   migrate-db-schema:
     image: liquibase/liquibase:4.2

@@ -5,6 +5,13 @@ server:
 grpc:
   port: 9090
 
+gcp:
+  projectId: local-run
+  pubsub:
+    emulator:
+      enabled: true
+      address: localhost:8538
+
 db:
   uri: jdbc:postgresql://localhost:5432/kotlinvertx
   user: username
