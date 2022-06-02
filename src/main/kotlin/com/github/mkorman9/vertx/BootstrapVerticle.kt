@@ -6,6 +6,7 @@ import com.google.inject.Injector
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
+import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.impl.logging.LoggerFactory
@@ -43,9 +44,9 @@ class BootstrapVerticle : CoroutineVerticle() {
             val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpCredentials)
             injector = Guice.createInjector(module)
 
-            log.info("BootstrapVerticle has been deployed")
+            deployVerticles(config).await()
 
-            deployVerticles(config)
+            log.info("BootstrapVerticle has been deployed")
         } catch (e: Exception) {
             log.error("Failed to deploy BootstrapVerticle", e)
             throw e
@@ -56,7 +57,9 @@ class BootstrapVerticle : CoroutineVerticle() {
         hibernateInitializer.stop(vertx).await()
     }
 
-    private fun deployVerticles(config: JsonObject) {
+    private fun deployVerticles(config: JsonObject): Future<CompositeFuture> {
+        val futures = mutableListOf<Future<*>>()
+
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
             .forEach { c ->
@@ -66,13 +69,16 @@ class BootstrapVerticle : CoroutineVerticle() {
                     if (annotation.configKey.isNotEmpty()) config.getJsonObject(annotation.configKey)
                     else null
 
-                vertx.deployVerticle(c.name, DeploymentOptions()
+                val future = vertx.deployVerticle(c.name, DeploymentOptions()
                     .setInstances(verticleConfig?.getInteger("instances") ?: 1)
                     .setWorker(annotation.worker)
                     .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
                     .setWorkerPoolSize(annotation.workerPoolSize)
                 )
+                futures.add(future)
             }
+
+        return CompositeFuture.all(futures)
     }
 
     private fun createConfigRetriever(): ConfigRetriever {
