@@ -44,8 +44,6 @@ class GCPPubSubClient @Inject constructor(
         channelProvider = createTransportChannelProvider(emulatorConfig)
         topicAdminClient = createTopicClient()
         subscriptionAdminClient = createSubscriptionAdminClient()
-
-        createPublisher("test")
     }
 
     fun createPublisher(topic: String): Publisher {
