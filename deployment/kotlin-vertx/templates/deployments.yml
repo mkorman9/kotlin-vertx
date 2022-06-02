@@ -13,7 +13,7 @@ metadata:
     app.gitlab.com/env: {{ .Values.gitlab.environment | quote }}
   {{- end }}
 spec:
-  replicas: {{ .Values.app.replicas }}
+  replicas: {{ .Values.app.autoscaling.default }}
   revisionHistoryLimit: {{ .Values.app.historicRevisions }}
   selector:
     matchLabels:
