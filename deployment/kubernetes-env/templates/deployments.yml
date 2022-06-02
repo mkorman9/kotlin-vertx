@@ -34,3 +34,33 @@ spec:
         - name: postgredb
           persistentVolumeClaim:
             claimName: {{ .Values.postgres.volume.claimName }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.pubsub.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.pubsub.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.pubsub.name }}
+    spec:
+      containers:
+        - name: {{ .Values.pubsub.name }}
+          image: {{ .Values.pubsub.image }}
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.pubsub.port }}
+              protocol: TCP
+          command:
+            - /usr/bin/gcloud
+            - beta
+            - emulators
+            - pubsub
+            - start
+            - --host-port=0.0.0.0:{{ .Values.pubsub.port }}

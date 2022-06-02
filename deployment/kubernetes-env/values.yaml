@@ -20,9 +20,13 @@ postgres:
     size: 100Mi
     path: "/var/lib/kotlin-vertx/dev-env/postgres-volume"
 
-rabbitmq:
-  username: admin
-  password: admin
+pubsub:
+  name: pubsub
+  image: bigtruedata/gcloud-pubsub-emulator:latest
+
+  port: 8538
+
+  projectId: gcp-project
 
 migration:
   name: db-migration

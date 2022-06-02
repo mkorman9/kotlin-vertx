@@ -160,6 +160,8 @@ kubectl create secret generic gitlab-docker-registry --namespace=kube-system \
 
 ### App secrets
 
+Make sure `credentials.json` exists and contains Service Account credentials for GCP.
+     
 Create `secrets.yml` file and populate it with data
 ```
 db:
@@ -174,7 +176,7 @@ gcp:
 
 Upload it
 ```bash
-kubectl create secret generic secrets --from-file=secrets.yml
+kubectl create secret generic secrets --from-file=secrets.yml --from-file=credentials.json
 ```
 
 ### TLS certificate

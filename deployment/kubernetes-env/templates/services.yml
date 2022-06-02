@@ -10,3 +10,16 @@ spec:
     - protocol: TCP
       port: {{ .Values.postgres.port }}
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pubsub.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: {{ .Values.pubsub.name }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.pubsub.port }}
+  type: ClusterIP

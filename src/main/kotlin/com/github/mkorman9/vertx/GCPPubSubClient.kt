@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.google.api.gax.grpc.GrpcTransportChannel
+import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider
 import com.google.api.gax.rpc.ApiException
 import com.google.api.gax.rpc.FixedTransportChannelProvider
 import com.google.api.gax.rpc.StatusCode
@@ -121,20 +122,20 @@ class GCPPubSubClient @Inject constructor(
         }
     }
 
-    private fun createTransportChannelProvider(emulatorConfig: JsonObject?): TransportChannelProvider? {
+    private fun createTransportChannelProvider(emulatorConfig: JsonObject?): TransportChannelProvider {
         val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
         val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
 
-        if (!emulatorEnabled) {
-            return null
+        if (emulatorEnabled) {
+            val managedChannel = ManagedChannelBuilder
+                .forTarget(emulatorAddress)
+                .usePlaintext()
+                .build()
+
+            return FixedTransportChannelProvider.create(GrpcTransportChannel.create(managedChannel))
         }
 
-        val managedChannel = ManagedChannelBuilder
-            .forTarget(emulatorAddress)
-            .usePlaintext()
-            .build()
-
-        return FixedTransportChannelProvider.create(GrpcTransportChannel.create(managedChannel))
+        return InstantiatingGrpcChannelProvider.newBuilder().build()
     }
 
     private fun createTopicClient(): TopicAdminClient {
