@@ -40,9 +40,9 @@ class BootstrapVerticle : CoroutineVerticle() {
             val config = configRetriever.config.await()
 
             val sessionFactory = hibernateInitializer.start(vertx, config).await()
-            val gcpCredentials = GCPSettings.read(vertx, config)
+            val gcpSettings = GCPSettings.read(vertx, config)
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpCredentials)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()
