@@ -42,7 +42,7 @@ class BootstrapVerticle : CoroutineVerticle() {
 
             val sessionFactory = hibernateInitializer.start(vertx, config).await()
             val gcpSettings = GCPSettings.read(vertx, config)
-            val firestore = FirestoreInitializer(gcpSettings).initialize()
+            val firestore = FirestoreInitializer(gcpSettings, config).initialize()
 
             val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings)
             injector = Guice.createInjector(module)

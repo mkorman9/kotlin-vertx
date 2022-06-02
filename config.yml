@@ -16,3 +16,7 @@ gcp:
     emulator:
       enabled: true
       address: localhost:8538
+  firestore:
+    emulator:
+      enabled: true
+      address: localhost:8200
