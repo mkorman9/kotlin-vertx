@@ -10,5 +10,9 @@ db:
   user: username
   password: password
 
-rabbitmq:
-  uri: amqp://username:password@rabbitmq:5672
+gcp:
+  projectId: local-run
+  pubsub:
+    emulator:
+      enabled: true
+      address: gcp-pubsub:8538

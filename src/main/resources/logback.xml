@@ -31,6 +31,4 @@
             </then>
         </if>
     </root>
-
-    <logger name="io.vertx.rabbitmq.impl.RabbitMQClientImpl" level="error" />
 </configuration>
