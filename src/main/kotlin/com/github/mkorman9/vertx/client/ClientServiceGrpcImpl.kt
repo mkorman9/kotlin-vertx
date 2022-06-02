@@ -1,8 +1,8 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.Client
-import com.github.mkorman9.vertx.ClientRequest
-import com.github.mkorman9.vertx.ClientServiceGrpcKt
+import com.github.mkorman9.vertx.protocol.Client
+import com.github.mkorman9.vertx.protocol.ClientRequest
+import com.github.mkorman9.vertx.protocol.ClientServiceGrpcKt
 import com.google.protobuf.Timestamp
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +36,7 @@ class ClientServiceGrpcImpl @Inject constructor(
                         .setEmail(it.email)
                         .setBirthDate(toTimestamp(it.birthDate))
                         .addAllCreditCards(it.creditCards.map {
-                            com.github.mkorman9.vertx.CreditCard.newBuilder()
+                            com.github.mkorman9.vertx.protocol.CreditCard.newBuilder()
                                 .setNumber(it.number)
                                 .build()
                         })
