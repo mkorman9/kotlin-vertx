@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.DeployVerticle
-import com.google.firebase.cloud.FirestoreClient
 import com.google.inject.Guice
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -50,6 +49,7 @@ class BootstrapVerticle : CoroutineVerticle() {
             deployVerticles(config).await()
 
             vertx.executeBlocking<Void> { call ->
+                // store
                 val doc = firestore.collection("users").document("michal")
                 val data = mapOf<String, Any>(
                     "firstName" to "Marcin",
@@ -58,7 +58,15 @@ class BootstrapVerticle : CoroutineVerticle() {
                 )
                 doc.set(data).get()
 
-                println(doc.get().get().data)
+                // retrieve
+                val docs = firestore.collection("users").whereEqualTo("firstName", "Marcin")
+                    .get()
+                    .get()
+                    .documents
+
+                docs.forEach {
+                    println(it.data)
+                }
 
                 call.complete()
             }.await()
