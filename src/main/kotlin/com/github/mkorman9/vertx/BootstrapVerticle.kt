@@ -1,8 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.security.Account
-import com.github.mkorman9.vertx.security.AccountCredentials
-import com.github.mkorman9.vertx.security.AccountRepository
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -20,7 +17,6 @@ import io.vertx.kotlin.coroutines.await
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.jar.Manifest
 
 class BootstrapVerticle : CoroutineVerticle() {
@@ -29,8 +25,6 @@ class BootstrapVerticle : CoroutineVerticle() {
     companion object {
         lateinit var injector: Injector
     }
-
-    private val hibernateInitializer = HibernateInitializer()
 
     override suspend fun start() {
         try {
@@ -43,11 +37,10 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val sessionFactory = hibernateInitializer.start(vertx, config).await()
             val gcpSettings = GCPSettings.read(vertx, config)
             val firestore = FirestoreInitializer(gcpSettings, config).initialize()
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings, firestore)
+            val module = AppModule(vertx, context, configRetriever, gcpSettings, firestore)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()
@@ -61,7 +54,6 @@ class BootstrapVerticle : CoroutineVerticle() {
 
     override suspend fun stop() {
         injector.getInstance<GCPPubSubClient>().stop()
-        hibernateInitializer.stop(vertx).await()
 
         log.info("BootstrapVerticle has been stopped")
     }

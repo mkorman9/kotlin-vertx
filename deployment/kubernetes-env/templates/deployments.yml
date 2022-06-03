@@ -1,61 +1,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.postgres.name }}
+  name: {{ .Values.gcp.firestore.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.postgres.name }}
+      app: {{ .Values.gcp.firestore.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.postgres.name }}
+        app: {{ .Values.gcp.firestore.name }}
     spec:
       containers:
-        - name: {{ .Values.postgres.name }}
-          image: {{ .Values.postgres.image }}
+        - name: {{ .Values.gcp.firestore.name }}
+          image: {{ .Values.gcp.firestore.image }}
           imagePullPolicy: {{ .Values.images.pullPolicy }}
-          env:
-            - name: POSTGRES_DB
-              value: {{ .Values.postgres.dbname }}
-            - name: POSTGRES_USER
-              value: {{ .Values.postgres.username }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.password }}
           ports:
-            - containerPort: {{ .Values.postgres.port }}
+            - containerPort: {{ .Values.gcp.firestore.port }}
               protocol: TCP
-          volumeMounts:
-            - mountPath: /var/lib/postgresql/data
-              name: postgredb
-      volumes:
-        - name: postgredb
-          persistentVolumeClaim:
-            claimName: {{ .Values.postgres.volume.claimName }}
+          env:
+            - name: FIRESTORE_PROJECT_ID
+              value: {{ .Values.gcp.projectId }}
+            - name: PORT
+              value: {{ .Values.gcp.firestore.port | quote }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.pubsub.name }}
+  name: {{ .Values.gcp.pubsub.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.pubsub.name }}
+      app: {{ .Values.gcp.pubsub.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.pubsub.name }}
+        app: {{ .Values.gcp.pubsub.name }}
     spec:
       containers:
-        - name: {{ .Values.pubsub.name }}
-          image: {{ .Values.pubsub.image }}
+        - name: {{ .Values.gcp.pubsub.name }}
+          image: {{ .Values.gcp.pubsub.image }}
           imagePullPolicy: {{ .Values.images.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.pubsub.port }}
+            - containerPort: {{ .Values.gcp.pubsub.port }}
               protocol: TCP
           command:
             - /usr/bin/gcloud
@@ -63,4 +54,4 @@ spec:
             - emulators
             - pubsub
             - start
-            - --host-port=0.0.0.0:{{ .Values.pubsub.port }}
+            - --host-port=0.0.0.0:{{ .Values.gcp.pubsub.port }}

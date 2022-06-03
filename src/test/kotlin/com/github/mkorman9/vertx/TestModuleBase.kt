@@ -10,7 +10,6 @@ import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
@@ -20,7 +19,6 @@ class TestModuleBase(
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
-        bind<SessionFactory>().toInstance(mockk())
         bind<GCPSettings>().toInstance(GCPSettings("tests", NoCredentialsProvider.create()))
         bind<Firestore>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())

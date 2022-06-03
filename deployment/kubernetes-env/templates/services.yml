@@ -1,25 +1,25 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.postgres.name }}
+  name: {{ .Values.gcp.firestore.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
-    app: {{ .Values.postgres.name }}
+    app: {{ .Values.gcp.firestore.name }}
   ports:
     - protocol: TCP
-      port: {{ .Values.postgres.port }}
+      port: {{ .Values.gcp.firestore.port }}
   type: ClusterIP
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.pubsub.name }}
+  name: {{ .Values.gcp.pubsub.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
-    app: {{ .Values.pubsub.name }}
+    app: {{ .Values.gcp.pubsub.name }}
   ports:
     - protocol: TCP
-      port: {{ .Values.pubsub.port }}
+      port: {{ .Values.gcp.pubsub.port }}
   type: ClusterIP

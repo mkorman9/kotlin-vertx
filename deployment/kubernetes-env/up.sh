@@ -10,11 +10,6 @@ deployment_name="${DEPLOYMENT_NAME:-kotlin-vertx-local-environment}"
 namespace="${KUBE_NAMESPACE:-kotlin-vertx}"
 timeout="${DEPLOYMENT_TIMEOUT:-3m0s}"
 
-echo "Creating ConfigMaps..."
-
-kubectl create configmap db-schema --namespace="$namespace" --from-file="$SCHEMA_DIR/"
-kubectl create configmap db-testdata --namespace="$namespace" --from-file="$TESTDATA_DIR/"
-
 echo "Starting the environment deployment... ($timeout timeout)"
 
 helm install "$deployment_name" ${SCRIPTPATH} \

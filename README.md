@@ -164,10 +164,6 @@ Make sure `credentials.json` exists and contains Service Account credentials for
      
 Create `secrets.yml` file and populate it with data
 ```
-db:
-  uri: jdbc:postgresql://<POSTGRES_HOST>:5432/<POSTGRES_DB_NAME>
-  user: <POSTGRES_USERNAME>
-  password: <POSTGRES_PASSWORD>
 gcp:
   projectId: <GCP_PROJECT_ID>
   credentials:
