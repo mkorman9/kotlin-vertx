@@ -2,11 +2,6 @@ package com.github.mkorman9.vertx.client
 
 import java.time.LocalDateTime
 
-data class ClientsPage(
-    val data: List<Client>,
-    val page: Int
-)
-
 data class ClientsFilteringOptions(
     val gender: String? = null,
     val firstName: String? = null,

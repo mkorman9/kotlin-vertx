@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.client
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.asyncTest
 import com.github.mkorman9.vertx.createTestInjector
@@ -19,6 +20,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
+import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import io.vertx.kotlin.coroutines.await
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import java.time.ZoneOffset
 import java.util.*
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
@@ -58,18 +61,15 @@ class ClientApiTest {
     fun testDefaultPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
-            page = 1,
-            data = listOf(
-                Client(
-                    id = UUID.randomUUID().toString(),
-                    firstName = "Test",
-                    lastName = "User"
-                )
+        val clients = listOf(
+            Client(
+                id = UUID.randomUUID().toString(),
+                firstName = "Test",
+                lastName = "User"
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
+        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(clients)
 
         // when
         val result =
@@ -77,11 +77,14 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedClients = DatabindCodec.mapper().readValue(
+            result.body().await().bytes,
+            object : TypeReference<List<ClientResponse>>() {}
+        )
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedPage).isEqualTo(page)
+        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(clients)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(),
@@ -95,18 +98,15 @@ class ClientApiTest {
     fun testSpecificPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
-            page = 2,
-            data = listOf(
-                Client(
-                    id = UUID.randomUUID().toString(),
-                    firstName = "Test",
-                    lastName = "User"
-                )
+        val clients = listOf(
+            Client(
+                id = UUID.randomUUID().toString(),
+                firstName = "Test",
+                lastName = "User"
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
+        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(clients)
 
         // when
         val result =
@@ -119,11 +119,14 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedClients = DatabindCodec.mapper().readValue(
+            result.body().await().bytes,
+            object : TypeReference<List<ClientResponse>>() {}
+        )
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedPage).isEqualTo(page)
+        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(clients)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(lastName = "User"),
@@ -137,14 +140,11 @@ class ClientApiTest {
     fun testInvalidPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
-            page = 1,
-            data = listOf(
-                Client(
-                    id = UUID.randomUUID().toString(),
-                    firstName = "Test",
-                    lastName = "User"
-                )
+        val page = listOf(
+            Client(
+                id = UUID.randomUUID().toString(),
+                firstName = "Test",
+                lastName = "User"
             )
         )
 
@@ -161,11 +161,14 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedClients = DatabindCodec.mapper().readValue(
+            result.body().await().bytes,
+            object : TypeReference<List<ClientResponse>>() {}
+        )
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedPage).isEqualTo(page)
+        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(page)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(),
@@ -462,5 +465,20 @@ class ClientApiTest {
 
         // then
         assertThat(result.statusCode()).isEqualTo(404)
+    }
+
+    private fun mapResponseToClient(response: ClientResponse): Client {
+        return Client(
+            id = response.id,
+            gender = response.gender,
+            firstName = response.firstName,
+            lastName = response.lastName,
+            address = response.address,
+            phoneNumber = response.phoneNumber,
+            email = response.email,
+            birthDate = response.birthDate?.toEpochSecond(ZoneOffset.UTC),
+            deleted = false,
+            creditCards = response.creditCards.map { CreditCard(number = it.number) }
+        )
     }
 }

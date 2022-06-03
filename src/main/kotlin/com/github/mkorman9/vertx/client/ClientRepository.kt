@@ -33,7 +33,7 @@ class ClientRepository @Inject constructor(
         filtering: ClientsFilteringOptions,
         paging: ClientsPagingOptions,
         sorting: ClientsSortingOptions
-    ): Future<ClientsPage> {
+    ): Future<List<Client>> {
         return vertx.executeBlocking { call ->
             val collection = firestore.collection(CLIENTS_COLLECTION)
             var query = createQueryWithFlters(collection, filtering)
@@ -45,7 +45,7 @@ class ClientRepository @Inject constructor(
                 .get()
             val clients = docs.toObjects(Client::class.java)
 
-            call.complete(ClientsPage(data = clients, page = paging.pageNumber))
+            call.complete(clients)
         }
     }
 
@@ -199,7 +199,7 @@ class ClientRepository @Inject constructor(
     private fun addSortingToQuery(query: Query, sorting: ClientsSortingOptions): Query {
         return query.orderBy(
             sorting.sortBy,
-            if (sorting.sortReverse) Query.Direction.ASCENDING else Query.Direction.DESCENDING
+            if (sorting.sortReverse) Query.Direction.DESCENDING else Query.Direction.ASCENDING
         )
     }
 

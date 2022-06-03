@@ -12,6 +12,7 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeParseException
 
 @Singleton
@@ -29,13 +30,13 @@ class ClientApi @Inject constructor(
         get("/").asyncHandler { ctx ->
             val params = parseFindClientsQueryParams(ctx.request())
 
-            val clientsPage = clientRepository.findPaged(
+            val clients = clientRepository.findPaged(
                 filtering = params.filtering,
                 paging = params.paging,
                 sorting = params.sorting
             ).await()
 
-            ctx.response().endWithJson(clientsPage)
+            ctx.response().endWithJson(clients.map { mapToClientResponse(it) })
         }
 
         get("/:id").asyncHandler { ctx ->
@@ -43,7 +44,7 @@ class ClientApi @Inject constructor(
 
             val client = clientRepository.findById(id).await()
             if (client != null) {
-                ctx.response().endWithJson(client)
+                ctx.response().endWithJson(mapToClientResponse(client))
             } else {
                 ctx.response().setStatusCode(404).endWithJson(StatusDTO(
                     status = "error",
@@ -129,6 +130,21 @@ class ClientApi @Inject constructor(
                     ))
                 }
             }
+    }
+
+    private fun mapToClientResponse(client: Client): ClientResponse {
+        return ClientResponse(
+            id = client.id,
+            gender = client.gender,
+            firstName = client.firstName,
+            lastName = client.lastName,
+            address = client.address,
+            phoneNumber = client.phoneNumber,
+            email = client.email,
+            birthDate = if (client.birthDate == null) null else
+                LocalDateTime.ofEpochSecond(client.birthDate!!, 0, ZoneOffset.UTC),
+            creditCards = client.creditCards.map { CreditCardResponse(number = it.number) }
+        )
     }
 
     private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {

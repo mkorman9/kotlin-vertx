@@ -9,8 +9,6 @@ import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,16 +18,16 @@ class ClientServiceGrpcImpl @Inject constructor(
 ) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
-            val clientsPage = clientRepository.findPaged(
+            val clients = clientRepository.findPaged(
                 ClientsFilteringOptions(),
                 ClientsPagingOptions(1, 10),
                 ClientsSortingOptions("id", false)
             ).await()
 
-            clientsPage.data
+            clients
                 .map {
                     Client.newBuilder()
-                        .setId(it.id.toString())
+                        .setId(it.id)
                         .setGender(it.gender)
                         .setFirstName(it.firstName)
                         .setLastName(it.lastName)
