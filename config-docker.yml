@@ -15,3 +15,6 @@ gcp:
     emulator:
       enabled: true
       address: firestore:8200
+
+testdata:
+  upload: true

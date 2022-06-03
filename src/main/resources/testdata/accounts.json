@@ -1,0 +1,18 @@
+[
+  {
+    "id": "e40989-4892-49bf-a247-bf6f0c82378a",
+    "username": "admin",
+    "roles": ["CLIENTS_EDITOR", "PERMISSIONS_ADMIN"],
+    "active": true,
+    "deleted": false,
+    "preferredLanguage": "en-US",
+    "bannedUntil": 0,
+    "createdAt": 1622910320,
+    "credentials": {
+      "email": "admin@gogin.online",
+      "passwordBcrypt": "$2a$10$CYoenxLkI.J6uzP3oH2Iceh9Zm1n4XO51ngkSwm3Rk7BfmXawkWW2",
+      "lastChangeAt": 1622910320,
+      "lastChangeIp": "127.0.0.1"
+    }
+  }
+]
