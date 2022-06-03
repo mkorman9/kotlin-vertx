@@ -8,6 +8,7 @@ import com.google.protobuf.Timestamp
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import javax.inject.Inject
@@ -49,12 +50,12 @@ class ClientServiceGrpcImpl @Inject constructor(
         }
     }
 
-    private fun toTimestamp(dateTime: LocalDateTime?): Timestamp? {
-        if (dateTime == null) {
+    private fun toTimestamp(epoch: Long?): Timestamp? {
+        if (epoch == null) {
             return null
         }
 
-        val instant = dateTime.toInstant(ZoneOffset.UTC)
+        val instant = Instant.ofEpochMilli(epoch)
         return Timestamp.newBuilder()
             .setSeconds(instant.epochSecond)
             .setNanos(instant.nano)

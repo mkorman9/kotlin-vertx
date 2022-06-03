@@ -60,10 +60,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientsPage(
             page = 1,
-            totalPages = 1,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -98,10 +97,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientsPage(
             page = 2,
-            totalPages = 2,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -141,10 +139,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientsPage(
             page = 1,
-            totalPages = 1,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -184,7 +181,7 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
         val client = Client(
-            id = UUID.fromString(id),
+            id = id,
             firstName = "Test",
             lastName = "User"
         )
@@ -234,7 +231,7 @@ class ClientApiTest {
             lastName = "User"
         )
         val addedClient = Client(
-            id = UUID.randomUUID(),
+            id = UUID.randomUUID().toString(),
             firstName = payload.firstName,
             lastName = payload.lastName
         )
@@ -355,7 +352,7 @@ class ClientApiTest {
             email = "test.user@example.com"
         )
         val client = Client(
-            id = UUID.randomUUID(),
+            id = UUID.randomUUID().toString(),
             firstName = "Test",
             lastName = "User",
             email = "test.user@example.com"
