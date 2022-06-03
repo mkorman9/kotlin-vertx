@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.google.api.gax.core.NoCredentialsProvider
 import com.google.cloud.firestore.Firestore
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
@@ -19,7 +18,6 @@ class TestModuleBase(
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
-        bind<GCPSettings>().toInstance(GCPSettings("tests", NoCredentialsProvider.create()))
         bind<Firestore>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
 

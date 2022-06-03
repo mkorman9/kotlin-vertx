@@ -11,7 +11,6 @@ class AppModule(
     private val vertx: Vertx,
     private val context: DeploymentContext,
     private val configRetriever: ConfigRetriever,
-    private val gcpSettings: GCPSettings,
     private val firestore: Firestore
 ) : KotlinModule() {
     companion object {
@@ -29,7 +28,6 @@ class AppModule(
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
         bind<ConfigRetriever>().toInstance(configRetriever)
-        bind<GCPSettings>().toInstance(gcpSettings)
         bind<Firestore>().toInstance(firestore)
 
         getInjectableClasses()

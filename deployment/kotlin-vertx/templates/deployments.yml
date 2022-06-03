@@ -74,6 +74,8 @@ spec:
           env:
             - name: ENVIRONMENT_NAME
               value: {{ .Values.app.environment }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /app/credentials.json
             {{- if .Values.app.config.graylog.enabled }}
             - name: GRAYLOG_HOST
               value: {{ .Values.app.config.graylog.host }}

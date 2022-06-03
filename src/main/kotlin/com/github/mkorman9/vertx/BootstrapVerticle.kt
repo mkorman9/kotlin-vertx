@@ -37,10 +37,9 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val gcpSettings = GCPSettings.read(vertx, config)
-            val firestore = FirestoreInitializer(gcpSettings, config).initialize()
+            val firestore = FirestoreInitializer(config).initialize()
 
-            val module = AppModule(vertx, context, configRetriever, gcpSettings, firestore)
+            val module = AppModule(vertx, context, configRetriever, firestore)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()

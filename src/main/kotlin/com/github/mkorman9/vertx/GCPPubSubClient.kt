@@ -1,32 +1,24 @@
 package com.github.mkorman9.vertx
 
+import com.google.api.gax.core.CredentialsProvider
+import com.google.api.gax.core.FixedCredentialsProvider
+import com.google.api.gax.core.NoCredentialsProvider
 import com.google.api.gax.grpc.GrpcTransportChannel
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider
 import com.google.api.gax.rpc.ApiException
 import com.google.api.gax.rpc.FixedTransportChannelProvider
 import com.google.api.gax.rpc.StatusCode
 import com.google.api.gax.rpc.TransportChannelProvider
-import com.google.cloud.pubsub.v1.MessageReceiverWithAckResponse
-import com.google.cloud.pubsub.v1.Publisher
-import com.google.cloud.pubsub.v1.Subscriber
-import com.google.cloud.pubsub.v1.SubscriptionAdminClient
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings
-import com.google.cloud.pubsub.v1.TopicAdminClient
-import com.google.cloud.pubsub.v1.TopicAdminSettings
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.pubsub.v1.*
 import com.google.cloud.pubsub.v1.stub.PublisherStubSettings
 import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings
-import com.google.pubsub.v1.ProjectSubscriptionName
-import com.google.pubsub.v1.PushConfig
-import com.google.pubsub.v1.Subscription
-import com.google.pubsub.v1.SubscriptionName
-import com.google.pubsub.v1.Topic
-import com.google.pubsub.v1.TopicName
+import com.google.pubsub.v1.*
 import io.grpc.ManagedChannelBuilder
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonObject
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,9 +26,11 @@ import javax.inject.Singleton
 @Singleton
 class GCPPubSubClient @Inject constructor(
     private val vertx: Vertx,
-    private val gcpSettings: GCPSettings,
     configRetriever: ConfigRetriever
 ) {
+    private val projectId: String
+    private val credentialsProvider: CredentialsProvider
+
     private val channelProvider: TransportChannelProvider
     private val topicAdminClient: TopicAdminClient
     private val subscriptionAdminClient: SubscriptionAdminClient
@@ -47,10 +41,21 @@ class GCPPubSubClient @Inject constructor(
 
     init {
         val config = configRetriever.cachedConfig
-        val pubSubConfig = config.getJsonObject("gcp")?.getJsonObject("pubsub")
-        val emulatorConfig = pubSubConfig?.getJsonObject("emulator")
+        val gcpConfig = config.getJsonObject("gcp")
 
-        channelProvider = createTransportChannelProvider(emulatorConfig)
+        projectId = gcpConfig?.getString("projectId") ?: "default-project-id"
+
+        val emulatorConfig = gcpConfig?.getJsonObject("pubsub")?.getJsonObject("emulator")
+        val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
+        val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
+
+        credentialsProvider = if (emulatorEnabled) {
+            NoCredentialsProvider.create()
+        } else {
+            FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault())
+        }
+
+        channelProvider = createTransportChannelProvider(emulatorEnabled, emulatorAddress)
         topicAdminClient = createTopicClient()
         subscriptionAdminClient = createSubscriptionAdminClient()
     }
@@ -76,11 +81,11 @@ class GCPPubSubClient @Inject constructor(
     fun createPublisher(topic: String): Publisher {
         createTopic(topic)
 
-        val topicName = TopicName.of(gcpSettings.projectId, topic)
+        val topicName = TopicName.of(projectId, topic)
 
         val publisher = Publisher.newBuilder(topicName)
             .setChannelProvider(channelProvider)
-            .setCredentialsProvider(gcpSettings.credentialsProvider)
+            .setCredentialsProvider(credentialsProvider)
             .build()
 
         publishers.add(publisher)
@@ -98,13 +103,13 @@ class GCPPubSubClient @Inject constructor(
             createSubscription(subscription, topic, subscriptionCustomizer)
 
             val subscriptionName = ProjectSubscriptionName.newBuilder()
-                .setProject(gcpSettings.projectId)
+                .setProject(projectId)
                 .setSubscription(subscription)
                 .build()
 
             val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
                 .setChannelProvider(channelProvider)
-                .setCredentialsProvider(gcpSettings.credentialsProvider)
+                .setCredentialsProvider(credentialsProvider)
                 .build()
 
             subscribers.add(subscriber)
@@ -128,7 +133,7 @@ class GCPPubSubClient @Inject constructor(
             createSubscription(subscription, topic, subscriptionCustomizer)
 
             val subscriptionName = ProjectSubscriptionName.newBuilder()
-                .setProject(gcpSettings.projectId)
+                .setProject(projectId)
                 .setSubscription(subscription)
                 .build()
 
@@ -136,7 +141,7 @@ class GCPPubSubClient @Inject constructor(
 
             val subscriber = Subscriber.newBuilder(subscriptionName, receiver)
                 .setChannelProvider(channelProvider)
-                .setCredentialsProvider(gcpSettings.credentialsProvider)
+                .setCredentialsProvider(credentialsProvider)
                 .build()
 
             subscribers.add(subscriber)
@@ -158,8 +163,8 @@ class GCPPubSubClient @Inject constructor(
 
         return try {
             val subscriptionBuilder = Subscription.newBuilder()
-                .setName(SubscriptionName.of(gcpSettings.projectId, name).toString())
-                .setTopic(TopicName.of(gcpSettings.projectId, topic).toString())
+                .setName(SubscriptionName.of(projectId, name).toString())
+                .setTopic(TopicName.of(projectId, topic).toString())
                 .setPushConfig(PushConfig.getDefaultInstance())
                 .setAckDeadlineSeconds(0)
 
@@ -168,7 +173,7 @@ class GCPPubSubClient @Inject constructor(
             subscriptionAdminClient.createSubscription(subscriptionBuilder.build())
         } catch (e: ApiException) {
             if (e.statusCode.code == StatusCode.Code.ALREADY_EXISTS) {
-                subscriptionAdminClient.getSubscription(SubscriptionName.of(gcpSettings.projectId, name).toString())
+                subscriptionAdminClient.getSubscription(SubscriptionName.of(projectId, name).toString())
             } else {
                 throw e
             }
@@ -176,7 +181,7 @@ class GCPPubSubClient @Inject constructor(
     }
 
     private fun createTopic(topic: String): Topic {
-        val topicName = TopicName.of(gcpSettings.projectId, topic)
+        val topicName = TopicName.of(projectId, topic)
 
         return try {
             topicAdminClient.createTopic(topicName)
@@ -189,10 +194,10 @@ class GCPPubSubClient @Inject constructor(
         }
     }
 
-    private fun createTransportChannelProvider(emulatorConfig: JsonObject?): TransportChannelProvider {
-        val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
-        val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
-
+    private fun createTransportChannelProvider(
+        emulatorEnabled: Boolean,
+        emulatorAddress: String
+    ): TransportChannelProvider {
         if (emulatorEnabled) {
             val managedChannel = ManagedChannelBuilder
                 .forTarget(emulatorAddress)
@@ -208,7 +213,7 @@ class GCPPubSubClient @Inject constructor(
     private fun createTopicClient(): TopicAdminClient {
         val settings = PublisherStubSettings.newBuilder()
             .setTransportChannelProvider(channelProvider)
-            .setCredentialsProvider(gcpSettings.credentialsProvider)
+            .setCredentialsProvider(credentialsProvider)
             .build()
 
         return TopicAdminClient.create(TopicAdminSettings.create(settings))
@@ -217,7 +222,7 @@ class GCPPubSubClient @Inject constructor(
     private fun createSubscriptionAdminClient(): SubscriptionAdminClient {
         val settings = SubscriberStubSettings.newBuilder()
             .setTransportChannelProvider(channelProvider)
-            .setCredentialsProvider(gcpSettings.credentialsProvider)
+            .setCredentialsProvider(credentialsProvider)
             .build()
 
         return SubscriptionAdminClient.create(SubscriptionAdminSettings.create(settings))

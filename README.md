@@ -166,8 +166,6 @@ Create `secrets.yml` file and populate it with data
 ```
 gcp:
   projectId: <GCP_PROJECT_ID>
-  credentials:
-    path: /app/credentials.json
 ```
 
 Upload it
