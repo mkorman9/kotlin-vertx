@@ -254,12 +254,12 @@ class ClientApiTest {
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(clientAddResponse.id).isEqualTo(addedClient.id.toString())
+        assertThat(clientAddResponse.id).isEqualTo(addedClient.id)
 
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.ADDED,
-                clientId = addedClient.id.toString(),
+                clientId = addedClient.id,
                 author = credentials.account.id
             )
         ) }
@@ -362,7 +362,7 @@ class ClientApiTest {
         )
         val credentials = fakeCredentials("test.account")
 
-        every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
+        every { clientRepository.update(client.id, payload) } returns Future.succeededFuture(client)
         every { credentialsProvider.getCredentials() } returns credentials
         every { clientEventsPublisher.publish(any()) } returns Unit
 
@@ -381,8 +381,8 @@ class ClientApiTest {
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.UPDATED,
-                clientId = client.id.toString(),
-                author = credentials.account.id.toString()
+                clientId = client.id,
+                author = credentials.account.id
             )
         ) }
     }
@@ -395,10 +395,10 @@ class ClientApiTest {
         val payload = ClientUpdatePayload(
             email = "test.user@example.com"
         )
-        val clientId = UUID.randomUUID()
+        val clientId = UUID.randomUUID().toString()
         val credentials = fakeCredentials("test.account")
 
-        every { clientRepository.update(clientId.toString(), payload) } returns Future.succeededFuture(null)
+        every { clientRepository.update(clientId, payload) } returns Future.succeededFuture(null)
         every { credentialsProvider.getCredentials() } returns credentials
 
         // when
@@ -417,10 +417,10 @@ class ClientApiTest {
     fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clientId = UUID.randomUUID()
+        val clientId = UUID.randomUUID().toString()
         val credentials = fakeCredentials("test.account")
 
-        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
+        every { clientRepository.delete(clientId) } returns Future.succeededFuture(true)
         every { credentialsProvider.getCredentials() } returns credentials
         every { clientEventsPublisher.publish(any()) } returns Unit
 
@@ -439,8 +439,8 @@ class ClientApiTest {
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.DELETED,
-                clientId = clientId.toString(),
-                author = credentials.account.id.toString()
+                clientId = clientId,
+                author = credentials.account.id
             )
         ) }
     }
@@ -450,10 +450,10 @@ class ClientApiTest {
     fun testDeleteNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clientId = UUID.randomUUID()
+        val clientId = UUID.randomUUID().toString()
         val credentials = fakeCredentials("test.account")
 
-        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(false)
+        every { clientRepository.delete(clientId) } returns Future.succeededFuture(false)
         every { credentialsProvider.getCredentials() } returns credentials
 
         // when

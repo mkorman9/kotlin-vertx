@@ -64,12 +64,12 @@ class ClientApi @Inject constructor(
                     clientEventsPublisher.publish(
                         ClientEvent(
                             operation = ClientEventOperation.ADDED,
-                            clientId = client.id.toString(),
+                            clientId = client.id,
                             author = account.id
                         )
                     )
 
-                    ctx.response().endWithJson(ClientAddResponse(id = client.id.toString()))
+                    ctx.response().endWithJson(ClientAddResponse(id = client.id))
                 }
             }
 
@@ -86,7 +86,7 @@ class ClientApi @Inject constructor(
                         clientEventsPublisher.publish(
                             ClientEvent(
                                 operation = ClientEventOperation.UPDATED,
-                                clientId = client.id.toString(),
+                                clientId = client.id,
                                 author = account.id
                             )
                         )
