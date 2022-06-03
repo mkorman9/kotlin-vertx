@@ -1,28 +1,47 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.utils.withSession
+import com.google.cloud.firestore.FieldPath
+import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Future
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import io.vertx.core.Vertx
 
 @Singleton
 class AccountRepository @Inject constructor(
-    private val sessionFactory: SessionFactory
+    private val vertx: Vertx,
+    private val firestore: Firestore
 ) {
-    fun findByCredentialsEmail(email: String): Future<Account?> {
-        return withSession(sessionFactory) { session ->
-            val query = session.createQuery("from Account a where a.credentials.email = :email", Account::class.java)
-            query.setParameter("email", email)
+    companion object {
+        private const val ACCOUNTS_COLLECTION = "accounts"
+    }
 
-            query.singleResultOrNull
-                .onItem().ifNotNull().transform { account ->
-                    if (account.deleted) {
-                        null
-                    } else {
-                        account
-                    }
-                }
+    fun findById(id: String): Future<Account?> {
+        return vertx.executeBlocking<Account?> { call ->
+            val doc = firestore.collection(ACCOUNTS_COLLECTION)
+                .document(id)
+                .get()
+                .get()
+
+            call.complete(doc.toObject(Account::class.java))
+        }
+    }
+
+    fun findByCredentialsEmail(email: String): Future<Account?> {
+        return vertx.executeBlocking<Account?> { call ->
+            val docs = firestore.collection(ACCOUNTS_COLLECTION)
+                .whereEqualTo(FieldPath.of("credentials", "email"), email)
+                .whereEqualTo("deleted", false)
+                .get()
+                .get()
+                .documents
+
+            if (docs.isEmpty()) {
+                call.complete(null)
+            } else {
+                val account = docs[0].toObject(Account::class.java)
+                call.complete(account)
+            }
         }
     }
 }

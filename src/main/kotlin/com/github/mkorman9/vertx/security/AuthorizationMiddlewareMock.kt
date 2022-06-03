@@ -2,22 +2,32 @@ package com.github.mkorman9.vertx.security
 
 import io.vertx.ext.web.RoutingContext
 
+data class MockCredentials(
+    val session: Session,
+    val account: Account
+)
+
 class AuthorizationMiddlewareMock(
-    private val mockSessionProvider: MockSessionProvider
+    private val mockCredentialsProvider: MockCredentialsProvider
 ) : AuthorizationMiddleware {
     override fun authorize(ctx: RoutingContext, allowedRoles: Set<String>?) {
         ctx.next()
     }
 
     override fun getActiveSession(ctx: RoutingContext): Session {
-        return mockSessionProvider.getSession()
+        return mockCredentialsProvider.getCredentials().session
+    }
+
+    override fun getActiveAccount(ctx: RoutingContext): Account {
+        return mockCredentialsProvider.getCredentials().account
     }
 }
 
-class MockSessionProvider(
-    private val mockSession: Session
+class MockCredentialsProvider(
+    private val mockSession: Session,
+    private val mockAccount: Account
 ) {
-    fun getSession(): Session {
-        return mockSession
+    fun getCredentials(): MockCredentials {
+        return MockCredentials(mockSession, mockAccount)
     }
 }

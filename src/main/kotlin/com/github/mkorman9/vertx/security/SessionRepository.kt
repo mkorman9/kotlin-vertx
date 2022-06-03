@@ -1,28 +1,47 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.utils.withSession
-import com.github.mkorman9.vertx.utils.withTransaction
+import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Future
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import io.vertx.core.Vertx
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Singleton
 class SessionRepository @Inject constructor(
-    private val sessionFactory: SessionFactory
+    private val vertx: Vertx,
+    private val firestore: Firestore
 ) {
+    companion object {
+        private const val SESSIONS_COLLECTION = "sessions"
+    }
+
     fun findByToken(token: String): Future<Session?> {
-        return withSession(sessionFactory) { session ->
-            val query = session.createQuery("from Session s where s.token = :token and (s.expiresAt is null or s.expiresAt > current_timestamp())", Session::class.java)
-            query.setParameter("token", token)
-            query.singleResultOrNull
+        return vertx.executeBlocking<Session?> { call ->
+            val docs = firestore.collection(SESSIONS_COLLECTION)
+                .whereEqualTo("token", token)
+                .whereGreaterThan("expiresAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                .get()
+                .get()
+                .documents
+
+            if (docs.isEmpty()) {
+                call.complete(null)
+            } else {
+                call.complete(docs[0].toObject(Session::class.java))
+            }
         }
     }
 
     fun add(sessionObject: Session): Future<Session> {
-        return withTransaction(sessionFactory) { session, _ ->
-            session.merge(sessionObject)
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(sessionObject.id)
+                .set(sessionObject)
+                .get()
+
+            call.complete(sessionObject)
         }
     }
 
@@ -31,28 +50,49 @@ class SessionRepository @Inject constructor(
             return Future.succeededFuture(sessionObject)
         }
 
-        return withTransaction(sessionFactory) { session, _ ->
-            sessionObject.expiresAt = LocalDateTime.now().plusSeconds(sessionObject.duration!!.toLong())
-            session.merge(sessionObject)
+        sessionObject.expiresAt = LocalDateTime.now()
+            .plusSeconds(sessionObject.duration!!.toLong())
+            .toEpochSecond(ZoneOffset.UTC)
+
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(sessionObject.id)
+                .set(sessionObject)
+                .get()
+
+            call.complete(sessionObject)
         }
     }
 
-    fun delete(sessionObject: Session): Future<Boolean> {
-        return withTransaction(sessionFactory) { session, _ ->
-            val query = session.createQuery<Void>("delete from Session s where s.id = :id")
-            query.setParameter("id", sessionObject.id)
+    fun delete(sessionObject: Session): Future<Void> {
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(sessionObject.id)
+                .delete()
+                .get()
 
-            query.executeUpdate()
-                .onItem().ifNotNull().transform { deletedRecords ->
-                    deletedRecords > 0
-                }
+            call.complete()
         }
     }
 
     fun deleteExpired(): Future<Int> {
-        return withTransaction(sessionFactory) { session, _ ->
-            val query = session.createQuery<Void>("delete from Session s where s.expiresAt < current_timestamp()")
-            query.executeUpdate()
+        return vertx.executeBlocking { call ->
+            val docs = firestore.collection(SESSIONS_COLLECTION)
+                .whereLessThan("expiresAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                .get()
+                .get()
+                .documents
+            val count = docs.size
+
+            val batch = firestore.batch()
+            docs.forEach {
+                batch.delete(it.reference)
+            }
+
+            batch.commit()
+                .get()
+
+            call.complete(count)
         }
     }
 }

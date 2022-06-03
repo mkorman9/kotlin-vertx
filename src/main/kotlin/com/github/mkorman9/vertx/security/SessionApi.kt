@@ -8,6 +8,7 @@ import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Singleton
 class SessionApi @Inject constructor(
@@ -67,12 +68,12 @@ class SessionApi @Inject constructor(
                         id = SecureRandomGenerator.generate(sessionIdLength),
                         accountId = account.id,
                         token = SecureRandomGenerator.generate(sessionTokenLength),
-                        rolesString = account.rolesString,
+                        roles = account.roles.toMutableList(),
                         ip = ctx.request().getClientIp(),
-                        issuedAt = LocalDateTime.now(),
+                        issuedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
                         duration = sessionDurationSeconds,
-                        expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong()),
-                        account = account
+                        expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong())
+                            .toEpochSecond(ZoneOffset.UTC)
                     )
 
                     val newSession = sessionRepository.add(session).await()
@@ -92,15 +93,8 @@ class SessionApi @Inject constructor(
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
             .asyncHandler { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
-                val deleted = sessionRepository.delete(session).await()
-                if (deleted) {
-                    ctx.response().endWithJson(StatusDTO(status = "ok"))
-                } else {
-                    ctx.response().setStatusCode(500).endWithJson(StatusDTO(
-                        status = "error",
-                        message = "failed to revoke session"
-                    ))
-                }
+                sessionRepository.delete(session).await()
+                ctx.response().endWithJson(StatusDTO(status = "ok"))
             }
     }
 }

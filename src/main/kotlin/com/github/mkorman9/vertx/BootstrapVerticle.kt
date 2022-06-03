@@ -1,5 +1,8 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.security.Account
+import com.github.mkorman9.vertx.security.AccountCredentials
+import com.github.mkorman9.vertx.security.AccountRepository
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -17,6 +20,7 @@ import io.vertx.kotlin.coroutines.await
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.jar.Manifest
 
 class BootstrapVerticle : CoroutineVerticle() {
@@ -43,33 +47,10 @@ class BootstrapVerticle : CoroutineVerticle() {
             val gcpSettings = GCPSettings.read(vertx, config)
             val firestore = FirestoreInitializer(gcpSettings, config).initialize()
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory, gcpSettings, firestore)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()
-
-            vertx.executeBlocking<Void> { call ->
-                // store
-                val doc = firestore.collection("users").document("michal")
-                val data = mapOf<String, Any>(
-                    "firstName" to "Marcin",
-                    "lastName" to "Figlarz",
-                    "born" to "1960"
-                )
-                doc.set(data).get()
-
-                // retrieve
-                val docs = firestore.collection("users").whereEqualTo("firstName", "Marcin")
-                    .get()
-                    .get()
-                    .documents
-
-                docs.forEach {
-                    println(it.data)
-                }
-
-                call.complete()
-            }.await()
 
             log.info("BootstrapVerticle has been deployed")
         } catch (e: Exception) {

@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.google.cloud.firestore.Firestore
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.config.ConfigRetriever
@@ -12,7 +13,8 @@ class AppModule(
     private val context: DeploymentContext,
     private val configRetriever: ConfigRetriever,
     private val sessionFactory: SessionFactory,
-    private val gcpSettings: GCPSettings
+    private val gcpSettings: GCPSettings,
+    private val firestore: Firestore
 ) : KotlinModule() {
     companion object {
         const val packageName = "com.github.mkorman9.vertx"
@@ -31,6 +33,7 @@ class AppModule(
         bind<ConfigRetriever>().toInstance(configRetriever)
         bind<SessionFactory>().toInstance(sessionFactory)
         bind<GCPSettings>().toInstance(gcpSettings)
+        bind<Firestore>().toInstance(firestore)
 
         getInjectableClasses()
             .forEach { c ->

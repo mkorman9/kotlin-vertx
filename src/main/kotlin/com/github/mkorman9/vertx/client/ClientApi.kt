@@ -55,7 +55,7 @@ class ClientApi @Inject constructor(
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
-                val session = authorizationMiddleware.getActiveSession(ctx)
+                val account = authorizationMiddleware.getActiveAccount(ctx)
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
                     val client = clientRepository.add(payload).await()
@@ -64,7 +64,7 @@ class ClientApi @Inject constructor(
                         ClientEvent(
                             operation = ClientEventOperation.ADDED,
                             clientId = client.id.toString(),
-                            author = session.account.id.toString()
+                            author = account.id
                         )
                     )
 
@@ -75,7 +75,7 @@ class ClientApi @Inject constructor(
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
-                val session = authorizationMiddleware.getActiveSession(ctx)
+                val account = authorizationMiddleware.getActiveAccount(ctx)
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                     val id = ctx.pathParam("id")
@@ -86,7 +86,7 @@ class ClientApi @Inject constructor(
                             ClientEvent(
                                 operation = ClientEventOperation.UPDATED,
                                 clientId = client.id.toString(),
-                                author = session.account.id.toString()
+                                author = account.id
                             )
                         )
 
@@ -107,7 +107,7 @@ class ClientApi @Inject constructor(
             .asyncHandler { ctx ->
                 val id = ctx.pathParam("id")
 
-                val session = authorizationMiddleware.getActiveSession(ctx)
+                val account = authorizationMiddleware.getActiveAccount(ctx)
 
                 val deleted = clientRepository.delete(id).await()
                 if (deleted) {
@@ -115,7 +115,7 @@ class ClientApi @Inject constructor(
                         ClientEvent(
                             operation = ClientEventOperation.DELETED,
                             clientId = id,
-                            author = session.account.id.toString()
+                            author = account.id
                         )
                     )
 

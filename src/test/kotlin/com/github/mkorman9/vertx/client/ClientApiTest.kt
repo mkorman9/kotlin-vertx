@@ -3,10 +3,8 @@ package com.github.mkorman9.vertx.client
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.asyncTest
 import com.github.mkorman9.vertx.createTestInjector
-import com.github.mkorman9.vertx.fakeSession
-import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
-import com.github.mkorman9.vertx.security.MockSessionProvider
+import com.github.mkorman9.vertx.fakeCredentials
+import com.github.mkorman9.vertx.security.*
 import com.github.mkorman9.vertx.utils.Cause
 import com.github.mkorman9.vertx.utils.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -36,7 +34,7 @@ class ClientApiTest {
     @SpyK
     private var clientRepository: ClientRepository = mockk()
     @MockK
-    private lateinit var sessionProvider: MockSessionProvider
+    private lateinit var credentialsProvider: MockCredentialsProvider
     @SpyK
     private var clientEventsPublisher: ClientEventsPublisher = mockk()
 
@@ -46,7 +44,7 @@ class ClientApiTest {
             override fun configure() {
                 bind<ClientApi>()
                 bind<ClientRepository>().toInstance(clientRepository)
-                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
+                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(credentialsProvider))
                 bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
             }
         })
@@ -240,10 +238,10 @@ class ClientApiTest {
             firstName = payload.firstName,
             lastName = payload.lastName
         )
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
         every { clientRepository.add(payload) } returns Future.succeededFuture(addedClient)
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -262,7 +260,7 @@ class ClientApiTest {
             ClientEvent(
                 operation = ClientEventOperation.ADDED,
                 clientId = addedClient.id.toString(),
-                author = activeSession.account.id.toString()
+                author = credentials.account.id
             )
         ) }
     }
@@ -274,9 +272,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
             .put("lastName", "User")
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
 
         // when
         val result =
@@ -300,9 +298,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
             .put("firstName", "Test")
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
 
         // when
         val result =
@@ -329,9 +327,9 @@ class ClientApiTest {
             lastName = "User",
             email = "xxx"
         )
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
 
         // when
         val result =
@@ -362,10 +360,10 @@ class ClientApiTest {
             lastName = "User",
             email = "test.user@example.com"
         )
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
         every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -384,7 +382,7 @@ class ClientApiTest {
             ClientEvent(
                 operation = ClientEventOperation.UPDATED,
                 clientId = client.id.toString(),
-                author = activeSession.account.id.toString()
+                author = credentials.account.id.toString()
             )
         ) }
     }
@@ -398,10 +396,10 @@ class ClientApiTest {
             email = "test.user@example.com"
         )
         val clientId = UUID.randomUUID()
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
         every { clientRepository.update(clientId.toString(), payload) } returns Future.succeededFuture(null)
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
 
         // when
         val result =
@@ -420,10 +418,10 @@ class ClientApiTest {
         // given
         val httpClient = vertx.createHttpClient()
         val clientId = UUID.randomUUID()
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
         every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -442,7 +440,7 @@ class ClientApiTest {
             ClientEvent(
                 operation = ClientEventOperation.DELETED,
                 clientId = clientId.toString(),
-                author = activeSession.account.id.toString()
+                author = credentials.account.id.toString()
             )
         ) }
     }
@@ -453,10 +451,10 @@ class ClientApiTest {
         // given
         val httpClient = vertx.createHttpClient()
         val clientId = UUID.randomUUID()
-        val activeSession = fakeSession("test.account")
+        val credentials = fakeCredentials("test.account")
 
         every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(false)
-        every { sessionProvider.getSession() } returns activeSession
+        every { credentialsProvider.getCredentials() } returns credentials
 
         // when
         val result =
