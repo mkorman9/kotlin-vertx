@@ -205,7 +205,7 @@ class ClientRepository @Inject constructor(
 
     private fun addPagingToQuery(query: Query, paging: ClientsPagingOptions): Query {
         return query
-            .offset(paging.pageNumber * paging.pageSize)
+            .offset((paging.pageNumber - 1) * paging.pageSize)
             .limit(paging.pageSize)
     }
 }
