@@ -36,7 +36,7 @@ class ClientRepository @Inject constructor(
     ): Future<List<Client>> {
         return vertx.executeBlocking { call ->
             val collection = firestore.collection(CLIENTS_COLLECTION)
-            var query = createQueryWithFlters(collection, filtering)
+            var query = createQueryWithFilters(collection, filtering)
             query = addPagingToQuery(query, paging)
             query = addSortingToQuery(query, sorting)
 
@@ -162,7 +162,7 @@ class ClientRepository @Inject constructor(
         }
     }
 
-    private fun createQueryWithFlters(collection: CollectionReference, filtering: ClientsFilteringOptions): Query {
+    private fun createQueryWithFilters(collection: CollectionReference, filtering: ClientsFilteringOptions): Query {
         var query = collection.whereEqualTo("deleted", false)
 
         if (filtering.gender != null) {
