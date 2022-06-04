@@ -60,17 +60,19 @@ class BootstrapVerticle : CoroutineVerticle() {
     private fun deployVerticles(config: JsonObject): Future<CompositeFuture> {
         val futures = mutableListOf<Future<*>>()
 
+        futures.add(
+            vertx.deployVerticle(HttpServerVerticle::class.java.name, DeploymentOptions()
+                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
+            )
+        )
+
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
             .forEach { c ->
                 val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                     .first()
-                val verticleConfig =
-                    if (annotation.configKey.isNotEmpty()) config.getJsonObject(annotation.configKey)
-                    else null
 
                 val future = vertx.deployVerticle(c.name, DeploymentOptions()
-                    .setInstances(verticleConfig?.getInteger("instances") ?: 1)
                     .setWorker(annotation.worker)
                     .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
                     .setWorkerPoolSize(annotation.workerPoolSize)
