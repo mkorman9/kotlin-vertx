@@ -10,9 +10,5 @@ data class Client(
     var email: String = "",
     var birthDate: Long? = null,
     var deleted: Boolean = false,
-    var creditCards: List<CreditCard> = listOf()
-)
-
-data class CreditCard(
-    var number: String = ""
+    var creditCards: List<String> = listOf()
 )

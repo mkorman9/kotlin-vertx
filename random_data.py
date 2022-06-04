@@ -33,7 +33,7 @@ for data in results:
 
     credit_cards = []
     for cc in (random_credit_card_number() for _ in range(random.randint(0,4))):
-        credit_cards.append({"number": cc})
+        credit_cards.append(cc)
 
     client = {
         "id": id,

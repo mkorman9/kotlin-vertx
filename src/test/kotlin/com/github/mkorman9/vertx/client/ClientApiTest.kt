@@ -478,7 +478,7 @@ class ClientApiTest {
             email = response.email,
             birthDate = response.birthDate?.toEpochSecond(ZoneOffset.UTC),
             deleted = false,
-            creditCards = response.creditCards.map { CreditCard(number = it.number) }
+            creditCards = response.creditCards.map { it.number }
         )
     }
 }

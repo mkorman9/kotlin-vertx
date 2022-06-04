@@ -76,11 +76,7 @@ class ClientRepository @Inject constructor(
             phoneNumber = payload.phoneNumber ?: "",
             email = payload.email ?: "",
             birthDate = payload.birthDate?.toEpochSecond(ZoneOffset.UTC),
-            creditCards = (payload.creditCards ?: listOf()).map {
-                CreditCard(
-                    number = it.number
-                )
-            }.toMutableList()
+            creditCards = (payload.creditCards ?: listOf()).map { it.number }.toMutableList()
         )
 
         return vertx.executeBlocking { call ->
@@ -126,7 +122,7 @@ class ClientRepository @Inject constructor(
                     client.birthDate = payload.birthDate.toEpochSecond(ZoneOffset.UTC)
                 }
                 if (payload.creditCards != null) {
-                    client.creditCards = payload.creditCards.map { CreditCard(it.number) }
+                    client.creditCards = payload.creditCards.map { it.number }
                 }
 
                 firestore.collection(CLIENTS_COLLECTION)
@@ -168,29 +164,37 @@ class ClientRepository @Inject constructor(
         if (filtering.gender != null) {
             query = query.whereEqualTo("gender", filtering.gender)
         }
+
         if (filtering.firstName != null) {
             query = query.whereEqualTo("firstName", filtering.firstName)
         }
+
         if (filtering.lastName != null) {
             query = query.whereEqualTo("lastName", filtering.lastName)
         }
+
         if (filtering.address != null) {
             query = query.whereEqualTo("address", filtering.address)
         }
+
         if (filtering.phoneNumber != null) {
             query = query.whereEqualTo("phoneNumber", filtering.phoneNumber)
         }
+
         if (filtering.email != null) {
             query = query.whereEqualTo("email", filtering.email)
         }
+
         if (filtering.bornAfter != null) {
             query = query.whereGreaterThanOrEqualTo("birthDate", filtering.bornAfter.toEpochSecond(ZoneOffset.UTC))
         }
+
         if (filtering.bornBefore != null) {
             query = query.whereLessThan("birthDate", filtering.bornBefore.toEpochSecond(ZoneOffset.UTC))
         }
+
         if (filtering.creditCard != null) {
-            
+            query = query.whereArrayContains("creditCards", filtering.creditCard)
         }
 
         return query

@@ -35,9 +35,9 @@ class ClientServiceGrpcImpl @Inject constructor(
                         .setPhoneNumber(it.phoneNumber)
                         .setEmail(it.email)
                         .setBirthDate(toTimestamp(it.birthDate))
-                        .addAllCreditCards(it.creditCards.map {
+                        .addAllCreditCards(it.creditCards.map { creditCardNumber ->
                             CreditCard.newBuilder()
-                                .setNumber(it.number)
+                                .setNumber(creditCardNumber)
                                 .build()
                         })
                         .build()

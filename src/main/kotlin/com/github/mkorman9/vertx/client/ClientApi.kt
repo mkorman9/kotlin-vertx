@@ -143,7 +143,7 @@ class ClientApi @Inject constructor(
             email = client.email,
             birthDate = if (client.birthDate == null) null else
                 LocalDateTime.ofEpochSecond(client.birthDate!!, 0, ZoneOffset.UTC),
-            creditCards = client.creditCards.map { CreditCardResponse(number = it.number) }
+            creditCards = client.creditCards.map { CreditCardResponse(number = it) }
         )
     }
 
