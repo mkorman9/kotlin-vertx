@@ -16,6 +16,3 @@ gcp:
     emulator:
       enabled: true
       address: gcp-pubsub:8538
-
-testdata:
-  upload: true

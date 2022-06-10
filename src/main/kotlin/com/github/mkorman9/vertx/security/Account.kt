@@ -5,7 +5,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 import javax.persistence.*
 
-
 @Entity(name = "Account")
 @Table(name = "accounts")
 data class Account(

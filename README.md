@@ -19,6 +19,11 @@ Start the app
 java -jar build/libs/app.jar
 ```
 
+Optionally upload some random data for tests
+```bash
+testdata/upload.sh
+```
+
 Cleanup docker-compose stack:
 ```bash
 docker-compose down
