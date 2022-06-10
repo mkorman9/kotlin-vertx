@@ -16,7 +16,7 @@ docker-compose up
 
 Start the app
 ```bash
-java -jar build/libs/app.jar
+java -Djava.net.preferIPv4Stack=true -jar build/libs/app.jar
 ```
 
 Cleanup docker-compose stack:
