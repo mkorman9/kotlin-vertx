@@ -249,7 +249,7 @@ class ClientRepository @Inject constructor(
 
         query.select(root)
         query.where(whereClause)
-        query.orderBy(criteriaBuilder.desc(root.get<String>("id")))
+        query.orderBy(criteriaBuilder.asc(root.get<String>("id")))
 
         return query
     }
