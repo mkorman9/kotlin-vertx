@@ -55,10 +55,10 @@ class ClientEventsVerticle(
     }
 
     private fun createPublishChannel(publisher: Publisher) {
-        vertx.eventBus().consumer<ClientEvent>(PUBLISH_CHANNEL_ADDRESS) { event ->
-            val data = Json.encode(event)
-            val message = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8(data)).build()
-            publisher.publish(message)
+        vertx.eventBus().consumer<ClientEvent>(PUBLISH_CHANNEL_ADDRESS) { message ->
+            val data = Json.encode(message.body())
+            val pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8(data)).build()
+            publisher.publish(pubsubMessage)
         }
     }
 }
