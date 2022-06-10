@@ -9,11 +9,9 @@ import io.vertx.ext.web.RoutingContext
 
 @Singleton
 class AuthorizationMiddlewareImpl @Inject constructor(
-    private val sessionRepository: SessionRepository,
-    private val accountRepository: AccountRepository
+    private val sessionRepository: SessionRepository
 ) : AuthorizationMiddleware {
     private val sessionObjectKey = "activeSession"
-    private val accountObjectKey = "activeAccount"
 
     override fun authorize(ctx: RoutingContext, allowedRoles: Set<String>?) {
         ctx.request().pause()
@@ -48,24 +46,15 @@ class AuthorizationMiddlewareImpl @Inject constructor(
                     return@onSuccess
                 }
 
-                accountRepository.findById(session.accountId)
-                    .onSuccess { account ->
-                        ctx.put(sessionObjectKey, session)
-                        ctx.put(accountObjectKey, account)
-                        ctx.request().resume()
-                        ctx.next()
-                    }
-                    .onFailure { failure -> ctx.fail(500, failure) }
+                ctx.put(sessionObjectKey, session)
+                ctx.request().resume()
+                ctx.next()
             }
             .onFailure { failure -> ctx.fail(500, failure) }
     }
 
     override fun getActiveSession(ctx: RoutingContext): Session {
         return ctx.get(sessionObjectKey)
-    }
-
-    override fun getActiveAccount(ctx: RoutingContext): Account {
-        return ctx.get(accountObjectKey)
     }
 
     private fun retrieveBearerToken(request: HttpServerRequest): String? {
@@ -83,7 +72,7 @@ class AuthorizationMiddlewareImpl @Inject constructor(
         return parts[1]
     }
 
-    private fun verifyRoles(providedRoles: List<String>, allowedRoles: Set<String>): Boolean {
+    private fun verifyRoles(providedRoles: Set<String>, allowedRoles: Set<String>): Boolean {
         return providedRoles.any { role -> allowedRoles.contains(role) }
     }
 }

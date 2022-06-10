@@ -5,7 +5,6 @@ import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.client.Client
 import com.github.mkorman9.vertx.security.Account
 import com.github.mkorman9.vertx.utils.DeployVerticle
-import com.google.cloud.firestore.Firestore
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
@@ -24,7 +23,6 @@ class UploadTestDataVerticle(
     private val log = LoggerFactory.getLogger(UploadTestDataVerticle::class.java)
 
     private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
-    private val firestore = injector.getInstance<Firestore>()
 
     override suspend fun start() {
         val configRetriever = injector.getInstance<ConfigRetriever>()
@@ -45,20 +43,10 @@ class UploadTestDataVerticle(
                 while (resources.hasMoreElements()) {
                     resources.nextElement().openStream().use { stream ->
                         val bytes = stream.readAllBytes()
-                        val accounts =
-                            DatabindCodec.mapper().readValue(bytes, object : TypeReference<List<Account>>() {})
+//                        val accounts =
+//                            DatabindCodec.mapper().readValue(bytes, object : TypeReference<List<Account>>() {})
 
-                        val batch = firestore.batch()
 
-                        accounts.forEach {
-                            batch.set(
-                                firestore.collection("accounts").document(it.id),
-                                it
-                            )
-                        }
-
-                        batch.commit()
-                            .get()
 
                         call.complete()
                     }
@@ -76,20 +64,10 @@ class UploadTestDataVerticle(
                 while (resources.hasMoreElements()) {
                     resources.nextElement().openStream().use { stream ->
                         val bytes = stream.readAllBytes()
-                        val clients =
-                            DatabindCodec.mapper().readValue(bytes, object : TypeReference<List<Client>>() {})
+//                        val clients =
+//                            DatabindCodec.mapper().readValue(bytes, object : TypeReference<List<Client>>() {})
 
-                        val batch = firestore.batch()
 
-                        clients.forEach {
-                            batch.set(
-                                firestore.collection("clients").document(it.id),
-                                it
-                            )
-                        }
-
-                        batch.commit()
-                            .get()
 
                         call.complete()
                     }

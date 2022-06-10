@@ -8,7 +8,8 @@ import com.google.protobuf.Timestamp
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,16 +19,16 @@ class ClientServiceGrpcImpl @Inject constructor(
 ) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
-            val clients = clientRepository.findPaged(
+            val clientsPage = clientRepository.findPaged(
                 ClientsFilteringOptions(),
                 ClientsPagingOptions(1, 10),
                 ClientsSortingOptions("id", false)
             ).await()
 
-            clients
+            clientsPage.data
                 .map {
                     Client.newBuilder()
-                        .setId(it.id)
+                        .setId(it.id.toString())
                         .setGender(it.gender)
                         .setFirstName(it.firstName)
                         .setLastName(it.lastName)
@@ -35,9 +36,9 @@ class ClientServiceGrpcImpl @Inject constructor(
                         .setPhoneNumber(it.phoneNumber)
                         .setEmail(it.email)
                         .setBirthDate(toTimestamp(it.birthDate))
-                        .addAllCreditCards(it.creditCards.map { creditCardNumber ->
+                        .addAllCreditCards(it.creditCards.map {
                             CreditCard.newBuilder()
-                                .setNumber(creditCardNumber)
+                                .setNumber(it.number)
                                 .build()
                         })
                         .build()
@@ -48,12 +49,12 @@ class ClientServiceGrpcImpl @Inject constructor(
         }
     }
 
-    private fun toTimestamp(epoch: Long?): Timestamp? {
-        if (epoch == null) {
+    private fun toTimestamp(dateTime: LocalDateTime?): Timestamp? {
+        if (dateTime == null) {
             return null
         }
 
-        val instant = Instant.ofEpochMilli(epoch)
+        val instant = dateTime.toInstant(ZoneOffset.UTC)
         return Timestamp.newBuilder()
             .setSeconds(instant.epochSecond)
             .setNanos(instant.nano)

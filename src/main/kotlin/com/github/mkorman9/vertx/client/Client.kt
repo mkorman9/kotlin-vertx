@@ -1,14 +1,49 @@
 package com.github.mkorman9.vertx.client
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.BatchSize
+import java.time.LocalDateTime
+import java.util.UUID
+import javax.persistence.*
+
+@Entity(name = "Client")
+@Table(name = "clients")
 data class Client(
-    var id: String = "",
+    @Id
+    @Column(name = "id", columnDefinition = "uuid")
+    var id: UUID,
+
+    @Column(name = "gender", columnDefinition = "CHAR(1)")
     var gender: String = "-",
-    var firstName: String = "",
-    var lastName: String = "",
-    var address: String = "",
-    var phoneNumber: String = "",
-    var email: String = "",
-    var birthDate: Long? = null,
+
+    @Column(name = "first_name")
+    var firstName: String,
+
+    @Column(name = "last_name")
+    var lastName: String,
+
+    @Column(name = "home_address")
+    var address: String? = null,
+
+    @Column(name = "phone_number")
+    var phoneNumber: String? = null,
+
+    @Column(name = "email")
+    var email: String? = null,
+
+    @Column(name = "birth_date")
+    var birthDate: LocalDateTime? = null,
+
+    @Column(name = "deleted")
+    @JsonIgnore
     var deleted: Boolean = false,
-    var creditCards: List<String> = listOf()
+
+    @OneToMany(
+        mappedBy = "clientId",
+        fetch = FetchType.EAGER,
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true
+    )
+    @BatchSize(size = 10)
+    var creditCards: MutableList<CreditCard> = mutableListOf()
 )

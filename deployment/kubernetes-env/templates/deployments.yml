@@ -1,30 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.gcp.firestore.name }}
+  name: {{ .Values.postgres.name }}
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.gcp.firestore.name }}
+      app: {{ .Values.postgres.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.gcp.firestore.name }}
+        app: {{ .Values.postgres.name }}
     spec:
       containers:
-        - name: {{ .Values.gcp.firestore.name }}
-          image: {{ .Values.gcp.firestore.image }}
+        - name: {{ .Values.postgres.name }}
+          image: {{ .Values.postgres.image }}
           imagePullPolicy: {{ .Values.images.pullPolicy }}
-          ports:
-            - containerPort: {{ .Values.gcp.firestore.port }}
-              protocol: TCP
           env:
-            - name: FIRESTORE_PROJECT_ID
-              value: {{ .Values.gcp.projectId }}
-            - name: PORT
-              value: {{ .Values.gcp.firestore.port | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.dbname }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgres.password }}
+          ports:
+            - containerPort: {{ .Values.postgres.port }}
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgres.volume.claimName }}
 ---
 apiVersion: apps/v1
 kind: Deployment

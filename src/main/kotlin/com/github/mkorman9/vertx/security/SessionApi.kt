@@ -68,12 +68,12 @@ class SessionApi @Inject constructor(
                         id = SecureRandomGenerator.generate(sessionIdLength),
                         accountId = account.id,
                         token = SecureRandomGenerator.generate(sessionTokenLength),
-                        roles = account.roles.toMutableList(),
+                        rolesString = account.rolesString,
                         ip = ctx.request().getClientIp(),
-                        issuedAt = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                        issuedAt = LocalDateTime.now(),
                         duration = sessionDurationSeconds,
-                        expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong())
-                            .toEpochSecond(ZoneOffset.UTC)
+                        expiresAt = LocalDateTime.now().plusSeconds(sessionDurationSeconds.toLong()),
+                        account = account
                     )
 
                     val newSession = sessionRepository.add(session).await()

@@ -1,11 +1,12 @@
 package com.github.mkorman9.vertx.client
 
-import com.fasterxml.jackson.core.type.TypeReference
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.asyncTest
 import com.github.mkorman9.vertx.createTestInjector
-import com.github.mkorman9.vertx.fakeCredentials
-import com.github.mkorman9.vertx.security.*
+import com.github.mkorman9.vertx.fakeSession
+import com.github.mkorman9.vertx.security.AuthorizationMiddleware
+import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
+import com.github.mkorman9.vertx.security.MockSessionProvider
 import com.github.mkorman9.vertx.utils.Cause
 import com.github.mkorman9.vertx.utils.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -20,7 +21,6 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.junit5.VertxExtension
 import io.vertx.junit5.VertxTestContext
 import io.vertx.kotlin.coroutines.await
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.time.ZoneOffset
 import java.util.*
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
@@ -37,7 +36,7 @@ class ClientApiTest {
     @SpyK
     private var clientRepository: ClientRepository = mockk()
     @MockK
-    private lateinit var credentialsProvider: MockCredentialsProvider
+    private lateinit var sessionProvider: MockSessionProvider
     @SpyK
     private var clientEventsPublisher: ClientEventsPublisher = mockk()
 
@@ -47,7 +46,7 @@ class ClientApiTest {
             override fun configure() {
                 bind<ClientApi>()
                 bind<ClientRepository>().toInstance(clientRepository)
-                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(credentialsProvider))
+                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
                 bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
             }
         })
@@ -61,15 +60,19 @@ class ClientApiTest {
     fun testDefaultPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clients = listOf(
-            Client(
-                id = UUID.randomUUID().toString(),
-                firstName = "Test",
-                lastName = "User"
+        val page = ClientsPage(
+            page = 1,
+            totalPages = 1,
+            data = listOf(
+                Client(
+                    id = UUID.randomUUID(),
+                    firstName = "Test",
+                    lastName = "User"
+                )
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(clients)
+        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
 
         // when
         val result =
@@ -77,14 +80,11 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedClients = DatabindCodec.mapper().readValue(
-            result.body().await().bytes,
-            object : TypeReference<List<ClientResponse>>() {}
-        )
+        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(clients)
+        assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(),
@@ -98,15 +98,19 @@ class ClientApiTest {
     fun testSpecificPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clients = listOf(
-            Client(
-                id = UUID.randomUUID().toString(),
-                firstName = "Test",
-                lastName = "User"
+        val page = ClientsPage(
+            page = 2,
+            totalPages = 2,
+            data = listOf(
+                Client(
+                    id = UUID.randomUUID(),
+                    firstName = "Test",
+                    lastName = "User"
+                )
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(clients)
+        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
 
         // when
         val result =
@@ -119,14 +123,11 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedClients = DatabindCodec.mapper().readValue(
-            result.body().await().bytes,
-            object : TypeReference<List<ClientResponse>>() {}
-        )
+        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(clients)
+        assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(lastName = "User"),
@@ -140,11 +141,15 @@ class ClientApiTest {
     fun testInvalidPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = listOf(
-            Client(
-                id = UUID.randomUUID().toString(),
-                firstName = "Test",
-                lastName = "User"
+        val page = ClientsPage(
+            page = 1,
+            totalPages = 1,
+            data = listOf(
+                Client(
+                    id = UUID.randomUUID(),
+                    firstName = "Test",
+                    lastName = "User"
+                )
             )
         )
 
@@ -161,14 +166,11 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedClients = DatabindCodec.mapper().readValue(
-            result.body().await().bytes,
-            object : TypeReference<List<ClientResponse>>() {}
-        )
+        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(returnedClients.map { mapResponseToClient(it) }).isEqualTo(page)
+        assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
             filtering = ClientsFilteringOptions(),
@@ -184,7 +186,7 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
         val client = Client(
-            id = id,
+            id = UUID.fromString(id),
             firstName = "Test",
             lastName = "User"
         )
@@ -234,14 +236,14 @@ class ClientApiTest {
             lastName = "User"
         )
         val addedClient = Client(
-            id = UUID.randomUUID().toString(),
+            id = UUID.randomUUID(),
             firstName = payload.firstName,
             lastName = payload.lastName
         )
-        val credentials = fakeCredentials("test.account")
+        val activeSession = fakeSession("test.account")
 
         every { clientRepository.add(payload) } returns Future.succeededFuture(addedClient)
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -254,13 +256,13 @@ class ClientApiTest {
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
-        assertThat(clientAddResponse.id).isEqualTo(addedClient.id)
+        assertThat(clientAddResponse.id).isEqualTo(addedClient.id.toString())
 
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.ADDED,
-                clientId = addedClient.id,
-                author = credentials.account.id
+                clientId = addedClient.id.toString(),
+                author = activeSession.account.id.toString()
             )
         ) }
     }
@@ -272,9 +274,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
             .put("lastName", "User")
-        val credentials = fakeCredentials("test.account")
+        val activeSession = fakeSession("test.account")
 
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { sessionProvider.getSession() } returns activeSession
 
         // when
         val result =
@@ -298,9 +300,9 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
             .put("firstName", "Test")
-        val credentials = fakeCredentials("test.account")
+        val activeSession = fakeSession("test.account")
 
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { sessionProvider.getSession() } returns activeSession
 
         // when
         val result =
@@ -327,9 +329,9 @@ class ClientApiTest {
             lastName = "User",
             email = "xxx"
         )
-        val credentials = fakeCredentials("test.account")
+        val activeSession = fakeSession("test.account")
 
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { sessionProvider.getSession() } returns activeSession
 
         // when
         val result =
@@ -355,15 +357,15 @@ class ClientApiTest {
             email = "test.user@example.com"
         )
         val client = Client(
-            id = UUID.randomUUID().toString(),
+            id = UUID.randomUUID(),
             firstName = "Test",
             lastName = "User",
             email = "test.user@example.com"
         )
-        val credentials = fakeCredentials("test.account")
+        val activeSession = fakeSession("test.account")
 
-        every { clientRepository.update(client.id, payload) } returns Future.succeededFuture(client)
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
+        every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -381,8 +383,8 @@ class ClientApiTest {
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.UPDATED,
-                clientId = client.id,
-                author = credentials.account.id
+                clientId = client.id.toString(),
+                author = activeSession.account.id.toString()
             )
         ) }
     }
@@ -395,11 +397,11 @@ class ClientApiTest {
         val payload = ClientUpdatePayload(
             email = "test.user@example.com"
         )
-        val clientId = UUID.randomUUID().toString()
-        val credentials = fakeCredentials("test.account")
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
 
-        every { clientRepository.update(clientId, payload) } returns Future.succeededFuture(null)
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { clientRepository.update(clientId.toString(), payload) } returns Future.succeededFuture(null)
+        every { sessionProvider.getSession() } returns activeSession
 
         // when
         val result =
@@ -417,11 +419,11 @@ class ClientApiTest {
     fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clientId = UUID.randomUUID().toString()
-        val credentials = fakeCredentials("test.account")
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
 
-        every { clientRepository.delete(clientId) } returns Future.succeededFuture(true)
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
+        every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any()) } returns Unit
 
         // when
@@ -439,8 +441,8 @@ class ClientApiTest {
         verify { clientEventsPublisher.publish(
             ClientEvent(
                 operation = ClientEventOperation.DELETED,
-                clientId = clientId,
-                author = credentials.account.id
+                clientId = clientId.toString(),
+                author = activeSession.account.id.toString()
             )
         ) }
     }
@@ -450,11 +452,11 @@ class ClientApiTest {
     fun testDeleteNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val clientId = UUID.randomUUID().toString()
-        val credentials = fakeCredentials("test.account")
+        val clientId = UUID.randomUUID()
+        val activeSession = fakeSession("test.account")
 
-        every { clientRepository.delete(clientId) } returns Future.succeededFuture(false)
-        every { credentialsProvider.getCredentials() } returns credentials
+        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(false)
+        every { sessionProvider.getSession() } returns activeSession
 
         // when
         val result =
@@ -465,20 +467,5 @@ class ClientApiTest {
 
         // then
         assertThat(result.statusCode()).isEqualTo(404)
-    }
-
-    private fun mapResponseToClient(response: ClientResponse): Client {
-        return Client(
-            id = response.id,
-            gender = response.gender,
-            firstName = response.firstName,
-            lastName = response.lastName,
-            address = response.address,
-            phoneNumber = response.phoneNumber,
-            email = response.email,
-            birthDate = response.birthDate?.toEpochSecond(ZoneOffset.UTC),
-            deleted = false,
-            creditCards = response.creditCards.map { it.number }
-        )
     }
 }

@@ -13,6 +13,12 @@ app:
     server:
       instances: 4
       bodyLimit: 65536
+    db:
+      pool:
+        size: 5
+        connectTimeout: 30000
+        idleTimeout: 0
+        cleanerPeriod: 0
     graylog:
       enabled: false
       host: graylog.monitoring.svc.cluster.local

@@ -26,6 +26,8 @@ class BootstrapVerticle : CoroutineVerticle() {
         lateinit var injector: Injector
     }
 
+    private val hibernateInitializer = HibernateInitializer()
+
     override suspend fun start() {
         try {
             val context = DeploymentContext(
@@ -37,9 +39,9 @@ class BootstrapVerticle : CoroutineVerticle() {
             val configRetriever = createConfigRetriever()
             val config = configRetriever.config.await()
 
-            val firestore = FirestoreInitializer(config).initialize()
+            val sessionFactory = hibernateInitializer.start(vertx, config).await()
 
-            val module = AppModule(vertx, context, configRetriever, firestore)
+            val module = AppModule(vertx, context, configRetriever, sessionFactory)
             injector = Guice.createInjector(module)
 
             deployVerticles(config).await()
@@ -53,6 +55,7 @@ class BootstrapVerticle : CoroutineVerticle() {
 
     override suspend fun stop() {
         injector.getInstance<GCPPubSubClient>().stop()
+        hibernateInitializer.stop(vertx).await()
 
         log.info("BootstrapVerticle has been stopped")
     }

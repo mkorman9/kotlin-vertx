@@ -25,6 +25,7 @@ plugins {
 }
 
 apply plugin: 'kotlin'
+apply plugin: "kotlin-jpa"
 
 scmVersion {
     useHighestVersion = true
@@ -63,7 +64,6 @@ dependencies {
     implementation "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
     implementation "com.google.protobuf:protobuf-kotlin:3.21.1"
 
-    implementation 'com.google.firebase:firebase-admin:8.1.0'
     implementation "com.google.cloud:google-cloud-pubsub:1.119.0"
     implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64"
@@ -74,6 +74,9 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.4.Final'
+    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
+    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
     implementation "org.hibernate.validator:hibernate-validator:$hibernateVersion"
     implementation 'dev.misfitlabs.kotlinguice4:kotlin-guice:1.6.0'
     implementation "io.micrometer:micrometer-registry-prometheus:1.8.5"

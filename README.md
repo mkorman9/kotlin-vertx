@@ -3,7 +3,7 @@ Personal playground for Kotlin and Vert.x
 ## Local run
 
 Requires JDK 11
-     
+
 Build
 ```bash
 ./gradlew build
@@ -16,7 +16,7 @@ docker-compose up
 
 Start the app
 ```bash
-java -Djava.net.preferIPv4Stack=true -jar build/libs/app.jar
+java -jar build/libs/app.jar
 ```
 
 Cleanup docker-compose stack:
@@ -27,7 +27,7 @@ docker-compose down
 ## Deploy to Kubernetes in Docker Desktop
 
 Requires Helm and Docker Desktop with Kubernetes running
-     
+
 Create nginx ingress controller
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -161,11 +161,17 @@ kubectl create secret generic gitlab-docker-registry --namespace=kube-system \
 ### App secrets
 
 Make sure `credentials.json` exists and contains Service Account credentials for GCP.
-     
+
 Create `secrets.yml` file and populate it with data
 ```
+db:
+  uri: jdbc:postgresql://<POSTGRES_HOST>:5432/<POSTGRES_DB_NAME>
+  user: <POSTGRES_USERNAME>
+  password: <POSTGRES_PASSWORD>
 gcp:
   projectId: <GCP_PROJECT_ID>
+  credentials:
+    path: /app/credentials.json
 ```
 
 Upload it

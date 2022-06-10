@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.google.cloud.firestore.Firestore
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -9,6 +8,7 @@ import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
@@ -18,7 +18,7 @@ class TestModuleBase(
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
-        bind<Firestore>().toInstance(mockk())
+        bind<SessionFactory>().toInstance(mockk())
         bind<ConfigRetriever>().toInstance(createConfigRetriever())
 
         AppModule.getInjectableClasses()

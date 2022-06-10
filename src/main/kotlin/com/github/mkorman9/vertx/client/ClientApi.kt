@@ -36,7 +36,7 @@ class ClientApi @Inject constructor(
                 sorting = params.sorting
             ).await()
 
-            ctx.response().endWithJson(clients.map { mapToClientResponse(it) })
+            ctx.response().endWithJson(clients)
         }
 
         get("/:id").asyncHandler { ctx ->
@@ -44,7 +44,7 @@ class ClientApi @Inject constructor(
 
             val client = clientRepository.findById(id).await()
             if (client != null) {
-                ctx.response().endWithJson(mapToClientResponse(client))
+                ctx.response().endWithJson(client)
             } else {
                 ctx.response().setStatusCode(404).endWithJson(StatusDTO(
                     status = "error",
@@ -56,7 +56,7 @@ class ClientApi @Inject constructor(
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
-                val account = authorizationMiddleware.getActiveAccount(ctx)
+                val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
                     val client = clientRepository.add(payload).await()
@@ -64,19 +64,19 @@ class ClientApi @Inject constructor(
                     clientEventsPublisher.publish(
                         ClientEvent(
                             operation = ClientEventOperation.ADDED,
-                            clientId = client.id,
-                            author = account.id
+                            clientId = client.id.toString(),
+                            author = account.id.toString()
                         )
                     )
 
-                    ctx.response().endWithJson(ClientAddResponse(id = client.id))
+                    ctx.response().endWithJson(ClientAddResponse(id = client.id.toString()))
                 }
             }
 
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
             .asyncHandler { ctx ->
-                val account = authorizationMiddleware.getActiveAccount(ctx)
+                val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                     val id = ctx.pathParam("id")
@@ -86,8 +86,8 @@ class ClientApi @Inject constructor(
                         clientEventsPublisher.publish(
                             ClientEvent(
                                 operation = ClientEventOperation.UPDATED,
-                                clientId = client.id,
-                                author = account.id
+                                clientId = client.id.toString(),
+                                author = account.id.toString()
                             )
                         )
 
@@ -108,7 +108,7 @@ class ClientApi @Inject constructor(
             .asyncHandler { ctx ->
                 val id = ctx.pathParam("id")
 
-                val account = authorizationMiddleware.getActiveAccount(ctx)
+                val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 val deleted = clientRepository.delete(id).await()
                 if (deleted) {
@@ -116,7 +116,7 @@ class ClientApi @Inject constructor(
                         ClientEvent(
                             operation = ClientEventOperation.DELETED,
                             clientId = id,
-                            author = account.id
+                            author = account.id.toString()
                         )
                     )
 
@@ -130,21 +130,6 @@ class ClientApi @Inject constructor(
                     ))
                 }
             }
-    }
-
-    private fun mapToClientResponse(client: Client): ClientResponse {
-        return ClientResponse(
-            id = client.id,
-            gender = client.gender,
-            firstName = client.firstName,
-            lastName = client.lastName,
-            address = client.address,
-            phoneNumber = client.phoneNumber,
-            email = client.email,
-            birthDate = if (client.birthDate == null) null else
-                LocalDateTime.ofEpochSecond(client.birthDate!!, 0, ZoneOffset.UTC),
-            creditCards = client.creditCards.map { CreditCardResponse(number = it) }
-        )
     }
 
     private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {

@@ -5,16 +5,17 @@ server:
 grpc:
   port: 9090
 
+db:
+  uri: jdbc:postgresql://localhost:5432/kotlinvertx
+  user: username
+  password: password
+
 gcp:
   projectId: local-run
   pubsub:
     emulator:
       enabled: true
       address: localhost:8538
-  firestore:
-    emulator:
-      enabled: true
-      address: localhost:8200
 
 testdata:
   upload: true

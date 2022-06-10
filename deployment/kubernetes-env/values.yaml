@@ -4,13 +4,24 @@ secret:
 images:
   pullPolicy: IfNotPresent
 
+postgres:
+  name: postgres
+  image: postgres:12
+
+  port: 5432
+
+  username: username
+  password: password
+  dbname: kotlinvertx
+
+  volume:
+    name: postgres-volume
+    claimName: postgres-volume-claim
+    size: 100Mi
+    path: "/var/lib/kotlin-vertx/dev-env/postgres-volume"
+
 gcp:
   projectId: default-project
-
-  firestore:
-    name: firestore
-    image: mtlynch/firestore-emulator
-    port: 8200
 
   pubsub:
     name: pubsub

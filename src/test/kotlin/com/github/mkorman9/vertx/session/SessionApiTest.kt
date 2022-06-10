@@ -27,7 +27,7 @@ class SessionApiTest {
     @MockK
     private lateinit var accountRepository: AccountRepository
     @MockK
-    private lateinit var credentialsProvider: MockCredentialsProvider
+    private lateinit var sessionProvider: MockSessionProvider
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
@@ -36,7 +36,7 @@ class SessionApiTest {
                 bind<SessionApi>()
                 bind<SessionRepository>().toInstance(sessionRepository)
                 bind<AccountRepository>().toInstance(accountRepository)
-                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(credentialsProvider))
+                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
             }
         })
 
@@ -53,10 +53,10 @@ class SessionApiTest {
             email = "test.user@example.com",
             password = defaultTestPassword.plaintext
         )
-        val credentials = fakeCredentials("test.user", email = payload.email, password = defaultTestPassword)
+        val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
 
-        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(credentials.account)
-        every { sessionRepository.add(any()) } returns Future.succeededFuture(credentials.session)
+        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
+        every { sessionRepository.add(any()) } returns Future.succeededFuture(session)
 
         // when
         val result =
@@ -101,7 +101,7 @@ class SessionApiTest {
             email = "test.user@example.com",
             password = "invalid_password"
         )
-        val session = fakeCredentials("test.user", email = payload.email, password = defaultTestPassword)
+        val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
 
         every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
 
@@ -121,10 +121,10 @@ class SessionApiTest {
     fun testRefreshSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val credentials = fakeCredentials("test.user")
+        val session = fakeSession("test.user")
 
-        every { credentialsProvider.getCredentials() } returns credentials
-        every { sessionRepository.refresh(credentials.session) } returns Future.succeededFuture(credentials.session)
+        every { sessionProvider.getSession() } returns session
+        every { sessionRepository.refresh(session) } returns Future.succeededFuture(session)
 
         // when
         val result =
@@ -142,10 +142,10 @@ class SessionApiTest {
     fun testRevokeSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val credentials = fakeCredentials("test.user")
+        val session = fakeSession("test.user")
 
-        every { credentialsProvider.getCredentials() } returns credentials
-        every { sessionRepository.delete(credentials.session) } returns Future.succeededFuture()
+        every { sessionProvider.getSession() } returns session
+        every { sessionRepository.delete(session) } returns Future.succeededFuture(true)
 
         // when
         val result =
