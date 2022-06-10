@@ -20,9 +20,9 @@ class ClientServiceGrpcImpl @Inject constructor(
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
             val clientsPage = clientRepository.findPaged(
-                ClientsFilteringOptions(),
-                ClientsPagingOptions(1, 10),
-                ClientsSortingOptions("id", false)
+                ClientFilteringOptions(),
+                ClientPagingOptions(1, 10),
+                ClientSortingOptions("id", false)
             ).await()
 
             clientsPage.data

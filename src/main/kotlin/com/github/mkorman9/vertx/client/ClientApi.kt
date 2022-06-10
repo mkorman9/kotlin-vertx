@@ -12,7 +12,6 @@ import io.vertx.core.http.HttpServerRequest
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeParseException
 
 @Singleton
@@ -28,15 +27,26 @@ class ClientApi @Inject constructor(
 
     fun createRouter(): Router = Router.router(vertx).apply {
         get("/").asyncHandler { ctx ->
-            val params = parseFindClientsQueryParams(ctx.request())
+            val params = parseFindPagedClientsQuery(ctx.request())
 
-            val clients = clientRepository.findPaged(
+            val clientsPage = clientRepository.findPaged(
                 filtering = params.filtering,
                 paging = params.paging,
                 sorting = params.sorting
             ).await()
 
-            ctx.response().endWithJson(clients)
+            ctx.response().endWithJson(clientsPage)
+        }
+
+        get("/cursor/get").asyncHandler { ctx ->
+            val params = parseFindClientsByCursorQuery(ctx.request())
+
+            val clientsCursor = clientRepository.findByCursor(
+                filtering = params.filtering,
+                cursorOptions = params.cursorOptions
+            ).await()
+
+            ctx.response().endWithJson(clientsCursor)
         }
 
         get("/:id").asyncHandler { ctx ->
@@ -132,7 +142,65 @@ class ClientApi @Inject constructor(
             }
     }
 
-    private fun parseFindClientsQueryParams(request: HttpServerRequest): FindClientsParams {
+    private fun parseFindPagedClientsQuery(request: HttpServerRequest): FindPagedClientParams {
+        val filters = parseClientFilters(request)
+
+        var page = request.getParam("page", "1").toInt()
+        if (page < 1) {
+            page = 1
+        }
+
+        var pageSize = request.getParam("pageSize", "10").toInt()
+        if (pageSize < 1) {
+            pageSize = 10
+        }
+        if (pageSize > 100) {
+            pageSize = 100
+        }
+
+        var sortBy = request.getParam("sortBy", "id")
+        if (!allowedSortByValues.contains(sortBy)) {
+            sortBy = "id"
+        }
+
+        val sortReverse = request.params().contains("sortReverse")
+
+        return FindPagedClientParams(
+            filtering = filters,
+            paging = ClientPagingOptions(
+                pageNumber = page,
+                pageSize = pageSize
+            ),
+            sorting = ClientSortingOptions(
+                sortBy = sortBy,
+                sortReverse = sortReverse
+            )
+        )
+    }
+
+    private fun parseFindClientsByCursorQuery(request: HttpServerRequest): FindCursorClientParams {
+        val filters = parseClientFilters(request)
+
+        val cursor = request.getParam("cursor")
+
+        var limit = request.getParam("limit", "10").toInt()
+        if (limit < 1) {
+            limit = 10
+        }
+        if (limit > 100) {
+            limit = 100
+        }
+
+        return FindCursorClientParams(
+            filtering = filters,
+            cursorOptions = ClientCursorOptions(
+                cursor = cursor,
+                limit = limit
+            )
+        )
+    }
+
+    private fun parseClientFilters(request: HttpServerRequest): ClientFilteringOptions {
         var genderFilter = request.getParam("filter[gender]")
         if (!hashSetOf("-", "M", "F").contains(genderFilter)) {
             genderFilter = null
@@ -165,46 +233,17 @@ class ClientApi @Inject constructor(
         }
         val creditCardFilter = request.getParam("filter[creditCard]")
 
-        var page = request.getParam("page", "1").toInt()
-        if (page < 1) {
-            page = 1
-        }
-
-        var pageSize = request.getParam("pageSize", "10").toInt()
-        if (pageSize < 1) {
-            pageSize = 10
-        }
-        if (pageSize > 100) {
-            pageSize = 100
-        }
-
-        var sortBy = request.getParam("sortBy", "id")
-        if (!allowedSortByValues.contains(sortBy)) {
-            sortBy = "id"
-        }
-
-        val sortReverse = request.params().contains("sortReverse")
-
-        return FindClientsParams(
-            filtering = ClientsFilteringOptions(
-                gender = genderFilter,
-                firstName = firstNameFilter,
-                lastName = lastNameFilter,
-                address = addressFilter,
-                phoneNumber = phoneNumberFilter,
-                email = emailFilter,
-                bornAfter = bornAfterFilter,
-                bornBefore = bornBeforeFilter,
-                creditCard = creditCardFilter
-            ),
-            paging = ClientsPagingOptions(
-                pageNumber = page,
-                pageSize = pageSize
-            ),
-            sorting = ClientsSortingOptions(
-                sortBy = sortBy,
-                sortReverse = sortReverse
-            )
+        val filters = ClientFilteringOptions(
+            gender = genderFilter,
+            firstName = firstNameFilter,
+            lastName = lastNameFilter,
+            address = addressFilter,
+            phoneNumber = phoneNumberFilter,
+            email = emailFilter,
+            bornAfter = bornAfterFilter,
+            bornBefore = bornBeforeFilter,
+            creditCard = creditCardFilter
         )
+        return filters
     }
 }

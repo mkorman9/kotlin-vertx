@@ -60,7 +60,7 @@ class ClientApiTest {
     fun testDefaultPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
+        val page = ClientPage(
             page = 1,
             totalPages = 1,
             data = listOf(
@@ -80,16 +80,16 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedPage = Json.decodeValue(result.body().await(), ClientPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
-            filtering = ClientsFilteringOptions(),
-            paging = ClientsPagingOptions(pageNumber = 1, pageSize = 10),
-            sorting = ClientsSortingOptions(sortBy = "id", sortReverse = false)
+            filtering = ClientFilteringOptions(),
+            paging = ClientPagingOptions(pageNumber = 1, pageSize = 10),
+            sorting = ClientSortingOptions(sortBy = "id", sortReverse = false)
         ) }
     }
 
@@ -98,7 +98,7 @@ class ClientApiTest {
     fun testSpecificPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
+        val page = ClientPage(
             page = 2,
             totalPages = 2,
             data = listOf(
@@ -123,16 +123,16 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedPage = Json.decodeValue(result.body().await(), ClientPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
-            filtering = ClientsFilteringOptions(lastName = "User"),
-            paging = ClientsPagingOptions(pageNumber = 2, pageSize = 20),
-            sorting = ClientsSortingOptions(sortBy = "firstName", sortReverse = true)
+            filtering = ClientFilteringOptions(lastName = "User"),
+            paging = ClientPagingOptions(pageNumber = 2, pageSize = 20),
+            sorting = ClientSortingOptions(sortBy = "firstName", sortReverse = true)
         ) }
     }
 
@@ -141,7 +141,7 @@ class ClientApiTest {
     fun testInvalidPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
-        val page = ClientsPage(
+        val page = ClientPage(
             page = 1,
             totalPages = 1,
             data = listOf(
@@ -166,16 +166,16 @@ class ClientApiTest {
                 .await()
                 .send()
                 .await()
-        val returnedPage = Json.decodeValue(result.body().await(), ClientsPage::class.java)
+        val returnedPage = Json.decodeValue(result.body().await(), ClientPage::class.java)
 
         // then
         assertThat(result.statusCode()).isEqualTo(200)
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
-            filtering = ClientsFilteringOptions(),
-            paging = ClientsPagingOptions(pageNumber = 1, pageSize = 100),
-            sorting = ClientsSortingOptions(sortBy = "id", sortReverse = false)
+            filtering = ClientFilteringOptions(),
+            paging = ClientPagingOptions(pageNumber = 1, pageSize = 100),
+            sorting = ClientSortingOptions(sortBy = "id", sortReverse = false)
         ) }
     }
 

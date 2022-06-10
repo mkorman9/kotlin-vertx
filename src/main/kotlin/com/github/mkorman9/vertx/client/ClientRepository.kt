@@ -27,10 +27,10 @@ class ClientRepository @Inject constructor(
     }
 
     fun findPaged(
-        filtering: ClientsFilteringOptions,
-        paging: ClientsPagingOptions,
-        sorting: ClientsSortingOptions
-    ): Future<ClientsPage> {
+        filtering: ClientFilteringOptions,
+        paging: ClientPagingOptions,
+        sorting: ClientSortingOptions
+    ): Future<ClientPage> {
         val criteriaBuilder = sessionFactory.criteriaBuilder
         val dataQuery = buildDataQuery(filtering, sorting, criteriaBuilder)
         val countQuery = buildCountQuery(filtering, criteriaBuilder)
@@ -46,10 +46,35 @@ class ClientRepository @Inject constructor(
             )
                 .asTuple()
                 .onItem().transform { tuple ->
-                    ClientsPage(
+                    ClientPage(
                         data = tuple.item1,
                         page = paging.pageNumber,
                         totalPages = max(1, ceil(tuple.item2.toDouble() / paging.pageSize.toDouble()).toInt())
+                    )
+                }
+        }
+    }
+
+    fun findByCursor(
+        filtering: ClientFilteringOptions,
+        cursorOptions: ClientCursorOptions
+    ): Future<ClientCursor> {
+        val criteriaBuilder = sessionFactory.criteriaBuilder
+        val query = buildCursorQuery(filtering, cursorOptions, criteriaBuilder)
+
+        return withSession(sessionFactory) { session ->
+            session.createQuery(query)
+                .setMaxResults(cursorOptions.limit)
+                .resultList
+                .onItem().transform { clients ->
+                    var nextCursor: UUID? = null
+                    if (clients.isNotEmpty()) {
+                        nextCursor = clients[clients.size - 1].id
+                    }
+
+                    ClientCursor(
+                        data = clients,
+                        nextCursor = nextCursor?.toString()
                     )
                 }
         }
@@ -169,7 +194,7 @@ class ClientRepository @Inject constructor(
     }
 
     private fun buildCountQuery(
-        filtering: ClientsFilteringOptions,
+        filtering: ClientFilteringOptions,
         criteriaBuilder: CriteriaBuilder
     ): CriteriaQuery<Long> {
         val query = criteriaBuilder.createQuery(Long::class.java)
@@ -184,8 +209,8 @@ class ClientRepository @Inject constructor(
     }
 
     private fun buildDataQuery(
-        filtering: ClientsFilteringOptions,
-        sorting: ClientsSortingOptions,
+        filtering: ClientFilteringOptions,
+        sorting: ClientSortingOptions,
         criteriaBuilder: CriteriaBuilder,
     ): CriteriaQuery<Client> {
         val query = criteriaBuilder.createQuery(Client::class.java)
@@ -205,8 +230,32 @@ class ClientRepository @Inject constructor(
         return query
     }
 
+    private fun buildCursorQuery(
+        filtering: ClientFilteringOptions,
+        cursorOptions: ClientCursorOptions,
+        criteriaBuilder: CriteriaBuilder,
+    ): CriteriaQuery<Client> {
+        val query = criteriaBuilder.createQuery(Client::class.java)
+        val root = query.from(Client::class.java)
+
+        var whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
+
+        if (cursorOptions.cursor != null) {
+            whereClause = criteriaBuilder.and(
+                whereClause,
+                criteriaBuilder.greaterThanOrEqualTo(root.get("id"), cursorOptions.cursor)
+            )
+        }
+
+        query.select(root)
+        query.where(whereClause)
+        query.orderBy(criteriaBuilder.desc(root.get<String>("id")))
+
+        return query
+    }
+
     private fun <T> buildPredicate(
-        filtering: ClientsFilteringOptions,
+        filtering: ClientFilteringOptions,
         criteriaBuilder: CriteriaBuilder,
         query: CriteriaQuery<T>,
         root: Root<Client>
