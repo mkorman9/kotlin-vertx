@@ -7,7 +7,10 @@ import org.hibernate.reactive.mutiny.Mutiny.Session
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.hibernate.reactive.mutiny.Mutiny.Transaction
 
-fun <T> withSession(sessionFactory: SessionFactory, func: java.util.function.Function<Session, Uni<T>>): Future<T> {
+fun <T> withSession(
+    sessionFactory: SessionFactory,
+    func: java.util.function.Function<Session, Uni<T>>
+): Future<T> {
     val promise = Promise.promise<T>()
 
     sessionFactory
@@ -22,7 +25,10 @@ fun <T> withSession(sessionFactory: SessionFactory, func: java.util.function.Fun
     return promise.future()
 }
 
-fun <T> withTransaction(sessionFactory: SessionFactory, func: java.util.function.BiFunction<Session, Transaction, Uni<T>>): Future<T> {
+fun <T> withTransaction(
+    sessionFactory: SessionFactory,
+    func: java.util.function.BiFunction<Session, Transaction, Uni<T>>
+): Future<T> {
     val promise = Promise.promise<T>()
 
     sessionFactory

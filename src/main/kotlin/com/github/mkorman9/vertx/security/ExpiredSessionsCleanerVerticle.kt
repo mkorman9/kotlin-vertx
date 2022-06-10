@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.BootstrapVerticle
+import com.github.mkorman9.vertx.utils.AdvisoryLock
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -18,14 +19,17 @@ class ExpiredSessionsCleanerVerticle(
 
     private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private val sessionRepository = injector.getInstance<SessionRepository>()
+    private val advisoryLock = injector.getInstance<AdvisoryLock>()
 
     override suspend fun start() {
         vertx.setPeriodic(taskDelayMs.toLong()) {
-            log.info("Starting ExpiredSessionsCleaner task")
+            advisoryLock.acquire(lockId) {
+                log.info("Starting ExpiredSessionsCleaner task")
 
-            sessionRepository.deleteExpired()
-                .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
-                .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
+                sessionRepository.deleteExpired()
+                    .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
+                    .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
+            }
         }
 
         log.info("ExpiredSessionsCleanerVerticle has been deployed successfully")
