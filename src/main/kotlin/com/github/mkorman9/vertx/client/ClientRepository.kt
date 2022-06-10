@@ -243,7 +243,7 @@ class ClientRepository @Inject constructor(
         if (cursorOptions.cursor != null) {
             whereClause = criteriaBuilder.and(
                 whereClause,
-                criteriaBuilder.greaterThanOrEqualTo(root.get("id"), cursorOptions.cursor)
+                criteriaBuilder.greaterThan(root.get("id"), cursorOptions.cursor)
             )
         }
 
