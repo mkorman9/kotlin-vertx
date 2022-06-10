@@ -1,16 +1,30 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.utils.WebsocketStore
+import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
 
 @Singleton
-class ClientEventsWebsocketApi {
+class ClientEventsWebsocketApi @Inject constructor(
+    vertx: Vertx
+) {
     private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
 
     private val websockets = WebsocketStore()
+
+    init {
+        vertx.eventBus().consumer<ClientEvent>(ClientEventsVerticle.CONSUME_CHANNEL_ADDRESS) { event ->
+            val eventSerialized = Json.encode(event)
+
+            websockets.list().forEach { ws ->
+                ws.writeTextMessage(eventSerialized)
+            }
+        }
+    }
 
     fun handle(ws: ServerWebSocket) {
         val id = websockets.add(ws)
@@ -25,14 +39,6 @@ class ClientEventsWebsocketApi {
         ws.textMessageHandler { msg ->
             log.info("Websocket '$id' sent '${msg}'")
             ws.writeTextMessage(msg)
-        }
-    }
-
-    fun onEvent(clientEvent: ClientEvent) {
-        val eventSerialized = Json.encode(clientEvent)
-
-        websockets.list().forEach { ws ->
-            ws.writeTextMessage(eventSerialized)
         }
     }
 }

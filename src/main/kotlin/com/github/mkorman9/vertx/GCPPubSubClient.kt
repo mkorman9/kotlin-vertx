@@ -78,19 +78,21 @@ class GCPPubSubClient @Inject constructor(
         }
     }
 
-    fun createPublisher(topic: String): Publisher {
-        createTopic(topic)
+    fun createPublisher(topic: String): Future<Publisher> {
+        return vertx.executeBlocking { call ->
+            createTopic(topic)
 
-        val topicName = TopicName.of(projectId, topic)
+            val topicName = TopicName.of(projectId, topic)
 
-        val publisher = Publisher.newBuilder(topicName)
-            .setChannelProvider(channelProvider)
-            .setCredentialsProvider(credentialsProvider)
-            .build()
+            val publisher = Publisher.newBuilder(topicName)
+                .setChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .build()
 
-        publishers.add(publisher)
+            publishers.add(publisher)
 
-        return publisher
+            call.complete(publisher)
+        }
     }
 
     fun createSubscriber(
