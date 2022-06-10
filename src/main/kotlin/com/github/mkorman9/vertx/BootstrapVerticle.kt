@@ -54,8 +54,10 @@ class BootstrapVerticle : CoroutineVerticle() {
     }
 
     override suspend fun stop() {
-        injector.getInstance<GCPPubSubClient>().stop()
-        hibernateInitializer.stop(vertx).await()
+        CompositeFuture.all(
+            injector.getInstance<GCPPubSubClient>().stop(),
+            hibernateInitializer.stop(vertx)
+        ).await()
 
         log.info("BootstrapVerticle has been stopped")
     }

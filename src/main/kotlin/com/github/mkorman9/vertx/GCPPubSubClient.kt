@@ -60,8 +60,8 @@ class GCPPubSubClient @Inject constructor(
         subscriptionAdminClient = createSubscriptionAdminClient()
     }
 
-    fun stop() {
-        vertx.executeBlocking<Void> { call ->
+    fun stop(): Future<Void> {
+        return vertx.executeBlocking { call ->
             publishers.forEach {
                 it.shutdown()
             }
