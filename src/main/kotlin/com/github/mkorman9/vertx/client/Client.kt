@@ -13,28 +13,28 @@ data class Client(
     @Column(name = "id", columnDefinition = "uuid")
     var id: UUID,
 
-    @Column(name = "gender", columnDefinition = "CHAR(1)")
+    @Column(name = "gender", columnDefinition = "char(1)")
     var gender: String = "-",
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", columnDefinition = "text")
     var firstName: String,
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", columnDefinition = "text")
     var lastName: String,
 
-    @Column(name = "home_address")
+    @Column(name = "home_address", columnDefinition = "text")
     var address: String? = null,
 
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", columnDefinition = "text")
     var phoneNumber: String? = null,
 
-    @Column(name = "email")
+    @Column(name = "email", columnDefinition = "text")
     var email: String? = null,
 
-    @Column(name = "birth_date")
+    @Column(name = "birth_date", columnDefinition = "timestamp")
     var birthDate: LocalDateTime? = null,
 
-    @Column(name = "deleted")
+    @Column(name = "deleted", columnDefinition = "boolean")
     @JsonIgnore
     var deleted: Boolean = false,
 

@@ -19,7 +19,7 @@ data class CreditCard(
 //    val client: Client,
 
     @Id
-    @Column(name = "number")
+    @Column(name = "number", columnDefinition = "text")
     var number: String
 )
 

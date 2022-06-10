@@ -17,16 +17,16 @@ data class AccountCredentials(
     @Column(name = "account_id", columnDefinition = "uuid")
     var accountId: UUID,
 
-    @Column(name = "email")
+    @Column(name = "email", columnDefinition = "text")
     var email: String,
 
-    @Column(name = "password_bcrypt")
+    @Column(name = "password_bcrypt", columnDefinition = "text")
     var passwordBcrypt: String,
 
-    @Column(name = "last_change_at")
+    @Column(name = "last_change_at", columnDefinition = "timestamp")
     var lastChangeAt: LocalDateTime,
 
-    @Column(name = "last_change_ip")
+    @Column(name = "last_change_ip", columnDefinition = "text")
     var lastChangeIp: String,
 
     @OneToOne

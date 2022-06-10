@@ -6,32 +6,34 @@ import java.util.UUID
 import javax.persistence.*
 
 @Entity(name = "Session")
-@Table(name = "sessions")
+@Table(name = "sessions", indexes = [
+    Index(columnList = "token", name = "sessions_token_idx")
+])
 data class Session(
     @Id
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "text")
     var id: String,
 
     @Column(name = "account_id", columnDefinition = "uuid")
     var accountId: UUID,
 
-    @Column(name = "token")
+    @Column(name = "token", columnDefinition = "text")
     var token: String,
 
-    @Column(name = "roles")
+    @Column(name = "roles", columnDefinition = "text")
     @JsonIgnore
     var rolesString: String,
 
-    @Column(name = "ip")
+    @Column(name = "ip", columnDefinition = "text")
     var ip: String,
 
-    @Column(name = "issued_at")
+    @Column(name = "issued_at", columnDefinition = "timestamp")
     var issuedAt: LocalDateTime,
 
-    @Column(name = "duration")
+    @Column(name = "duration", columnDefinition = "integer")
     var duration: Int? = null,
 
-    @Column(name = "expires_at")
+    @Column(name = "expires_at", columnDefinition = "timestamp")
     var expiresAt: LocalDateTime? = null,
 
     @ManyToOne
