@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.JsonCodec
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -12,6 +13,12 @@ class TestModuleBase(
     private val vertx: Vertx,
     private val context: DeploymentContext
 ) : KotlinModule() {
+    companion object {
+        init {
+            JsonCodec.configure()
+        }
+    }
+
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
