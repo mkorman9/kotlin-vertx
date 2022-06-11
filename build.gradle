@@ -1,8 +1,8 @@
 buildscript {
     ext {
         kotlinVersion = '1.5.31'
-        vertxVersion = '4.3.0'
-        nettyVersion = '4.1.74.Final'  // must match the version used by vertx
+        vertxVersion = '4.3.1'
+        nettyVersion = '4.1.77.Final'  // must match the version used by vertx
         jacksonVersion = '2.13.3'
         mutinyVersion = '2.21.0'
         hibernateVersion = '6.0.0.Final'
