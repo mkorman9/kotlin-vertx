@@ -12,6 +12,7 @@ import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
+import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
@@ -49,14 +50,14 @@ class ClientEventsVerticle(
 
         log.info("ClientEvent has been received $event")
 
-        vertx.eventBus().publish(CONSUME_CHANNEL_ADDRESS, event)
+        vertx.eventBus().publish(CONSUME_CHANNEL_ADDRESS, JsonObject.mapFrom(event))
 
         consumer.ack()
     }
 
     private fun createPublishChannel(publisher: Publisher) {
-        vertx.eventBus().consumer<ClientEvent>(PUBLISH_CHANNEL_ADDRESS) { message ->
-            val data = Json.encode(message.body())
+        vertx.eventBus().consumer<JsonObject>(PUBLISH_CHANNEL_ADDRESS) { message ->
+            val data = message.body().encode()
             val pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8(data)).build()
             publisher.publish(pubsubMessage)
         }

@@ -7,6 +7,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
+import io.vertx.core.json.JsonObject
 
 @Singleton
 class ClientEventsWebsocketApi @Inject constructor(
@@ -17,11 +18,9 @@ class ClientEventsWebsocketApi @Inject constructor(
     private val websockets = WebsocketStore()
 
     init {
-        vertx.eventBus().consumer<ClientEvent>(ClientEventsVerticle.CONSUME_CHANNEL_ADDRESS) { message ->
-            val eventSerialized = Json.encode(message.body())
-
+        vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.CONSUME_CHANNEL_ADDRESS) { message ->
             websockets.list().forEach { ws ->
-                ws.writeTextMessage(eventSerialized)
+                ws.writeTextMessage(message.body().encode())
             }
         }
     }
