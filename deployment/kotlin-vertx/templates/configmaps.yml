@@ -16,11 +16,10 @@ data:
       endpoints:
         health: {{ .Values.app.health.endpoint }}
         metrics: {{ .Values.app.metrics.endpoint }}
-      config:
-        bodyLimit: {{ .Values.app.config.server.bodyLimit }}
     db:
       pool:
         size: {{ .Values.app.config.db.pool.size }}
-        connectTimeout: {{ .Values.app.config.db.pool.connectTimeout }}
-        idleTimeout: {{ .Values.app.config.db.pool.idleTimeout }}
-        cleanerPeriod: {{ .Values.app.config.db.pool.cleanerPeriod }}
+        timeouts:
+          connect: {{ .Values.app.config.db.pool.timeouts.connect }}
+          idle: {{ .Values.app.config.db.pool.timeouts.idle }}
+        cleaner: {{ .Values.app.config.db.pool.cleaner }}

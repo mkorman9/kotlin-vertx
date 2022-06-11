@@ -41,7 +41,7 @@ class GCPPubSubClient @Inject constructor(
     init {
         val gcpConfig = config.getJsonObject("gcp")
 
-        projectId = gcpConfig?.getString("projectId") ?: "default-project-id"
+        projectId = gcpConfig?.getString("project") ?: "default-project-id"
 
         val emulatorConfig = gcpConfig?.getJsonObject("pubsub")?.getJsonObject("emulator")
         val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false

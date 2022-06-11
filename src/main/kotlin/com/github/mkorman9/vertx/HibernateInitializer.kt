@@ -19,9 +19,9 @@ class HibernateInitializer {
 
         val poolConfig = config.getJsonObject("db")?.getJsonObject("pool")
         val poolSize = poolConfig?.getInteger("size") ?: 5
-        val connectTimeout = poolConfig?.getInteger("connectTimeout") ?: 30_000
-        val idleTimeout = poolConfig?.getInteger("idleTimeout") ?: 0
-        val cleanerPeriod = poolConfig?.getInteger("cleanerPeriod") ?: 1000
+        val connectTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("connect") ?: 30_000
+        val idleTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("idle") ?: 0
+        val cleanerPeriod = poolConfig?.getInteger("cleaner") ?: 1000
 
         val sqlConfig = config.getJsonObject("db")?.getJsonObject("sql")
         val showSql = sqlConfig?.getBoolean("show") ?: false
