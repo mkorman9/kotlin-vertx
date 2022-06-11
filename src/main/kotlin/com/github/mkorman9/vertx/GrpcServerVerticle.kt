@@ -13,11 +13,10 @@ import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
 class GrpcServerVerticle(
-    passedInjector: Injector? = null
+    private val injector: Injector
 ) : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(GrpcServerVerticle::class.java)
 
-    private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private lateinit var server: Server
 
     override suspend fun start() {

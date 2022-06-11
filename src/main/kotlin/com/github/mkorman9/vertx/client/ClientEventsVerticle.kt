@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.GCPPubSubClient
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.cloud.pubsub.v1.AckReplyConsumerWithResponse
@@ -18,7 +17,7 @@ import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
 class ClientEventsVerticle(
-    passedInjector: Injector? = null
+    private val injector: Injector
 ) : CoroutineVerticle() {
     companion object {
         const val PUBLISH_CHANNEL_ADDRESS = "client.events.publish"
@@ -27,7 +26,6 @@ class ClientEventsVerticle(
 
     private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
-    private val injector = passedInjector ?: BootstrapVerticle.injector
     private val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
 
     private val topicName = "client.events"

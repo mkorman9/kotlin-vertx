@@ -10,6 +10,7 @@ import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
+import io.vertx.core.Verticle
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -65,11 +66,12 @@ class BootstrapVerticle : CoroutineVerticle() {
     private fun deployVerticles(config: JsonObject): Future<CompositeFuture> {
         val futures = mutableListOf<Future<*>>()
 
-        futures.add(
-            vertx.deployVerticle(HttpServerVerticle::class.java.name, DeploymentOptions()
-                .setInstances(config.getJsonObject("server")?.getInteger("instances") ?: 1)
+        val httpServerInstances = config.getJsonObject("server")?.getInteger("instances") ?: 1
+        for (i in 0 until httpServerInstances) {
+            futures.add(
+                vertx.deployVerticle(HttpServerVerticle(injector))
             )
-        )
+        }
 
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
@@ -77,10 +79,12 @@ class BootstrapVerticle : CoroutineVerticle() {
                 val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                     .first()
 
-                val future = vertx.deployVerticle(c.name, DeploymentOptions()
-                    .setWorker(annotation.worker)
-                    .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
-                    .setWorkerPoolSize(annotation.workerPoolSize)
+                val future = vertx.deployVerticle(
+                    c.declaredConstructors[0].newInstance(injector) as Verticle,
+                    DeploymentOptions()
+                        .setWorker(annotation.worker)
+                        .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
+                        .setWorkerPoolSize(annotation.workerPoolSize)
                 )
                 futures.add(future)
             }

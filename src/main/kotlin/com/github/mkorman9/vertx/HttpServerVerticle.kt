@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.JsonCodecConfig
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -12,11 +11,10 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 class HttpServerVerticle(
-    passedInjector: Injector? = null
+    private var injector: Injector
 ): CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
 
-    private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private lateinit var server: HttpServer
 
     override suspend fun start() {

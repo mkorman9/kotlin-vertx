@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.BootstrapVerticle
 import com.github.mkorman9.vertx.utils.AdvisoryLock
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
@@ -10,14 +9,13 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 
 @DeployVerticle
 class ExpiredSessionsCleanerVerticle(
-    passedInjector: Injector? = null
+    private val injector: Injector
 ) : CoroutineVerticle() {
     private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
 
     private val lockId: Long = 1000
     private val taskDelayMs: Int = 30 * 60 * 1000  // 30 min
 
-    private val injector: Injector = passedInjector ?: BootstrapVerticle.injector
     private val sessionRepository = injector.getInstance<SessionRepository>()
     private val advisoryLock = injector.getInstance<AdvisoryLock>()
 
