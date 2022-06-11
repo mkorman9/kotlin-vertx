@@ -19,10 +19,9 @@ class ClientServiceGrpcImpl @Inject constructor(
 ) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
-            val clientsPage = clientRepository.findPaged(
+            val clientsPage = clientRepository.findByCursor(
                 ClientFilteringOptions(),
-                ClientPagingOptions(1, 10),
-                ClientSortingOptions("id", false)
+                ClientCursorOptions(cursor = null, limit = 10)
             ).await()
 
             clientsPage.data
@@ -36,9 +35,9 @@ class ClientServiceGrpcImpl @Inject constructor(
                         .setPhoneNumber(it.phoneNumber)
                         .setEmail(it.email)
                         .setBirthDate(toTimestamp(it.birthDate))
-                        .addAllCreditCards(it.creditCards.map {
+                        .addAllCreditCards(it.creditCards.map { cc ->
                             CreditCard.newBuilder()
-                                .setNumber(it.number)
+                                .setNumber(cc.number)
                                 .build()
                         })
                         .build()
