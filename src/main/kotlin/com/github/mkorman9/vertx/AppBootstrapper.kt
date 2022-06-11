@@ -11,59 +11,59 @@ import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future
 import io.vertx.core.Verticle
+import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.await
 import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
 
-class BootstrapVerticle : CoroutineVerticle() {
-    private val log = LoggerFactory.getLogger(BootstrapVerticle::class.java)
-
-    companion object {
-        lateinit var injector: Injector
-    }
+class AppBootstrapper {
+    private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
 
     private val hibernateInitializer = HibernateInitializer()
+    private lateinit var injector: Injector
 
-    override suspend fun start() {
+    fun bootstrap(vertx: Vertx) {
         try {
             val context = DeploymentContext(
-                version = readVersionFromManifest().await(),
+                version = readVersionFromManifest(),
                 startupTime = LocalDateTime.now(),
                 environment = System.getenv("ENVIRONMENT_NAME") ?: "default"
             )
 
-            val configRetriever = createConfigRetriever()
-            val config = configRetriever.config.await()
+            val configRetriever = createConfigRetriever(vertx)
+            val config = configRetriever.config
+                .toCompletionStage()
+                .toCompletableFuture()
+                .join()
 
-            val sessionFactory = hibernateInitializer.start(vertx, config).await()
+            val sessionFactory = hibernateInitializer.start(config)
 
             val module = AppModule(vertx, context, configRetriever, sessionFactory)
             injector = Guice.createInjector(module)
 
-            deployVerticles(config).await()
+            deployVerticles(vertx, injector, config)
+                .toCompletionStage()
+                .toCompletableFuture()
+                .join()
 
-            log.info("BootstrapVerticle has been deployed")
+            log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {
-            log.error("Failed to deploy BootstrapVerticle", e)
+            log.error("Failed to bootstrap the app", e)
             throw e
         }
     }
 
-    override suspend fun stop() {
-        CompositeFuture.all(
-            injector.getInstance<GCPPubSubClient>().stop(),
-            hibernateInitializer.stop(vertx)
-        ).await()
+    fun shutdown() {
+        injector.getInstance<GCPPubSubClient>().stop()
+        hibernateInitializer.stop()
 
-        log.info("BootstrapVerticle has been stopped")
+        log.info("App has been stopped")
     }
 
-    private fun deployVerticles(config: JsonObject): Future<CompositeFuture> {
+    private fun deployVerticles(vertx: Vertx, injector: Injector, config: JsonObject): Future<CompositeFuture> {
         val futures = mutableListOf<Future<*>>()
 
         val httpServerInstances = config.getJsonObject("server")?.getInteger("instances") ?: 1
@@ -92,7 +92,7 @@ class BootstrapVerticle : CoroutineVerticle() {
         return CompositeFuture.all(futures)
     }
 
-    private fun createConfigRetriever(): ConfigRetriever {
+    private fun createConfigRetriever(vertx: Vertx): ConfigRetriever {
         val store = ConfigStoreOptions()
             .setType("file")
             .setFormat("yaml")
@@ -114,21 +114,22 @@ class BootstrapVerticle : CoroutineVerticle() {
         )
     }
 
-    private fun readVersionFromManifest(): Future<String> {
-        return vertx.executeBlocking { call ->
-            try {
-                val resources = BootstrapVerticle::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
-                while (resources.hasMoreElements()) {
-                    resources.nextElement().openStream().use { stream ->
-                        val manifest = Manifest(stream)
-                        val attributes = manifest.mainAttributes
-                        val version = attributes.getValue("Version") ?: "dev"
-                        call.complete(version)
-                    }
+    private fun readVersionFromManifest(): String {
+        try {
+            val resources = AppBootstrapper::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
+            while (resources.hasMoreElements()) {
+                resources.nextElement().openStream().use { stream ->
+                    val manifest = Manifest(stream)
+                    val attributes = manifest.mainAttributes
+
+                    return attributes.getValue("Version") ?: "dev"
                 }
-            } catch (e: IOException) {
-                call.fail(e)
             }
+        } catch (e: IOException) {
+            log.error("Failed to load app version from MANIFEST.MF", e)
+            throw e
         }
+
+        return ""
     }
 }

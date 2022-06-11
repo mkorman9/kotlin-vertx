@@ -18,7 +18,8 @@ fun main() {
         )
     )
 
-    vertx.deployVerticle(BootstrapVerticle::class.java.name)
+    val bootstrapper = AppBootstrapper()
+    bootstrapper.bootstrap(vertx)
 
-    ShutdownHook.register(vertx)
+    ShutdownHook.register(vertx, bootstrapper)
 }

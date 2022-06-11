@@ -9,7 +9,7 @@ import javax.persistence.Persistence
 class HibernateInitializer {
     private lateinit var sessionFactory: SessionFactory
 
-    fun start(vertx: Vertx, config: JsonObject): Future<SessionFactory> {
+    fun start(config: JsonObject): SessionFactory {
         val uri = config.getJsonObject("db")?.getString("uri")
             ?: throw RuntimeException("db.uri is missing from config")
         val user = config.getJsonObject("db")?.getString("user")
@@ -43,24 +43,15 @@ class HibernateInitializer {
             "hibernate.highlight_sql" to highlightSql
         )
 
-        return vertx
-            .executeBlocking<SessionFactory?> { call ->
-                val sessionFactory = Persistence
-                    .createEntityManagerFactory("default", props)
-                    .unwrap(SessionFactory::class.java)
 
-                call.complete(sessionFactory)
-            }
-            .map {
-                sessionFactory = it
-                it
-            }
+        sessionFactory = Persistence
+            .createEntityManagerFactory("default", props)
+            .unwrap(SessionFactory::class.java)
+
+        return sessionFactory
     }
 
-    fun stop(vertx: Vertx): Future<Void> {
-        return vertx.executeBlocking { promise ->
-            sessionFactory.close()
-            promise.complete()
-        }
+    fun stop() {
+        sessionFactory.close()
     }
 }
