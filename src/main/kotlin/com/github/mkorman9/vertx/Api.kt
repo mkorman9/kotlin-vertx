@@ -27,6 +27,8 @@ class Api (injector: Injector) {
     private val metricsPath = endpointsConfig?.getString("metrics") ?: "/metrics"
 
     fun createRouter(): Router = Router.router(vertx).apply {
+        route().handler(BodyHandler.create())
+
         route(healthcheckPath).handler(healthcheckHandler.create())
         route(metricsPath).handler(PrometheusScrapingHandler.create())
 
