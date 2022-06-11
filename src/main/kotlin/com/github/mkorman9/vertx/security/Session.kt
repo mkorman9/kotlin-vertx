@@ -6,9 +6,7 @@ import java.util.UUID
 import javax.persistence.*
 
 @Entity(name = "Session")
-@Table(name = "sessions", indexes = [
-    Index(columnList = "token", name = "sessions_token_idx")
-])
+@Table(name = "sessions")
 data class Session(
     @Id
     @Column(name = "id", columnDefinition = "text")
@@ -17,7 +15,7 @@ data class Session(
     @Column(name = "account_id", columnDefinition = "uuid")
     var accountId: UUID,
 
-    @Column(name = "token", columnDefinition = "text")
+    @Column(name = "token", columnDefinition = "text", unique = true)
     var token: String,
 
     @Column(name = "roles", columnDefinition = "text")
