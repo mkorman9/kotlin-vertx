@@ -6,7 +6,6 @@ import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.grpc.Server
 import io.grpc.ServerBuilder
-import io.vertx.config.ConfigRetriever
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
@@ -21,8 +20,7 @@ class GrpcServerVerticle(
 
     override suspend fun start() {
         try {
-            val configRetriever = injector.getInstance<ConfigRetriever>()
-            val config = configRetriever.config.await()
+            val config = injector.getInstance<Config>()
 
             val port = config.getJsonObject("grpc")?.getInteger("port") ?: 9090
 

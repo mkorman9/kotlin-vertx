@@ -15,7 +15,6 @@ import com.google.cloud.pubsub.v1.stub.PublisherStubSettings
 import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings
 import com.google.pubsub.v1.*
 import io.grpc.ManagedChannelBuilder
-import io.vertx.config.ConfigRetriever
 import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -26,7 +25,7 @@ import javax.inject.Singleton
 @Singleton
 class GCPPubSubClient @Inject constructor(
     private val vertx: Vertx,
-    configRetriever: ConfigRetriever
+    config: Config
 ) {
     private val projectId: String
     private val credentialsProvider: CredentialsProvider
@@ -40,7 +39,6 @@ class GCPPubSubClient @Inject constructor(
     private val ephemeralSubscriptions = mutableListOf<ProjectSubscriptionName>()
 
     init {
-        val config = configRetriever.cachedConfig
         val gcpConfig = config.getJsonObject("gcp")
 
         projectId = gcpConfig?.getString("projectId") ?: "default-project-id"

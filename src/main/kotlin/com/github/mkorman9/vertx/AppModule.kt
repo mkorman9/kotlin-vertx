@@ -2,15 +2,17 @@ package com.github.mkorman9.vertx
 
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
-import io.vertx.config.ConfigRetriever
 import io.vertx.core.Vertx
+import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import org.reflections.Reflections
+
+typealias Config = JsonObject
 
 class AppModule(
     private val vertx: Vertx,
     private val context: DeploymentContext,
-    private val configRetriever: ConfigRetriever,
+    private val config: Config,
     private val sessionFactory: SessionFactory
 ) : KotlinModule() {
     companion object {
@@ -27,7 +29,7 @@ class AppModule(
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
-        bind<ConfigRetriever>().toInstance(configRetriever)
+        bind<Config>().toInstance(config)
         bind<SessionFactory>().toInstance(sessionFactory)
 
         getInjectableClasses()

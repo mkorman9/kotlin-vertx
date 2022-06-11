@@ -42,7 +42,7 @@ class AppBootstrapper {
 
             val sessionFactory = hibernateInitializer.start(config)
 
-            val module = AppModule(vertx, context, configRetriever, sessionFactory)
+            val module = AppModule(vertx, context, config, sessionFactory)
             injector = Guice.createInjector(module)
 
             deployVerticles(vertx, injector, config)
@@ -115,6 +115,7 @@ class AppBootstrapper {
             .addStore(configFileStore)
             .addStore(secretsFileStore)
             .addStore(envVarsStore)
+            .setScanPeriod(0)
         )
             .setConfigurationProcessor { config ->
                 val newConfig = mutableMapOf<String, Any>()

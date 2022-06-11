@@ -3,7 +3,6 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.utils.JsonCodecConfig
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
-import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -19,8 +18,7 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         try {
-            val configRetriever = injector.getInstance<ConfigRetriever>()
-            val config = configRetriever.config.await()
+            val config = injector.getInstance<Config>()
 
             val apiRouter = Api(injector).createRouter()
             val websocketApi = WebsocketApi(injector)
