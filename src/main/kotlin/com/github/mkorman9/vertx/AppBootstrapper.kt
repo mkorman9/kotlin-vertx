@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.github.mkorman9.vertx.utils.JsonCodec
 import com.google.inject.Guice
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -21,13 +22,17 @@ import java.util.jar.Manifest
 import kotlin.system.exitProcess
 
 class AppBootstrapper {
-    private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
+    }
 
     private val hibernateInitializer = HibernateInitializer()
     private lateinit var injector: Injector
 
     fun bootstrap(vertx: Vertx) {
         try {
+            JsonCodec.configure()
+
             val context = DeploymentContext(
                 version = readVersionFromManifest(),
                 startupTime = LocalDateTime.now(),

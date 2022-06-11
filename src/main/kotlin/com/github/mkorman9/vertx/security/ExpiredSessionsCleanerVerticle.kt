@@ -11,7 +11,9 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 class ExpiredSessionsCleanerVerticle(
     private val injector: Injector
 ) : CoroutineVerticle() {
-    private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
+    }
 
     private val lockId: Long = 1000
     private val taskDelayMs: Int = 30 * 60 * 1000  // 30 min

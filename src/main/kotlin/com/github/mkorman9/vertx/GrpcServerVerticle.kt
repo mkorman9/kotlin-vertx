@@ -14,7 +14,9 @@ import io.vertx.kotlin.coroutines.await
 class GrpcServerVerticle(
     private val injector: Injector
 ) : CoroutineVerticle() {
-    private val log = LoggerFactory.getLogger(GrpcServerVerticle::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(GrpcServerVerticle::class.java)
+    }
 
     private lateinit var server: Server
 

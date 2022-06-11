@@ -20,11 +20,11 @@ class ClientEventsVerticle(
     private val injector: Injector
 ) : CoroutineVerticle() {
     companion object {
+        private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
+
         const val PUBLISH_CHANNEL_ADDRESS = "client.events.publish"
         const val CONSUME_CHANNEL_ADDRESS = "client.events.consume"
     }
-
-    private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
     private val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
 

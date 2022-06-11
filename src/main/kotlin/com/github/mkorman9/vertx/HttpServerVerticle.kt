@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.JsonCodecConfig
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.http.HttpServer
@@ -12,7 +11,9 @@ import io.vertx.kotlin.coroutines.await
 class HttpServerVerticle(
     private var injector: Injector
 ): CoroutineVerticle() {
-    private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
+    }
 
     private lateinit var server: HttpServer
 
@@ -48,11 +49,5 @@ class HttpServerVerticle(
     override suspend fun stop() {
         server.close().await()
         log.info("HttpServerVerticle has been stopped")
-    }
-
-    companion object {
-        init {
-            JsonCodecConfig()
-        }
     }
 }

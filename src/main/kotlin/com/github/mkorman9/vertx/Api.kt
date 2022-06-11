@@ -13,7 +13,9 @@ import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.micrometer.PrometheusScrapingHandler
 
 class Api (injector: Injector) {
-    private val log = LoggerFactory.getLogger(Api::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(Api::class.java)
+    }
 
     private val vertx = injector.getInstance<Vertx>()
     private val config = injector.getInstance<Config>()

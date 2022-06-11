@@ -6,14 +6,15 @@ import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 
 @Singleton
 class ClientEventsWebsocketApi @Inject constructor(
     vertx: Vertx
 ) {
-    private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
+    companion object {
+        private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
+    }
 
     private val websockets = WebsocketStore()
 
