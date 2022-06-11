@@ -18,6 +18,7 @@ import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
+import kotlin.system.exitProcess
 
 class AppBootstrapper {
     private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
@@ -52,7 +53,7 @@ class AppBootstrapper {
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {
             log.error("Failed to bootstrap the app", e)
-            throw e
+            exitProcess(1)
         }
     }
 
