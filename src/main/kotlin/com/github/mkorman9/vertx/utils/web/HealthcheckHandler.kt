@@ -1,7 +1,6 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.web
 
-import com.github.mkorman9.vertx.utils.web.HealthcheckResponse
-import com.github.mkorman9.vertx.utils.web.endWithJson
+import com.github.mkorman9.vertx.utils.DeploymentContext
 import io.vertx.core.Handler
 import io.vertx.ext.web.RoutingContext
 
