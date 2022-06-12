@@ -8,6 +8,7 @@ import com.google.inject.Injector
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
+import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import java.time.LocalDateTime
 import kotlin.system.exitProcess
 
@@ -16,7 +17,7 @@ class AppBootstrapper {
         private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
     }
 
-    private val hibernateInitializer = HibernateInitializer()
+    private lateinit var sessionFactory: SessionFactory
     private lateinit var gcpPubSubClient: GCPPubSubClient
 
     fun bootstrap(vertx: Vertx) {
@@ -26,7 +27,7 @@ class AppBootstrapper {
             val context = DeploymentContext.create()
             val config = ConfigReader.read(vertx)
 
-            val sessionFactory = hibernateInitializer.start(config)
+            sessionFactory = HibernateInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient(vertx, config)
 
             val module = AppModule(vertx, context, config, sessionFactory, gcpPubSubClient)
@@ -45,7 +46,7 @@ class AppBootstrapper {
 
     fun shutdown() {
         gcpPubSubClient.stop()
-        hibernateInitializer.stop()
+        sessionFactory.close()
 
         log.info("App has been stopped")
     }
