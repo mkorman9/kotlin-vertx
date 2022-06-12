@@ -1,22 +1,14 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.DeployVerticle
-import com.github.mkorman9.vertx.utils.DeploymentContext
-import com.github.mkorman9.vertx.utils.JsonCodec
-import com.github.mkorman9.vertx.utils.ReflectionsUtils
+import com.github.mkorman9.vertx.utils.*
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.utils.hibernate.HibernateInitializer
 import com.google.inject.Guice
 import com.google.inject.Injector
-import io.vertx.config.ConfigRetriever
-import io.vertx.config.ConfigRetrieverOptions
-import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
-import java.io.IOException
 import java.time.LocalDateTime
-import java.util.jar.Manifest
 import kotlin.system.exitProcess
 
 class AppBootstrapper {
@@ -32,16 +24,11 @@ class AppBootstrapper {
             JsonCodec.configure()
 
             val context = DeploymentContext(
-                version = readVersionFromManifest(),
+                version = VersionReader.read(),
                 startupTime = LocalDateTime.now(),
                 environment = System.getenv("ENVIRONMENT_NAME") ?: "default"
             )
-
-            val configRetriever = createConfigRetriever(vertx)
-            val config = configRetriever.config
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
+            val config = ConfigReader.read(vertx)
 
             val sessionFactory = hibernateInitializer.start(config)
             gcpPubSubClient = GCPPubSubClient(vertx, config)
@@ -108,81 +95,5 @@ class AppBootstrapper {
             .toCompletionStage()
             .toCompletableFuture()
             .join()
-    }
-
-    private fun createConfigRetriever(vertx: Vertx): ConfigRetriever {
-        val configFileStore = ConfigStoreOptions()
-            .setType("file")
-            .setFormat("yaml")
-            .setOptional(true)
-            .setConfig(JsonObject()
-                .put("path", System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
-            )
-        val secretsFileStore = ConfigStoreOptions()
-            .setType("file")
-            .setFormat("yaml")
-            .setOptional(true)
-            .setConfig(JsonObject()
-                .put("path", System.getenv().getOrDefault("SECRETS_FILE", "./secrets.yml"))
-            )
-        val envVarsStore = ConfigStoreOptions()
-            .setType("env")
-
-        return ConfigRetriever.create(vertx, ConfigRetrieverOptions()
-            .addStore(configFileStore)
-            .addStore(secretsFileStore)
-            .addStore(envVarsStore)
-            .setScanPeriod(0)
-        )
-            .setConfigurationProcessor { config ->
-                val newConfig = mutableMapOf<String, Any>()
-
-                config.map.forEach { entry ->
-                    val key = entry.key.lowercase()
-                    val value = entry.value
-
-                    val splits = key.split("_")
-                    if (splits.size == 1) {
-                        newConfig[key] = value
-                    } else {
-                        var ptr = newConfig
-                        splits.forEachIndexed { index, s ->
-                            if (index < splits.size - 1) {
-                                if (!ptr.containsKey(s)) {
-                                    ptr[s] = mutableMapOf<String, Any>()
-                                }
-
-                                if (ptr[s] is Map<*, *>) {
-                                    @Suppress("UNCHECKED_CAST")
-                                    ptr = ptr[s] as MutableMap<String, Any>
-                                }
-                            } else {
-                                ptr[s] = value
-                            }
-                        }
-                    }
-                }
-
-                JsonObject(newConfig)
-            }
-    }
-
-    private fun readVersionFromManifest(): String {
-        try {
-            val resources = AppBootstrapper::class.java.classLoader.getResources("META-INF/MANIFEST.MF")
-            while (resources.hasMoreElements()) {
-                resources.nextElement().openStream().use { stream ->
-                    val manifest = Manifest(stream)
-                    val attributes = manifest.mainAttributes
-
-                    return attributes.getValue("Version") ?: "dev"
-                }
-            }
-        } catch (e: IOException) {
-            log.error("Failed to load app version from MANIFEST.MF", e)
-            throw e
-        }
-
-        return ""
     }
 }

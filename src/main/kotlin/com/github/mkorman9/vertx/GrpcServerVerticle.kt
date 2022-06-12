@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientServiceGrpcImpl
+import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance

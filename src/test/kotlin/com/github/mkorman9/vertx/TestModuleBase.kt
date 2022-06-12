@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.JsonCodec
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient

@@ -1,15 +1,13 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.ReflectionsUtils
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
-
-typealias Config = JsonObject
 
 class AppModule(
     private val vertx: Vertx,
