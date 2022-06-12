@@ -8,12 +8,15 @@ data class DeploymentContext(
     val environment: String
 ) {
     companion object {
-        fun create(): DeploymentContext {
-            return DeploymentContext(
+        private val instance =
+            DeploymentContext(
                 version = VersionReader.read(),
                 startupTime = LocalDateTime.now(),
                 environment = System.getenv("ENVIRONMENT_NAME") ?: "default"
             )
+
+        fun create(): DeploymentContext {
+            return instance
         }
     }
 }
