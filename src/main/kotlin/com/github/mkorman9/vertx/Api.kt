@@ -2,7 +2,6 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.security.SessionApi
-import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.HealthcheckHandler
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import com.github.mkorman9.vertx.utils.web.endWithJson
@@ -20,21 +19,16 @@ class Api (injector: Injector) {
     }
 
     private val vertx = injector.getInstance<Vertx>()
-    private val config = injector.getInstance<Config>()
 
     private val healthcheckHandler = injector.getInstance<HealthcheckHandler>()
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
-    private val endpointsConfig = config.getJsonObject("server")?.getJsonObject("endpoints")
-    private val healthcheckPath = endpointsConfig?.getString("health") ?: "/health"
-    private val metricsPath = endpointsConfig?.getString("metrics") ?: "/metrics"
-
     fun createRouter(): Router = Router.router(vertx).apply {
         route().handler(BodyHandler.create())
 
-        route(healthcheckPath).handler(healthcheckHandler.create())
-        route(metricsPath).handler(PrometheusScrapingHandler.create())
+        route("/health").handler(healthcheckHandler.create())
+        route("/metrics").handler(PrometheusScrapingHandler.create())
 
         route("/api/v1/client*").subRouter(clientApi.createRouter())
         route("/api/v1/session*").subRouter(sessionApi.createRouter())

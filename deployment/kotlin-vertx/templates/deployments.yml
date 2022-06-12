@@ -38,14 +38,14 @@ spec:
               containerPort: {{ .Values.app.port }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.app.health.endpoint }}
+              path: /health
               port: {{ .Values.app.port }}
               scheme: HTTP
             initialDelaySeconds: {{ .Values.app.health.readiness.initialDelaySeconds }}
             periodSeconds: {{ .Values.app.health.readiness.periodSeconds }}
           livenessProbe:
             httpGet:
-              path: {{ .Values.app.health.endpoint }}
+              path: /health
               port: {{ .Values.app.port }}
               scheme: HTTP
             initialDelaySeconds: {{ .Values.app.health.liveness.initialDelaySeconds }}
