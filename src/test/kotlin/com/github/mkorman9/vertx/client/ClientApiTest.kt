@@ -1,12 +1,13 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.HttpServerVerticle
-import com.github.mkorman9.vertx.asyncTest
-import com.github.mkorman9.vertx.createTestInjector
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
+import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.asyncTest
+import com.github.mkorman9.vertx.utils.createTestInjector
 import com.github.mkorman9.vertx.utils.web.Cause
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -42,14 +43,18 @@ class ClientApiTest {
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
-        val injector = createTestInjector(vertx, object : KotlinModule() {
-            override fun configure() {
-                bind<ClientApi>()
-                bind<ClientRepository>().toInstance(clientRepository)
-                bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
-                bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
+        val injector = createTestInjector(
+            vertx,
+            Config(),
+            object : KotlinModule() {
+                override fun configure() {
+                    bind<ClientApi>()
+                    bind<ClientRepository>().toInstance(clientRepository)
+                    bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
+                    bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
+                }
             }
-        })
+        )
 
         vertx.deployVerticle(HttpServerVerticle(injector))
             .onComplete { testContext.completeNow() }
