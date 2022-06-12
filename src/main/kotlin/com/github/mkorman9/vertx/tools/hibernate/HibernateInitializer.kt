@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils.hibernate
+package com.github.mkorman9.vertx.tools.hibernate
 
 import com.github.mkorman9.vertx.utils.Config
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory

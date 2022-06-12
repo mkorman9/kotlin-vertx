@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils.gcp
+package com.github.mkorman9.vertx.tools.gcp
 
 import com.github.mkorman9.vertx.utils.Config
 import com.google.api.gax.core.CredentialsProvider

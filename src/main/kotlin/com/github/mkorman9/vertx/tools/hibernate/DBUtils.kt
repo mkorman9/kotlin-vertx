@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.tools.hibernate
 
 import io.smallrye.mutiny.Uni
 import io.vertx.core.Future

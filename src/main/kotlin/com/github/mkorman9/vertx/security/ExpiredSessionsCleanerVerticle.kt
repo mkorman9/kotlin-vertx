@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.utils.hibernate.AdvisoryLock
+import com.github.mkorman9.vertx.tools.hibernate.AdvisoryLock
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance

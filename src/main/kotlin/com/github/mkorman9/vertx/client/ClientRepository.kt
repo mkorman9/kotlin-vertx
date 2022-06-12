@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.utils.withSession
-import com.github.mkorman9.vertx.utils.withTransaction
+import com.github.mkorman9.vertx.tools.hibernate.withSession
+import com.github.mkorman9.vertx.tools.hibernate.withTransaction
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.smallrye.mutiny.Uni

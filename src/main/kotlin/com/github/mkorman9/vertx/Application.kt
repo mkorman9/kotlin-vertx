@@ -3,8 +3,8 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.ConfigReader
-import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
-import com.github.mkorman9.vertx.utils.hibernate.HibernateInitializer
+import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
+import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
