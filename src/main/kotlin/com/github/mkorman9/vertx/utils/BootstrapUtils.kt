@@ -6,12 +6,13 @@ import io.vertx.core.Vertx
 
 class BootstrapUtils {
     companion object {
-        fun bootstrap(packageName: String, vertx: Vertx, appModule: com.google.inject.Module) {
+        fun bootstrap(packageName: String, vertx: Vertx, config: Config, appModule: com.google.inject.Module) {
             JsonCodec.configure()
 
             val vertxModule = object : KotlinModule() {
                 override fun configure() {
                     bind<Vertx>().toInstance(vertx)
+                    bind<Config>().toInstance(config)
                 }
             }
             val injector = InjectorUtils.createInjector(

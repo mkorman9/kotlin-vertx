@@ -1,10 +1,9 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.BootstrapUtils
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.ConfigReader
 import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
+import com.github.mkorman9.vertx.utils.BootstrapUtils
+import com.github.mkorman9.vertx.utils.ConfigReader
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
@@ -28,9 +27,8 @@ class Application {
             sessionFactory = HibernateInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
-            BootstrapUtils.bootstrap(PACKAGE_NAME, vertx, object : KotlinModule() {
+            BootstrapUtils.bootstrap(PACKAGE_NAME, vertx, config, object : KotlinModule() {
                 override fun configure() {
-                    bind<Config>().toInstance(config)
                     bind<SessionFactory>().toInstance(sessionFactory)
                     bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
                 }
