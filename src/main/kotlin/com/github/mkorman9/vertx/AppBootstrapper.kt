@@ -68,7 +68,9 @@ class AppBootstrapper {
     }
 
     private fun deployHttpServer(config: JsonObject, vertx: Vertx, injector: Injector) {
-        val instances = config.getJsonObject("server")?.getInteger("instances") ?: 1
+        val instances = config.getJsonObject("server")?.getInteger("instances")
+            ?: Runtime.getRuntime().availableProcessors()
+
         val futures = mutableListOf<Future<*>>()
 
         for (i in 0 until instances) {
