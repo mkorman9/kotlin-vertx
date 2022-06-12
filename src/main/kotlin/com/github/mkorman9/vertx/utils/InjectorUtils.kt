@@ -8,7 +8,7 @@ import dev.misfitlabs.kotlinguice4.KotlinModule
 
 class InjectorUtils {
     companion object {
-        fun createInjector(packageName: String, appModule: KotlinModule): Injector {
+        fun createInjector(packageName: String, appModule: com.google.inject.Module): Injector {
             return Guice.createInjector(
                 Modules.override(scanForBeans(packageName))
                     .with(appModule)

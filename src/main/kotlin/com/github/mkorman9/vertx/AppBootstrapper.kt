@@ -1,11 +1,11 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.BootstrapUtils
+import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.ConfigReader
-import com.github.mkorman9.vertx.utils.InjectorUtils
-import com.github.mkorman9.vertx.utils.JsonCodec
-import com.github.mkorman9.vertx.utils.VerticleDeployer
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.utils.hibernate.HibernateInitializer
+import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -14,6 +14,8 @@ import kotlin.system.exitProcess
 class AppBootstrapper {
     companion object {
         private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
+
+        const val PACKAGE_NAME = "com.github.mkorman9.vertx"
     }
 
     private lateinit var sessionFactory: SessionFactory
@@ -21,19 +23,18 @@ class AppBootstrapper {
 
     fun bootstrap(vertx: Vertx) {
         try {
-            JsonCodec.configure()
-
             val config = ConfigReader.read(vertx)
 
             sessionFactory = HibernateInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
-            val injector = InjectorUtils.createInjector(
-                AppModule.PACKAGE_NAME,
-                AppModule(vertx, config, sessionFactory, gcpPubSubClient)
-            )
-
-            VerticleDeployer.scanAndDeploy(vertx, AppModule.PACKAGE_NAME, injector)
+            BootstrapUtils.bootstrap(PACKAGE_NAME, vertx, object : KotlinModule() {
+                override fun configure() {
+                    bind<Config>().toInstance(config)
+                    bind<SessionFactory>().toInstance(sessionFactory)
+                    bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
+                }
+            })
 
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {

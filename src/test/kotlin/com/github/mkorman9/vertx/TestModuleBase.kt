@@ -28,7 +28,7 @@ class TestModuleBase(
         bind<GCPPubSubClient>().toInstance(mockk())
         bind<Config>().toInstance(createConfig())
 
-        ReflectionsUtils.findClasses(AppModule.PACKAGE_NAME, Singleton::class.java)
+        ReflectionsUtils.findClasses(AppBootstrapper.PACKAGE_NAME, Singleton::class.java)
             .forEach {
                 val kclass = Reflection.createKotlinClass(Class.forName(it.name))
                 bind(it).toInstance(mockkClass(kclass, relaxed = true))
