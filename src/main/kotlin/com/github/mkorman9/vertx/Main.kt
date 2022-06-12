@@ -19,8 +19,8 @@ fun main() {
         )
     )
 
-    val bootstrapper = AppBootstrapper()
-    bootstrapper.bootstrap(vertx)
+    val application = Application()
+    application.bootstrap(vertx)
 
     ShutdownHook.register {
         vertx.close()
@@ -28,6 +28,6 @@ fun main() {
             .toCompletableFuture()
             .join()
 
-        bootstrapper.shutdown()
+        application.shutdown()
     }
 }

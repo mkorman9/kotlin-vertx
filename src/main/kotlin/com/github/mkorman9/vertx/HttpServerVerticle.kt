@@ -25,7 +25,7 @@ class HttpServerVerticle(
         try {
             val config = injector.getInstance<Config>()
 
-            val apiRouter = Api(injector).createRouter()
+            val restApiRouter = RestApi(injector).createRouter()
             val websocketApi = WebsocketApi(injector)
 
             server = vertx
@@ -38,7 +38,7 @@ class HttpServerVerticle(
                         reusePort = true
                     )
                 )
-                .requestHandler { apiRouter.handle(it) }
+                .requestHandler { restApiRouter.handle(it) }
                 .webSocketHandler { websocketApi.handle(it) }
                 .listen()
                 .await()

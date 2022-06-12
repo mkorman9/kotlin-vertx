@@ -11,9 +11,9 @@ import io.vertx.core.impl.logging.LoggerFactory
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
-class AppBootstrapper {
+class Application {
     companion object {
-        private val log = LoggerFactory.getLogger(AppBootstrapper::class.java)
+        private val log = LoggerFactory.getLogger(Application::class.java)
 
         const val PACKAGE_NAME = "com.github.mkorman9.vertx"
     }
