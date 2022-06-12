@@ -2,7 +2,9 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.JsonCodec
+import com.github.mkorman9.vertx.utils.ReflectionsUtils
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
+import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.mockk.mockkClass
@@ -26,7 +28,7 @@ class TestModuleBase(
         bind<GCPPubSubClient>().toInstance(mockk())
         bind<Config>().toInstance(createConfig())
 
-        AppModule.getInjectableClasses()
+        ReflectionsUtils.findClasses(AppModule.PACKAGE_NAME, Singleton::class.java)
             .forEach {
                 val kclass = Reflection.createKotlinClass(Class.forName(it.name))
                 bind(it).toInstance(mockkClass(kclass, relaxed = true))
@@ -35,7 +37,10 @@ class TestModuleBase(
 
     private fun createConfig(): Config {
         return JsonObject()
-            .put("host", "127.0.0.1")
-            .put("port", 8080)
+            .put("server",
+                JsonObject()
+                    .put("host", "127.0.0.1")
+                    .put("port", 8080)
+            )
     }
 }
