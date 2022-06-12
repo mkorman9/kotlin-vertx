@@ -1,6 +1,8 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.github.mkorman9.vertx.utils.NUM_OF_CPUS
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.http.HttpServer
@@ -9,6 +11,7 @@ import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
+@DeployVerticle(instances = NUM_OF_CPUS)
 class HttpServerVerticle(
     private var injector: Injector
 ): CoroutineVerticle() {
@@ -39,6 +42,8 @@ class HttpServerVerticle(
                 .webSocketHandler { websocketApi.handle(it) }
                 .listen()
                 .await()
+
+            log.info("HttpServerVerticle has been successfully deployed")
         } catch (e: Exception) {
             log.error("Failed to deploy HttpServerVerticle", e)
             throw e
@@ -47,5 +52,6 @@ class HttpServerVerticle(
 
     override suspend fun stop() {
         server.close().await()
+        log.info("HttpServerVerticle has been stopped")
     }
 }

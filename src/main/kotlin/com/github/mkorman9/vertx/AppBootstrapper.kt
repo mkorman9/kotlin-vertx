@@ -6,12 +6,8 @@ import com.github.mkorman9.vertx.utils.JsonCodec
 import com.github.mkorman9.vertx.utils.VerticleDeployer
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.utils.hibernate.HibernateInitializer
-import com.google.inject.Injector
-import io.vertx.core.CompositeFuture
-import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
-import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
@@ -37,8 +33,6 @@ class AppBootstrapper {
                 AppModule(vertx, config, sessionFactory, gcpPubSubClient)
             )
 
-            deployHttpServer(config, vertx, injector)
-
             VerticleDeployer.scanAndDeploy(vertx, AppModule.PACKAGE_NAME, injector)
 
             log.info("App has been bootstrapped successfully")
@@ -53,25 +47,5 @@ class AppBootstrapper {
         sessionFactory.close()
 
         log.info("App has been stopped")
-    }
-
-    private fun deployHttpServer(config: JsonObject, vertx: Vertx, injector: Injector) {
-        val instances = config.getJsonObject("server")?.getInteger("instances")
-            ?: Runtime.getRuntime().availableProcessors()
-
-        val futures = mutableListOf<Future<*>>()
-
-        for (i in 0 until instances) {
-            futures.add(
-                vertx.deployVerticle(HttpServerVerticle(injector))
-            )
-        }
-
-        CompositeFuture.all(futures)
-            .toCompletionStage()
-            .toCompletableFuture()
-            .join()
-
-        log.info("Successfully deployed $instances HttpServerVerticle instances")
     }
 }
