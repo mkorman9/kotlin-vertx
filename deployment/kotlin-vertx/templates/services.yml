@@ -11,7 +11,7 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/scheme: "http"
     prometheus.io/port: "{{ .Values.app.port }}"
-    prometheus.io/path: "{{ .Values.app.metrics.endpoint }}"
+    prometheus.io/path: "/metrics"
 spec:
   selector:
     app: {{ .Values.app.name }}
