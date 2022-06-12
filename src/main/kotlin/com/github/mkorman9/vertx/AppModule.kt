@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.ReflectionsUtils
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.google.inject.Singleton
@@ -25,7 +24,6 @@ class AppModule(
 
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
-        bind<DeploymentContext>().toInstance(DeploymentContext.create())
         bind<Config>().toInstance(config)
         bind<SessionFactory>().toInstance(sessionFactory)
         bind<GCPPubSubClient>().toInstance(gcpPubSubClient)

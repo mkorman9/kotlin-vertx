@@ -20,14 +20,13 @@ class Api (injector: Injector) {
 
     private val vertx = injector.getInstance<Vertx>()
 
-    private val healthcheckHandler = injector.getInstance<HealthcheckHandler>()
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
     fun createRouter(): Router = Router.router(vertx).apply {
         route().handler(BodyHandler.create())
 
-        route("/health").handler(healthcheckHandler.create())
+        route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
         route("/api/v1/client*").subRouter(clientApi.createRouter())

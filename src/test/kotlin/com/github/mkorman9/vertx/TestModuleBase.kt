@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.JsonCodec
 import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -13,8 +12,7 @@ import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
-    private val vertx: Vertx,
-    private val context: DeploymentContext
+    private val vertx: Vertx
 ) : KotlinModule() {
     companion object {
         init {
@@ -24,7 +22,6 @@ class TestModuleBase(
 
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
-        bind<DeploymentContext>().toInstance(context)
         bind<SessionFactory>().toInstance(mockk())
         bind<GCPPubSubClient>().toInstance(mockk())
         bind<Config>().toInstance(createConfig())
