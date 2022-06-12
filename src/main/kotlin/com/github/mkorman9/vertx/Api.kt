@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.security.SessionApi
 import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.HealthcheckHandler
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import com.github.mkorman9.vertx.utils.web.endWithJson
 import com.google.inject.Injector

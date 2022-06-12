@@ -37,7 +37,8 @@ class AppBootstrapper {
             val injector = Guice.createInjector(module)
 
             deployHttpServer(config, vertx, injector)
-            deployVerticlesByReflection(vertx, injector)
+
+            VerticleDeployer.scanAndDeploy(vertx, AppModule.packageName, injector)
 
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {
@@ -71,29 +72,5 @@ class AppBootstrapper {
             .join()
 
         log.info("Successfully deployed $instances HttpServerVerticle instances")
-    }
-
-    private fun deployVerticlesByReflection(vertx: Vertx, injector: Injector) {
-        val futures = mutableListOf<Future<*>>()
-
-        ReflectionsUtils.findClasses(AppModule.packageName, DeployVerticle::class.java)
-            .forEach { c ->
-                val annotation = c.annotations.filterIsInstance<DeployVerticle>()
-                    .first()
-
-                val future = vertx.deployVerticle(
-                    c.declaredConstructors[0].newInstance(injector) as Verticle,
-                    DeploymentOptions()
-                        .setWorker(annotation.worker)
-                        .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
-                        .setWorkerPoolSize(annotation.workerPoolSize)
-                )
-                futures.add(future)
-            }
-
-        CompositeFuture.all(futures)
-            .toCompletionStage()
-            .toCompletableFuture()
-            .join()
     }
 }
