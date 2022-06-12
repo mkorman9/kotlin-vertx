@@ -11,7 +11,6 @@ import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 
 class AppModule(
     private val vertx: Vertx,
-    private val context: DeploymentContext,
     private val config: Config,
     private val sessionFactory: SessionFactory,
     private val gcpPubSubClient: GCPPubSubClient
@@ -26,7 +25,7 @@ class AppModule(
 
     override fun configure() {
         bind<Vertx>().toInstance(vertx)
-        bind<DeploymentContext>().toInstance(context)
+        bind<DeploymentContext>().toInstance(DeploymentContext.create())
         bind<Config>().toInstance(config)
         bind<SessionFactory>().toInstance(sessionFactory)
         bind<GCPPubSubClient>().toInstance(gcpPubSubClient)

@@ -24,13 +24,12 @@ class AppBootstrapper {
         try {
             JsonCodec.configure()
 
-            val context = DeploymentContext.create()
             val config = ConfigReader.read(vertx)
 
             sessionFactory = HibernateInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient(vertx, config)
 
-            val module = AppModule(vertx, context, config, sessionFactory, gcpPubSubClient)
+            val module = AppModule(vertx, config, sessionFactory, gcpPubSubClient)
             val injector = Guice.createInjector(module)
 
             deployHttpServer(config, vertx, injector)
