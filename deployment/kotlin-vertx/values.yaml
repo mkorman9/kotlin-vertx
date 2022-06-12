@@ -48,9 +48,6 @@ app:
       cpu: 85
 
   resources:
-    cpu:
-      request: 500m
-      limit: 2
     memory:
       request: 512Mi
       limit: 2Gi
