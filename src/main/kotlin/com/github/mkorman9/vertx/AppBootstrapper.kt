@@ -28,7 +28,6 @@ class AppBootstrapper {
 
     private val hibernateInitializer = HibernateInitializer()
     private lateinit var gcpPubSubClient: GCPPubSubClient
-    private lateinit var injector: Injector
 
     fun bootstrap(vertx: Vertx) {
         try {
@@ -50,7 +49,7 @@ class AppBootstrapper {
             gcpPubSubClient = GCPPubSubClient(vertx, config)
 
             val module = AppModule(vertx, context, config, sessionFactory, gcpPubSubClient)
-            injector = Guice.createInjector(module)
+            val injector = Guice.createInjector(module)
 
             deployHttpServer(config, vertx, injector)
             deployVerticlesByReflection(vertx, injector)
