@@ -23,11 +23,7 @@ class AppBootstrapper {
         try {
             JsonCodec.configure()
 
-            val context = DeploymentContext(
-                version = VersionReader.read(),
-                startupTime = LocalDateTime.now(),
-                environment = System.getenv("ENVIRONMENT_NAME") ?: "default"
-            )
+            val context = DeploymentContext.create()
             val config = ConfigReader.read(vertx)
 
             val sessionFactory = hibernateInitializer.start(config)

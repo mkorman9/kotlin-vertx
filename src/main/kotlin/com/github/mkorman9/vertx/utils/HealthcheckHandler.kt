@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.utils
 
-import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.web.HealthcheckResponse
 import com.github.mkorman9.vertx.utils.web.endWithJson
 import com.google.inject.Inject
