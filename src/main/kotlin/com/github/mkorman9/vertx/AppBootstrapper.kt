@@ -50,10 +50,8 @@ class AppBootstrapper {
             val module = AppModule(vertx, context, config, sessionFactory)
             injector = Guice.createInjector(module)
 
-            deployVerticles(vertx, injector, config)
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
+            deployHttpServer(config, vertx, injector)
+            deployVerticlesByReflection(vertx, injector)
 
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {
@@ -69,15 +67,26 @@ class AppBootstrapper {
         log.info("App has been stopped")
     }
 
-    private fun deployVerticles(vertx: Vertx, injector: Injector, config: JsonObject): Future<CompositeFuture> {
+    private fun deployHttpServer(config: JsonObject, vertx: Vertx, injector: Injector) {
+        val instances = config.getJsonObject("server")?.getInteger("instances") ?: 1
         val futures = mutableListOf<Future<*>>()
 
-        val httpServerInstances = config.getJsonObject("server")?.getInteger("instances") ?: 1
-        for (i in 0 until httpServerInstances) {
+        for (i in 0 until instances) {
             futures.add(
                 vertx.deployVerticle(HttpServerVerticle(injector))
             )
         }
+
+        CompositeFuture.all(futures)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+
+        log.info("Successfully deployed $instances HttpServerVerticle instances")
+    }
+
+    private fun deployVerticlesByReflection(vertx: Vertx, injector: Injector) {
+        val futures = mutableListOf<Future<*>>()
 
         val packageReflections = Reflections(AppModule.packageName)
         packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
@@ -95,7 +104,10 @@ class AppBootstrapper {
                 futures.add(future)
             }
 
-        return CompositeFuture.all(futures)
+        CompositeFuture.all(futures)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
     }
 
     private fun createConfigRetriever(vertx: Vertx): ConfigRetriever {
