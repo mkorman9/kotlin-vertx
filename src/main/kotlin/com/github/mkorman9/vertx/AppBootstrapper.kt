@@ -27,7 +27,7 @@ class AppBootstrapper {
             val config = ConfigReader.read(vertx)
 
             sessionFactory = HibernateInitializer.initialize(config)
-            gcpPubSubClient = GCPPubSubClient(vertx, config)
+            gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
             val module = AppModule(vertx, config, sessionFactory, gcpPubSubClient)
             val injector = Guice.createInjector(module)

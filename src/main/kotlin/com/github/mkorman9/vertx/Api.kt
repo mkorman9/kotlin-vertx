@@ -36,9 +36,9 @@ class Api (injector: Injector) {
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(
                 StatusDTO(
-                status = "error",
-                message = "not found"
-            )
+                    status = "error",
+                    message = "not found"
+                )
             )
         }
 
@@ -47,9 +47,9 @@ class Api (injector: Injector) {
 
             ctx.response().endWithJson(
                 StatusDTO(
-                status = "error",
-                message = "internal server error"
-            )
+                    status = "error",
+                    message = "internal server error"
+                )
             )
         }
     }

@@ -21,39 +21,87 @@ import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import java.util.*
 
-class GCPPubSubClient (
+class GCPPubSubClient private constructor(
     private val vertx: Vertx,
-    config: Config
-) {
-    private val projectId: String
-    private val credentialsProvider: CredentialsProvider
-
-    private val channelProvider: TransportChannelProvider
-    private val topicAdminClient: TopicAdminClient
+    private val projectId: String,
+    private val credentialsProvider: CredentialsProvider,
+    private val channelProvider: TransportChannelProvider,
+    private val topicAdminClient: TopicAdminClient,
     private val subscriptionAdminClient: SubscriptionAdminClient
-
+) {
     private val publishers = mutableListOf<Publisher>()
     private val subscribers = mutableListOf<Subscriber>()
     private val ephemeralSubscriptions = mutableListOf<ProjectSubscriptionName>()
 
-    init {
-        val gcpConfig = config.getJsonObject("gcp")
+    companion object {
+        fun create(vertx: Vertx, config: Config): GCPPubSubClient {
+            val gcpConfig = config.getJsonObject("gcp")
 
-        projectId = gcpConfig?.getString("project") ?: "default-project-id"
+            val projectId = gcpConfig?.getString("project") ?: "default-project-id"
 
-        val emulatorConfig = gcpConfig?.getJsonObject("pubsub")?.getJsonObject("emulator")
-        val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
-        val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
+            val emulatorConfig = gcpConfig?.getJsonObject("pubsub")?.getJsonObject("emulator")
+            val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
+            val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
 
-        credentialsProvider = if (emulatorEnabled) {
-            NoCredentialsProvider.create()
-        } else {
-            FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault())
+            val credentialsProvider = if (emulatorEnabled) {
+                NoCredentialsProvider.create()
+            } else {
+                FixedCredentialsProvider.create(GoogleCredentials.getApplicationDefault())
+            }
+
+            val channelProvider = createTransportChannelProvider(emulatorEnabled, emulatorAddress)
+            val topicAdminClient = createTopicClient(credentialsProvider, channelProvider)
+            val subscriptionAdminClient = createSubscriptionAdminClient(credentialsProvider, channelProvider)
+
+            return GCPPubSubClient(
+                vertx,
+                projectId,
+                credentialsProvider,
+                channelProvider,
+                topicAdminClient,
+                subscriptionAdminClient
+            )
         }
 
-        channelProvider = createTransportChannelProvider(emulatorEnabled, emulatorAddress)
-        topicAdminClient = createTopicClient()
-        subscriptionAdminClient = createSubscriptionAdminClient()
+        private fun createTransportChannelProvider(
+            emulatorEnabled: Boolean,
+            emulatorAddress: String
+        ): TransportChannelProvider {
+            if (emulatorEnabled) {
+                val managedChannel = ManagedChannelBuilder
+                    .forTarget(emulatorAddress)
+                    .usePlaintext()
+                    .build()
+
+                return FixedTransportChannelProvider.create(GrpcTransportChannel.create(managedChannel))
+            }
+
+            return InstantiatingGrpcChannelProvider.newBuilder().build()
+        }
+
+        private fun createTopicClient(
+            credentialsProvider: CredentialsProvider,
+            channelProvider: TransportChannelProvider
+        ): TopicAdminClient {
+            val settings = PublisherStubSettings.newBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .build()
+
+            return TopicAdminClient.create(TopicAdminSettings.create(settings))
+        }
+
+        private fun createSubscriptionAdminClient(
+            credentialsProvider: CredentialsProvider,
+            channelProvider: TransportChannelProvider
+        ): SubscriptionAdminClient {
+            val settings = SubscriberStubSettings.newBuilder()
+                .setTransportChannelProvider(channelProvider)
+                .setCredentialsProvider(credentialsProvider)
+                .build()
+
+            return SubscriptionAdminClient.create(SubscriptionAdminSettings.create(settings))
+        }
     }
 
     fun stop() {
@@ -186,39 +234,5 @@ class GCPPubSubClient (
                 throw e
             }
         }
-    }
-
-    private fun createTransportChannelProvider(
-        emulatorEnabled: Boolean,
-        emulatorAddress: String
-    ): TransportChannelProvider {
-        if (emulatorEnabled) {
-            val managedChannel = ManagedChannelBuilder
-                .forTarget(emulatorAddress)
-                .usePlaintext()
-                .build()
-
-            return FixedTransportChannelProvider.create(GrpcTransportChannel.create(managedChannel))
-        }
-
-        return InstantiatingGrpcChannelProvider.newBuilder().build()
-    }
-
-    private fun createTopicClient(): TopicAdminClient {
-        val settings = PublisherStubSettings.newBuilder()
-            .setTransportChannelProvider(channelProvider)
-            .setCredentialsProvider(credentialsProvider)
-            .build()
-
-        return TopicAdminClient.create(TopicAdminSettings.create(settings))
-    }
-
-    private fun createSubscriptionAdminClient(): SubscriptionAdminClient {
-        val settings = SubscriberStubSettings.newBuilder()
-            .setTransportChannelProvider(channelProvider)
-            .setCredentialsProvider(credentialsProvider)
-            .build()
-
-        return SubscriptionAdminClient.create(SubscriptionAdminSettings.create(settings))
     }
 }
