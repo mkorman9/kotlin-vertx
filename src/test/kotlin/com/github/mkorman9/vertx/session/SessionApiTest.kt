@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.session
 
+import com.github.mkorman9.vertx.Application
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.defaultTestPassword
 import com.github.mkorman9.vertx.fakeSession
@@ -37,9 +38,10 @@ class SessionApiTest {
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
-            vertx,
-            Config(),
-            object : KotlinModule() {
+            vertx = vertx,
+            packageName = Application.PACKAGE_NAME,
+            config = Config(),
+            module = object : KotlinModule() {
                 override fun configure() {
                     bind<SessionApi>()
                     bind<SessionRepository>().toInstance(sessionRepository)

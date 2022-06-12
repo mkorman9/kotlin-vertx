@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.client
 
+import com.github.mkorman9.vertx.Application
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
@@ -44,9 +45,10 @@ class ClientApiTest {
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
-            vertx,
-            Config(),
-            object : KotlinModule() {
+            vertx = vertx,
+            packageName = Application.PACKAGE_NAME,
+            config = Config(),
+            module = object : KotlinModule() {
                 override fun configure() {
                     bind<ClientApi>()
                     bind<ClientRepository>().toInstance(clientRepository)
