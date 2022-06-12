@@ -12,26 +12,26 @@ data class Account(
     @Column(name = "id", columnDefinition = "uuid")
     var id: UUID,
 
-    @Column(name = "username", columnDefinition = "text")
+    @Column(name = "username", columnDefinition = "text", nullable = false)
     var username: String,
 
-    @Column(name = "roles", columnDefinition = "text")
+    @Column(name = "roles", columnDefinition = "text", nullable = false)
     @JsonIgnore
     var rolesString: String,
 
-    @Column(name = "active", columnDefinition = "boolean")
+    @Column(name = "active", columnDefinition = "boolean", nullable = false)
     var active: Boolean,
 
-    @Column(name = "deleted", columnDefinition = "boolean")
+    @Column(name = "deleted", columnDefinition = "boolean", nullable = false)
     var deleted: Boolean,
 
-    @Column(name = "preferred_language", columnDefinition = "text")
+    @Column(name = "preferred_language", columnDefinition = "text", nullable = false)
     var preferredLanguage: String,
 
     @Column(name = "banned_until", columnDefinition = "timestamp")
-    var bannedUntil: LocalDateTime,
+    var bannedUntil: LocalDateTime?,
 
-    @Column(name = "created_at", columnDefinition = "timestamp")
+    @Column(name = "created_at", columnDefinition = "timestamp", nullable = false)
     var createdAt: LocalDateTime,
 
     @OneToOne(

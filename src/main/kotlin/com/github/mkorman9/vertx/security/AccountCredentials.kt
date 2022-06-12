@@ -17,10 +17,10 @@ data class AccountCredentials(
     @Column(name = "account_id", columnDefinition = "uuid")
     var accountId: UUID,
 
-    @Column(name = "email", columnDefinition = "text")
+    @Column(name = "email", columnDefinition = "text", unique = true, nullable = false)
     var email: String,
 
-    @Column(name = "password_bcrypt", columnDefinition = "text")
+    @Column(name = "password_bcrypt", columnDefinition = "text", nullable = false)
     var passwordBcrypt: String,
 
     @Column(name = "last_change_at", columnDefinition = "timestamp")

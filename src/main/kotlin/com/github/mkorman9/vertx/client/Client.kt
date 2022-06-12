@@ -13,13 +13,13 @@ data class Client(
     @Column(name = "id", columnDefinition = "uuid")
     var id: UUID,
 
-    @Column(name = "gender", columnDefinition = "char(1)")
+    @Column(name = "gender", columnDefinition = "char(1)", nullable = false)
     var gender: String = "-",
 
-    @Column(name = "first_name", columnDefinition = "text")
+    @Column(name = "first_name", columnDefinition = "text", nullable = false)
     var firstName: String,
 
-    @Column(name = "last_name", columnDefinition = "text")
+    @Column(name = "last_name", columnDefinition = "text", nullable = false)
     var lastName: String,
 
     @Column(name = "home_address", columnDefinition = "text")
@@ -34,7 +34,7 @@ data class Client(
     @Column(name = "birth_date", columnDefinition = "timestamp")
     var birthDate: LocalDateTime? = null,
 
-    @Column(name = "deleted", columnDefinition = "boolean")
+    @Column(name = "deleted", columnDefinition = "boolean", nullable = false)
     @JsonIgnore
     var deleted: Boolean = false,
 

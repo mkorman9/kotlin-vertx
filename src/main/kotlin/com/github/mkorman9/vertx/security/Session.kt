@@ -12,20 +12,20 @@ data class Session(
     @Column(name = "id", columnDefinition = "text")
     var id: String,
 
-    @Column(name = "account_id", columnDefinition = "uuid")
+    @Column(name = "account_id", columnDefinition = "uuid", nullable = false)
     var accountId: UUID,
 
-    @Column(name = "token", columnDefinition = "text", unique = true)
+    @Column(name = "token", columnDefinition = "text", unique = true, nullable = false)
     var token: String,
 
-    @Column(name = "roles", columnDefinition = "text")
+    @Column(name = "roles", columnDefinition = "text", nullable = false)
     @JsonIgnore
     var rolesString: String,
 
-    @Column(name = "ip", columnDefinition = "text")
+    @Column(name = "ip", columnDefinition = "text", nullable = false)
     var ip: String,
 
-    @Column(name = "issued_at", columnDefinition = "timestamp")
+    @Column(name = "issued_at", columnDefinition = "timestamp", nullable = false)
     var issuedAt: LocalDateTime,
 
     @Column(name = "duration", columnDefinition = "integer")
