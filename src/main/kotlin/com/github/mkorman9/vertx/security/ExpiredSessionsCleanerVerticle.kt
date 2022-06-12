@@ -9,7 +9,7 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 
 @DeployVerticle
 class ExpiredSessionsCleanerVerticle(
-    private val injector: Injector
+    injector: Injector
 ) : CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)

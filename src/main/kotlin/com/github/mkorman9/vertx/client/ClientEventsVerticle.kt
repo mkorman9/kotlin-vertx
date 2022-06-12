@@ -17,7 +17,7 @@ import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
 class ClientEventsVerticle(
-    private val injector: Injector
+    injector: Injector
 ) : CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)

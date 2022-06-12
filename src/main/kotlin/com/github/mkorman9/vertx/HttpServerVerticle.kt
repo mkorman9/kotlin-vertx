@@ -13,7 +13,7 @@ import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle(instances = NUM_OF_CPUS)
 class HttpServerVerticle(
-    private var injector: Injector
+    private val injector: Injector
 ): CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
