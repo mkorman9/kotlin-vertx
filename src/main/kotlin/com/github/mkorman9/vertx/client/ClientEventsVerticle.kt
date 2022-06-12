@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.GCPPubSubClient
+import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.cloud.pubsub.v1.AckReplyConsumerWithResponse
 import com.google.cloud.pubsub.v1.Publisher

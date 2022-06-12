@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.web
 
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator
 import javax.validation.Validation

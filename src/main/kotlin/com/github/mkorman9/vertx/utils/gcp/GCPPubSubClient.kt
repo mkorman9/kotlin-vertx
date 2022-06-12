@@ -1,5 +1,6 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.utils.gcp
 
+import com.github.mkorman9.vertx.Config
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.api.gax.core.NoCredentialsProvider

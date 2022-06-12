@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.utils.StatusDTO
-import com.github.mkorman9.vertx.utils.endWithJson
+import com.github.mkorman9.vertx.utils.web.StatusDTO
+import com.github.mkorman9.vertx.utils.web.endWithJson
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.http.HttpServerRequest
@@ -18,10 +18,12 @@ class AuthorizationMiddlewareImpl @Inject constructor(
 
         val token = retrieveBearerToken(ctx.request())
         if (token == null) {
-            ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+            ctx.response().setStatusCode(401).endWithJson(
+                StatusDTO(
                 status = "error",
                 message = "Authorization required"
-            ))
+            )
+            )
 
             return
         }
@@ -29,19 +31,23 @@ class AuthorizationMiddlewareImpl @Inject constructor(
         sessionRepository.findByToken(token)
             .onSuccess { session ->
                 if (session == null) {
-                    ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                    ctx.response().setStatusCode(401).endWithJson(
+                        StatusDTO(
                         status = "error",
                         message = "Authorization failed"
-                    ))
+                    )
+                    )
 
                     return@onSuccess
                 }
 
                 if (allowedRoles != null && !verifyRoles(session.roles, allowedRoles)) {
-                    ctx.response().setStatusCode(403).endWithJson(StatusDTO(
+                    ctx.response().setStatusCode(403).endWithJson(
+                        StatusDTO(
                         status = "error",
                         message = "Access denied"
-                    ))
+                    )
+                    )
 
                     return@onSuccess
                 }

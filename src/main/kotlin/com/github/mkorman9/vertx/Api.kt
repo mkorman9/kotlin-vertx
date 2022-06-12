@@ -2,8 +2,8 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.security.SessionApi
-import com.github.mkorman9.vertx.utils.StatusDTO
-import com.github.mkorman9.vertx.utils.endWithJson
+import com.github.mkorman9.vertx.utils.web.StatusDTO
+import com.github.mkorman9.vertx.utils.web.endWithJson
 import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.Vertx
@@ -38,19 +38,23 @@ class Api (injector: Injector) {
         route("/api/v1/session*").subRouter(sessionApi.createRouter())
 
         errorHandler(404) { ctx ->
-            ctx.response().endWithJson(StatusDTO(
+            ctx.response().endWithJson(
+                StatusDTO(
                 status = "error",
                 message = "not found"
-            ))
+            )
+            )
         }
 
         errorHandler(500) { ctx ->
             log.error("Unexpected error while serving request", ctx.failure())
 
-            ctx.response().endWithJson(StatusDTO(
+            ctx.response().endWithJson(
+                StatusDTO(
                 status = "error",
                 message = "internal server error"
-            ))
+            )
+            )
         }
     }
 }

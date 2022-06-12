@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.ShutdownHook
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.micrometer.MicrometerMetricsOptions
@@ -21,5 +22,12 @@ fun main() {
     val bootstrapper = AppBootstrapper()
     bootstrapper.bootstrap(vertx)
 
-    ShutdownHook.register(vertx, bootstrapper)
+    ShutdownHook.register {
+        vertx.close()
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+
+        bootstrapper.shutdown()
+    }
 }

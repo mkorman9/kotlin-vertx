@@ -7,8 +7,8 @@ import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
-import com.github.mkorman9.vertx.utils.Cause
-import com.github.mkorman9.vertx.utils.StatusDTO
+import com.github.mkorman9.vertx.utils.web.Cause
+import com.github.mkorman9.vertx.utils.web.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

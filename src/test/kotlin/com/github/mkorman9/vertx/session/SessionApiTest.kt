@@ -2,7 +2,7 @@ package com.github.mkorman9.vertx.session
 
 import com.github.mkorman9.vertx.*
 import com.github.mkorman9.vertx.security.*
-import com.github.mkorman9.vertx.utils.StatusDTO
+import com.github.mkorman9.vertx.utils.web.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

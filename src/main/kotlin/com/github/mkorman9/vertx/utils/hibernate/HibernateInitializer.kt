@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx
+package com.github.mkorman9.vertx.utils.hibernate
 
 import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory

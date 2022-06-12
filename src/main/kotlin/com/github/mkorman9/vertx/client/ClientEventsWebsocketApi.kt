@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.utils.WebsocketStore
+import com.github.mkorman9.vertx.utils.web.WebsocketStore
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx

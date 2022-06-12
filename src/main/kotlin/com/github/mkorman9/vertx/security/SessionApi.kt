@@ -2,13 +2,13 @@ package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.github.mkorman9.vertx.utils.*
+import com.github.mkorman9.vertx.utils.web.*
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Singleton
 class SessionApi @Inject constructor(
@@ -29,21 +29,25 @@ class SessionApi @Inject constructor(
                 ctx.handleJsonBody<StartSessionPayload> { payload ->
                     val account = accountRepository.findByCredentialsEmail(payload.email).await()
                     if (account == null) {
-                        ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        ctx.response().setStatusCode(401).endWithJson(
+                            StatusDTO(
                             status = "error",
                             message = "invalid credentials",
                             causes = listOf(Cause("credentials", "invalid"))
-                        ))
+                        )
+                        )
 
                         return@handleJsonBody
                     }
 
                     if (!account.active) {
-                        ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        ctx.response().setStatusCode(401).endWithJson(
+                            StatusDTO(
                             status = "error",
                             message = "account is not active",
                             causes = listOf(Cause("account", "inactive"))
-                        ))
+                        )
+                        )
 
                         return@handleJsonBody
                     }
@@ -55,11 +59,13 @@ class SessionApi @Inject constructor(
                     }.await()
 
                     if (!verificationResult.verified) {
-                        ctx.response().setStatusCode(401).endWithJson(StatusDTO(
+                        ctx.response().setStatusCode(401).endWithJson(
+                            StatusDTO(
                             status = "error",
                             message = "invalid credentials",
                             causes = listOf(Cause("credentials", "invalid"))
-                        ))
+                        )
+                        )
 
                         return@handleJsonBody
                     }

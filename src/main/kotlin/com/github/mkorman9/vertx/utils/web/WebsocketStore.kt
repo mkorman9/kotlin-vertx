@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.web
 
 import io.vertx.core.http.ServerWebSocket
 import java.util.UUID

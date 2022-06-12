@@ -1,10 +1,10 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.utils.StatusDTO
-import com.github.mkorman9.vertx.utils.asyncHandler
-import com.github.mkorman9.vertx.utils.endWithJson
-import com.github.mkorman9.vertx.utils.handleJsonBody
+import com.github.mkorman9.vertx.utils.web.StatusDTO
+import com.github.mkorman9.vertx.utils.web.asyncHandler
+import com.github.mkorman9.vertx.utils.web.endWithJson
+import com.github.mkorman9.vertx.utils.web.handleJsonBody
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx
@@ -56,10 +56,12 @@ class ClientApi @Inject constructor(
             if (client != null) {
                 ctx.response().endWithJson(client)
             } else {
-                ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                ctx.response().setStatusCode(404).endWithJson(
+                    StatusDTO(
                     status = "error",
                     message = "client not found"
-                ))
+                )
+                )
             }
         }
 
@@ -101,14 +103,18 @@ class ClientApi @Inject constructor(
                             )
                         )
 
-                        ctx.response().endWithJson(StatusDTO(
+                        ctx.response().endWithJson(
+                            StatusDTO(
                             status = "ok"
-                        ))
+                        )
+                        )
                     } else {
-                        ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                        ctx.response().setStatusCode(404).endWithJson(
+                            StatusDTO(
                             status = "error",
                             message = "client not found"
-                        ))
+                        )
+                        )
                     }
                 }
             }
@@ -130,14 +136,18 @@ class ClientApi @Inject constructor(
                         )
                     )
 
-                    ctx.response().endWithJson(StatusDTO(
+                    ctx.response().endWithJson(
+                        StatusDTO(
                         status = "ok"
-                    ))
+                    )
+                    )
                 } else {
-                    ctx.response().setStatusCode(404).endWithJson(StatusDTO(
+                    ctx.response().setStatusCode(404).endWithJson(
+                        StatusDTO(
                         status = "error",
                         message = "client not found"
-                    ))
+                    )
+                    )
                 }
             }
     }

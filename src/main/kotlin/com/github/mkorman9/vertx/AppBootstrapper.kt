@@ -1,8 +1,11 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.JsonCodec
 import com.github.mkorman9.vertx.utils.ReflectionsUtils
+import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
+import com.github.mkorman9.vertx.utils.hibernate.HibernateInitializer
 import com.google.inject.Guice
 import com.google.inject.Injector
 import io.vertx.config.ConfigRetriever

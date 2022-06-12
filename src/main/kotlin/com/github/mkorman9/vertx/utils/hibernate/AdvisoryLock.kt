@@ -1,5 +1,6 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.hibernate
 
+import com.github.mkorman9.vertx.utils.withSession
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Promise

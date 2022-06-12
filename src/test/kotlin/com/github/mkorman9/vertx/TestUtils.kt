@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.util.Modules

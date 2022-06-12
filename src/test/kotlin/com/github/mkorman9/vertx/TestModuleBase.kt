@@ -1,6 +1,8 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.DeploymentContext
 import com.github.mkorman9.vertx.utils.JsonCodec
+import com.github.mkorman9.vertx.utils.gcp.GCPPubSubClient
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockk
 import io.mockk.mockkClass
