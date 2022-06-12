@@ -1,11 +1,11 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.ReflectionsUtils
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
-import org.reflections.Reflections
 
 typealias Config = JsonObject
 
@@ -19,11 +19,8 @@ class AppModule(
     companion object {
         const val packageName = "com.github.mkorman9.vertx"
 
-        fun getInjectableClasses(): Set<Class<Any>> {
-            val packageReflections = Reflections(packageName)
-
-            @Suppress("UNCHECKED_CAST")
-            return packageReflections.getTypesAnnotatedWith(Singleton::class.java) as Set<Class<Any>>
+        fun getInjectableClasses(): List<Class<Any>> {
+            return ReflectionsUtils.findClasses(packageName, Singleton::class.java)
         }
     }
 

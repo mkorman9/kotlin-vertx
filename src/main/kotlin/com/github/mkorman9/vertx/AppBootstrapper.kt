@@ -2,20 +2,15 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.JsonCodec
+import com.github.mkorman9.vertx.utils.ReflectionsUtils
 import com.google.inject.Guice
 import com.google.inject.Injector
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
-import io.vertx.core.CompositeFuture
-import io.vertx.core.DeploymentOptions
-import io.vertx.core.Future
-import io.vertx.core.Verticle
-import io.vertx.core.Vertx
+import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
-import org.reflections.Reflections
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.jar.Manifest
@@ -91,8 +86,7 @@ class AppBootstrapper {
     private fun deployVerticlesByReflection(vertx: Vertx, injector: Injector) {
         val futures = mutableListOf<Future<*>>()
 
-        val packageReflections = Reflections(AppModule.packageName)
-        packageReflections.getTypesAnnotatedWith(DeployVerticle::class.java)
+        ReflectionsUtils.findClasses(AppModule.packageName, DeployVerticle::class.java)
             .forEach { c ->
                 val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                     .first()
