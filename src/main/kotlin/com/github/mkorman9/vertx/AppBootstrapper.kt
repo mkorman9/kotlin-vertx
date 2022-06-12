@@ -27,6 +27,7 @@ class AppBootstrapper {
     }
 
     private val hibernateInitializer = HibernateInitializer()
+    private lateinit var gcpPubSubClient: GCPPubSubClient
     private lateinit var injector: Injector
 
     fun bootstrap(vertx: Vertx) {
@@ -46,8 +47,9 @@ class AppBootstrapper {
                 .join()
 
             val sessionFactory = hibernateInitializer.start(config)
+            gcpPubSubClient = GCPPubSubClient(vertx, config)
 
-            val module = AppModule(vertx, context, config, sessionFactory)
+            val module = AppModule(vertx, context, config, sessionFactory, gcpPubSubClient)
             injector = Guice.createInjector(module)
 
             deployHttpServer(config, vertx, injector)
@@ -61,7 +63,7 @@ class AppBootstrapper {
     }
 
     fun shutdown() {
-        injector.getInstance<GCPPubSubClient>().stop()
+        gcpPubSubClient.stop()
         hibernateInitializer.stop()
 
         log.info("App has been stopped")

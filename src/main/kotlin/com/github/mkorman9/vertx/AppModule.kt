@@ -13,7 +13,8 @@ class AppModule(
     private val vertx: Vertx,
     private val context: DeploymentContext,
     private val config: Config,
-    private val sessionFactory: SessionFactory
+    private val sessionFactory: SessionFactory,
+    private val gcpPubSubClient: GCPPubSubClient
 ) : KotlinModule() {
     companion object {
         const val packageName = "com.github.mkorman9.vertx"
@@ -31,6 +32,7 @@ class AppModule(
         bind<DeploymentContext>().toInstance(context)
         bind<Config>().toInstance(config)
         bind<SessionFactory>().toInstance(sessionFactory)
+        bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
 
         getInjectableClasses()
             .forEach { c ->

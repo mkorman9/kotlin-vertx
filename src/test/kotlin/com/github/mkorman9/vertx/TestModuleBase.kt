@@ -23,6 +23,7 @@ class TestModuleBase(
         bind<Vertx>().toInstance(vertx)
         bind<DeploymentContext>().toInstance(context)
         bind<SessionFactory>().toInstance(mockk())
+        bind<GCPPubSubClient>().toInstance(mockk())
         bind<Config>().toInstance(createConfig())
 
         AppModule.getInjectableClasses()

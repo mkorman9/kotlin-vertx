@@ -1,7 +1,5 @@
 package com.github.mkorman9.vertx
 
-import io.vertx.core.Future
-import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import javax.persistence.Persistence

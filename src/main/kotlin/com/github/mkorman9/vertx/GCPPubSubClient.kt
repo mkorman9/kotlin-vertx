@@ -19,11 +19,8 @@ import io.vertx.core.Future
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class GCPPubSubClient @Inject constructor(
+class GCPPubSubClient (
     private val vertx: Vertx,
     config: Config
 ) {
