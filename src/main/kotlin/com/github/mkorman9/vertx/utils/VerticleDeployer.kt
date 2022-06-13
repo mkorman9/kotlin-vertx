@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx.utils
 
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
+import kotlin.math.ceil
 
 class VerticleDeployer {
     companion object {
@@ -14,11 +15,7 @@ class VerticleDeployer {
                 .forEach { c ->
                     val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                         .first()
-
-                    var instances = annotation.instances
-                    if (instances == NUM_OF_CPUS) {
-                        instances = Runtime.getRuntime().availableProcessors()
-                    }
+                    val instances = parseInstancesNumber(annotation.instances)
 
                     for (i in 0 until instances) {
                         val future = vertx.deployVerticle(
@@ -39,6 +36,15 @@ class VerticleDeployer {
                 .toCompletionStage()
                 .toCompletableFuture()
                 .join()
+        }
+
+        private fun parseInstancesNumber(instances: Int): Int {
+            return when(instances) {
+                NUM_OF_CPUS -> Runtime.getRuntime().availableProcessors()
+                HALF_NUM_OF_CPUS -> ceil(Runtime.getRuntime().availableProcessors() / 2.0).toInt()
+                TWICE_NUM_OF_CPUS -> Runtime.getRuntime().availableProcessors() * 2
+                else -> instances
+            }
         }
     }
 }
