@@ -1,9 +1,12 @@
 package com.github.mkorman9.vertx.utils
 
 import io.vertx.core.*
+import io.vertx.core.impl.logging.LoggerFactory
 
 class VerticleDeployer {
     companion object {
+        private val log = LoggerFactory.getLogger(VerticleDeployer::class.java)
+
         fun scanAndDeploy(vertx: Vertx, packageName: String, config: Config, vararg constructorParams: Any) {
             val futures = mutableListOf<Future<*>>()
 
@@ -28,6 +31,8 @@ class VerticleDeployer {
                         )
                         futures.add(future)
                     }
+
+                    log.info("Deployed $instances instances of ${c.simpleName}")
                 }
 
             CompositeFuture.all(futures)

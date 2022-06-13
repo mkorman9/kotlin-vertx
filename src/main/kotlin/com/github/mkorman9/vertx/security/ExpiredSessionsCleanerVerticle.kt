@@ -22,16 +22,19 @@ class ExpiredSessionsCleanerVerticle(
     private val advisoryLock = injector.getInstance<AdvisoryLock>()
 
     override suspend fun start() {
-        vertx.setPeriodic(taskDelayMs.toLong()) {
-            advisoryLock.acquire(lockId) {
-                log.info("Starting ExpiredSessionsCleaner task")
+        try {
+            vertx.setPeriodic(taskDelayMs.toLong()) {
+                advisoryLock.acquire(lockId) {
+                    log.info("Starting ExpiredSessionsCleaner task")
 
-                sessionRepository.deleteExpired()
-                    .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
-                    .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
+                    sessionRepository.deleteExpired()
+                        .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
+                        .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
+                }
             }
+        } catch (e: Exception) {
+            log.error("Failed to deploy ExpiredSessionsCleanerVerticle", e)
+            throw e
         }
-
-        log.info("ExpiredSessionsCleanerVerticle has been deployed successfully")
     }
 }

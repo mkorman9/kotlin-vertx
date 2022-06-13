@@ -38,8 +38,6 @@ class HttpServerVerticle(
                 .webSocketHandler { websocketApi.handle(it) }
                 .listen()
                 .await()
-
-            log.info("HttpServerVerticle has been successfully deployed")
         } catch (e: Exception) {
             log.error("Failed to deploy HttpServerVerticle", e)
             throw e
@@ -48,6 +46,5 @@ class HttpServerVerticle(
 
     override suspend fun stop() {
         server.close().await()
-        log.info("HttpServerVerticle has been stopped")
     }
 }

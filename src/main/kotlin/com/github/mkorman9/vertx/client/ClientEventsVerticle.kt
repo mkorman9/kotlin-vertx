@@ -33,14 +33,13 @@ class ClientEventsVerticle(
     override suspend fun start() {
         try {
             gcpPubSubClient.createSubscriber(topicName, this::messageHandler).await()
+
+            val publisher = gcpPubSubClient.createPublisher(topicName).await()
+            createPublishChannel(publisher)
         } catch(e: Exception) {
-            log.error("Error while creating ClientsEvents subscriber", e)
+            log.error("Failed to deploy ClientEventsVerticle", e)
+            throw e
         }
-
-        val publisher = gcpPubSubClient.createPublisher(topicName).await()
-        createPublishChannel(publisher)
-
-        log.info("ClientEventsVerticle has been deployed")
     }
 
     private fun messageHandler(message: PubsubMessage, consumer: AckReplyConsumerWithResponse) {

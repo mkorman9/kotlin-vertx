@@ -32,10 +32,9 @@ class GrpcServerVerticle(
                     .start()
                 call.complete()
             }.await()
-
-            log.info("GrpcServerVerticle has been deployed")
         } catch (e: Exception) {
             log.error("Failed to deploy GrpcServerVerticle", e)
+            throw e
         }
     }
 
@@ -44,7 +43,5 @@ class GrpcServerVerticle(
             server.shutdown().awaitTermination()
             call.complete()
         }.await()
-
-        log.info("GrpcServerVerticle has been stopped")
     }
 }
