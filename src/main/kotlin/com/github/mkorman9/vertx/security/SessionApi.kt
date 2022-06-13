@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.github.mkorman9.vertx.utils.AsyncRoot
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.web.*
 import com.google.inject.Inject
@@ -16,7 +17,7 @@ class SessionApi @Inject constructor(
     private val accountRepository: AccountRepository,
     private val sessionRepository: SessionRepository,
     private val authorizationMiddleware: AuthorizationMiddleware
-) : AsyncApi(vertx) {
+) : AsyncRoot(vertx) {
     private val sessionIdLength: Long = 24
     private val sessionTokenLength: Long = 48
     private val sessionDurationSeconds: Int = 4 * 60 * 60

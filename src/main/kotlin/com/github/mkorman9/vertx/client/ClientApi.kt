@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
+import com.github.mkorman9.vertx.utils.AsyncRoot
 import com.github.mkorman9.vertx.utils.web.*
 import com.google.inject.Inject
 import com.google.inject.Singleton
@@ -14,7 +15,7 @@ class ClientApi @Inject constructor(
     private val clientRepository: ClientRepository,
     private val authorizationMiddleware: AuthorizationMiddleware,
     private val clientEventsPublisher: ClientEventsPublisher
-) : AsyncApi(vertx) {
+) : AsyncRoot(vertx) {
     fun createRouter(): Router = Router.router(vertx).apply {
         get("/")
             .asyncHandler(scope) { ctx ->
