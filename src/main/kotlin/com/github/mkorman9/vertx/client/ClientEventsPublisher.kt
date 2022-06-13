@@ -10,6 +10,6 @@ class ClientEventsPublisher @Inject constructor(
     private val vertx: Vertx
 ) {
     fun publish(event: ClientEvent) {
-        vertx.eventBus().publish(ClientEventsVerticle.PUBLISH_CHANNEL_ADDRESS, JsonObject.mapFrom(event))
+        vertx.eventBus().publish(ClientEventsVerticle.OUTGOING_CHANNEL, JsonObject.mapFrom(event))
     }
 }

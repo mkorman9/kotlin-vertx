@@ -19,7 +19,7 @@ class ClientEventsWebsocketApi @Inject constructor(
     private val websockets = WebsocketStore()
 
     init {
-        vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.CONSUME_CHANNEL_ADDRESS) { message ->
+        vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.INCOMING_CHANNEL) { message ->
             websockets.list().forEach { ws ->
                 ws.writeTextMessage(message.body().encode())
             }

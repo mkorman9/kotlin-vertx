@@ -22,8 +22,8 @@ class ClientEventsVerticle(
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
-        const val PUBLISH_CHANNEL_ADDRESS = "client.events.publish"
-        const val CONSUME_CHANNEL_ADDRESS = "client.events.consume"
+        const val OUTGOING_CHANNEL = "client.events.outgoing"
+        const val INCOMING_CHANNEL = "client.events.incoming"
     }
 
     private val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
@@ -32,31 +32,32 @@ class ClientEventsVerticle(
 
     override suspend fun start() {
         try {
-            gcpPubSubClient.createSubscriber(topicName, this::messageHandler).await()
+            gcpPubSubClient.createSubscriber(topicName, this::incomingMessageHandler).await()
 
-            val publisher = gcpPubSubClient.createPublisher(topicName).await()
-            createPublishChannel(publisher)
+            val pubSubPublisher = gcpPubSubClient.createPublisher(topicName).await()
+            redirectToPubSub(pubSubPublisher)
         } catch(e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
             throw e
         }
     }
 
-    private fun messageHandler(message: PubsubMessage, consumer: AckReplyConsumerWithResponse) {
+    private fun incomingMessageHandler(message: PubsubMessage, consumer: AckReplyConsumerWithResponse) {
         val event = Json.decodeValue(Buffer.buffer(message.data.toByteArray()), ClientEvent::class.java)
 
         log.info("ClientEvent has been received $event")
 
-        vertx.eventBus().publish(CONSUME_CHANNEL_ADDRESS, JsonObject.mapFrom(event))
+        vertx.eventBus().publish(INCOMING_CHANNEL, JsonObject.mapFrom(event))
 
         consumer.ack()
     }
 
-    private fun createPublishChannel(publisher: Publisher) {
-        vertx.eventBus().consumer<JsonObject>(PUBLISH_CHANNEL_ADDRESS) { message ->
+    private fun redirectToPubSub(pubSubPublisher: Publisher) {
+        vertx.eventBus().consumer<JsonObject>(OUTGOING_CHANNEL) { message ->
             val data = message.body().encode()
             val pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8(data)).build()
-            publisher.publish(pubsubMessage)
+
+            pubSubPublisher.publish(pubsubMessage)
         }
     }
 }
