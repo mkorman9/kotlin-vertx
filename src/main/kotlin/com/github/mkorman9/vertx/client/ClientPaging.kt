@@ -31,12 +31,6 @@ data class ClientSortingOptions(
     val sortReverse: Boolean
 )
 
-data class FindPagedClientParams(
-    val filtering: ClientFilteringOptions,
-    val paging: ClientPagingOptions,
-    val sorting: ClientSortingOptions
-)
-
 data class ClientCursor(
     val data: List<Client>,
 
