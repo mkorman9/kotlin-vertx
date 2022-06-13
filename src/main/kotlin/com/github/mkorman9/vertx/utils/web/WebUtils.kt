@@ -13,7 +13,7 @@ import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
+fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit): Route = handler {
     GlobalScope.launch(it.vertx().dispatcher()) {
         try {
             func(it)
@@ -23,7 +23,7 @@ fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit) = handler {
     }
 }
 
-fun HttpServerRequest.getClientIp(): String{
+fun HttpServerRequest.getClientIp(): String {
     return getHeader("X-Forwarded-For") ?: remoteAddress().host()
 }
 
