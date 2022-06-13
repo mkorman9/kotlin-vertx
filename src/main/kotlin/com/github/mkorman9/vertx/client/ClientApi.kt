@@ -14,84 +14,87 @@ class ClientApi @Inject constructor(
     private val clientRepository: ClientRepository,
     private val authorizationMiddleware: AuthorizationMiddleware,
     private val clientEventsPublisher: ClientEventsPublisher
-) {
+) : AsyncApi(vertx) {
     fun createRouter(): Router = Router.router(vertx).apply {
-        get("/").asyncHandler { ctx ->
-            val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)
-            val filtering = ClientFilteringOptions(
-                gender = queryParams.get("filter[gender]"),
-                firstName = queryParams.get("filter[firstName]"),
-                lastName = queryParams.get("filter[lastName]"),
-                address = queryParams.get("filter[address]"),
-                phoneNumber = queryParams.get("filter[phoneNumber]"),
-                email = queryParams.get("filter[email]"),
-                bornAfter = queryParams.get("filter[bornAfter]"),
-                bornBefore = queryParams.get("filter[bornBefore]"),
-                creditCard = queryParams.get("filter[creditCard]")
-            )
-            val paging = ClientPagingOptions(
-                pageNumber = queryParams.mustGet("page"),
-                pageSize = queryParams.mustGet("pageSize"),
-            )
-            val sorting = ClientSortingOptions(
-                sortBy = queryParams.mustGet("sortBy"),
-                sortReverse = queryParams.mustGet("sortReverse"),
-            )
-
-            val clientsPage = clientRepository.findPaged(
-                filtering = filtering,
-                paging = paging,
-                sorting = sorting
-            ).await()
-
-            ctx.response().endWithJson(clientsPage)
-        }
-
-        get("/cursor/get").asyncHandler { ctx ->
-            val queryParams = QueryParamValues.parse(ctx, FIND_CLIENTS_BY_CURSOR_QUERY_PARAMS)
-            val filtering = ClientFilteringOptions(
-                gender = queryParams.get("filter[gender]"),
-                firstName = queryParams.get("filter[firstName]"),
-                lastName = queryParams.get("filter[lastName]"),
-                address = queryParams.get("filter[address]"),
-                phoneNumber = queryParams.get("filter[phoneNumber]"),
-                email = queryParams.get("filter[email]"),
-                bornAfter = queryParams.get("filter[bornAfter]"),
-                bornBefore = queryParams.get("filter[bornBefore]"),
-                creditCard = queryParams.get("filter[creditCard]")
-            )
-            val cursorOptions = ClientCursorOptions(
-                cursor = queryParams.mustGet("cursor"),
-                limit = queryParams.mustGet("limit"),
-            )
-
-            val clientsCursor = clientRepository.findByCursor(
-                filtering = filtering,
-                cursorOptions = cursorOptions
-            ).await()
-
-            ctx.response().endWithJson(clientsCursor)
-        }
-
-        get("/:id").asyncHandler { ctx ->
-            val id = ctx.pathParam("id")
-
-            val client = clientRepository.findById(id).await()
-            if (client != null) {
-                ctx.response().endWithJson(client)
-            } else {
-                ctx.response().setStatusCode(404).endWithJson(
-                    StatusDTO(
-                        status = "error",
-                        message = "client not found"
-                    )
+        get("/")
+            .asyncHandler(scope) { ctx ->
+                val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)
+                val filtering = ClientFilteringOptions(
+                    gender = queryParams.get("filter[gender]"),
+                    firstName = queryParams.get("filter[firstName]"),
+                    lastName = queryParams.get("filter[lastName]"),
+                    address = queryParams.get("filter[address]"),
+                    phoneNumber = queryParams.get("filter[phoneNumber]"),
+                    email = queryParams.get("filter[email]"),
+                    bornAfter = queryParams.get("filter[bornAfter]"),
+                    bornBefore = queryParams.get("filter[bornBefore]"),
+                    creditCard = queryParams.get("filter[creditCard]")
                 )
+                val paging = ClientPagingOptions(
+                    pageNumber = queryParams.mustGet("page"),
+                    pageSize = queryParams.mustGet("pageSize"),
+                )
+                val sorting = ClientSortingOptions(
+                    sortBy = queryParams.mustGet("sortBy"),
+                    sortReverse = queryParams.mustGet("sortReverse"),
+                )
+
+                val clientsPage = clientRepository.findPaged(
+                    filtering = filtering,
+                    paging = paging,
+                    sorting = sorting
+                ).await()
+
+                ctx.response().endWithJson(clientsPage)
             }
-        }
+
+        get("/cursor/get")
+            .asyncHandler(scope) { ctx ->
+                val queryParams = QueryParamValues.parse(ctx, FIND_CLIENTS_BY_CURSOR_QUERY_PARAMS)
+                val filtering = ClientFilteringOptions(
+                    gender = queryParams.get("filter[gender]"),
+                    firstName = queryParams.get("filter[firstName]"),
+                    lastName = queryParams.get("filter[lastName]"),
+                    address = queryParams.get("filter[address]"),
+                    phoneNumber = queryParams.get("filter[phoneNumber]"),
+                    email = queryParams.get("filter[email]"),
+                    bornAfter = queryParams.get("filter[bornAfter]"),
+                    bornBefore = queryParams.get("filter[bornBefore]"),
+                    creditCard = queryParams.get("filter[creditCard]")
+                )
+                val cursorOptions = ClientCursorOptions(
+                    cursor = queryParams.mustGet("cursor"),
+                    limit = queryParams.mustGet("limit"),
+                )
+
+                val clientsCursor = clientRepository.findByCursor(
+                    filtering = filtering,
+                    cursorOptions = cursorOptions
+                ).await()
+
+                ctx.response().endWithJson(clientsCursor)
+            }
+
+        get("/:id")
+            .asyncHandler(scope) { ctx ->
+                val id = ctx.pathParam("id")
+
+                val client = clientRepository.findById(id).await()
+                if (client != null) {
+                    ctx.response().endWithJson(client)
+                } else {
+                    ctx.response().setStatusCode(404).endWithJson(
+                        StatusDTO(
+                            status = "error",
+                            message = "client not found"
+                        )
+                    )
+                }
+            }
 
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler { ctx ->
+            .asyncHandler(scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
@@ -111,7 +114,7 @@ class ClientApi @Inject constructor(
 
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler { ctx ->
+            .asyncHandler(scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
@@ -145,7 +148,7 @@ class ClientApi @Inject constructor(
 
         delete("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler { ctx ->
+            .asyncHandler(scope) { ctx ->
                 val id = ctx.pathParam("id")
 
                 val account = authorizationMiddleware.getActiveSession(ctx).account

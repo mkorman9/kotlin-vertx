@@ -9,16 +9,15 @@ import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-fun Route.asyncHandler(func: suspend (RoutingContext) -> Unit): Route = handler {
-    GlobalScope.launch(it.vertx().dispatcher()) {
+fun Route.asyncHandler(scope: CoroutineScope, func: suspend (RoutingContext) -> Unit): Route = handler { ctx ->
+    scope.launch {
         try {
-            func(it)
+            func(ctx)
         } catch (t: Throwable) {
-            it.fail(500, t)
+            ctx.fail(500, t)
         }
     }
 }
