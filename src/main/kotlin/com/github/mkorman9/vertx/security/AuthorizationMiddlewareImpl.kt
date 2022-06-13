@@ -20,9 +20,9 @@ class AuthorizationMiddlewareImpl @Inject constructor(
         if (token == null) {
             ctx.response().setStatusCode(401).endWithJson(
                 StatusDTO(
-                status = "error",
-                message = "Authorization required"
-            )
+                    status = "error",
+                    message = "Authorization required"
+                )
             )
 
             return
@@ -33,9 +33,9 @@ class AuthorizationMiddlewareImpl @Inject constructor(
                 if (session == null) {
                     ctx.response().setStatusCode(401).endWithJson(
                         StatusDTO(
-                        status = "error",
-                        message = "Authorization failed"
-                    )
+                            status = "error",
+                            message = "Authorization failed"
+                        )
                     )
 
                     return@onSuccess
@@ -44,9 +44,9 @@ class AuthorizationMiddlewareImpl @Inject constructor(
                 if (allowedRoles != null && !verifyRoles(session.roles, allowedRoles)) {
                     ctx.response().setStatusCode(403).endWithJson(
                         StatusDTO(
-                        status = "error",
-                        message = "Access denied"
-                    )
+                            status = "error",
+                            message = "Access denied"
+                        )
                     )
 
                     return@onSuccess
