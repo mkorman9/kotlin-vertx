@@ -14,7 +14,10 @@ class SessionRepository @Inject constructor(
 ) {
     fun findByToken(token: String): Future<Session?> {
         return withSession(sessionFactory) { session ->
-            val query = session.createQuery("from Session s where s.token = :token and (s.expiresAt is null or s.expiresAt > current_timestamp())", Session::class.java)
+            val query = session.createQuery(
+                "from Session s where s.token = :token and (s.expiresAt is null or s.expiresAt > current_timestamp())",
+                Session::class.java
+            )
             query.setParameter("token", token)
             query.singleResultOrNull
         }
@@ -51,7 +54,9 @@ class SessionRepository @Inject constructor(
 
     fun deleteExpired(): Future<Int> {
         return withTransaction(sessionFactory) { session, _ ->
-            val query = session.createQuery<Void>("delete from Session s where s.expiresAt < current_timestamp()")
+            val query = session.createQuery<Void>(
+                "delete from Session s where s.expiresAt < current_timestamp()"
+            )
             query.executeUpdate()
         }
     }
