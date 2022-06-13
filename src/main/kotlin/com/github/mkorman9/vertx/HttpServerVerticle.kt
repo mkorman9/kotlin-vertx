@@ -1,10 +1,8 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.NUM_OF_CPUS
 import com.google.inject.Injector
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -23,8 +21,6 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         try {
-            val config = injector.getInstance<Config>()
-
             val restApiRouter = RestApi(injector).createRouter()
             val websocketApi = WebsocketApi(injector)
 

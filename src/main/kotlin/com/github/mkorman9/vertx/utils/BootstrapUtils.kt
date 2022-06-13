@@ -6,7 +6,7 @@ import io.vertx.core.Vertx
 
 class BootstrapUtils {
     companion object {
-        fun bootstrap(packageName: String, vertx: Vertx, config: Config, appModule: com.google.inject.Module) {
+        fun bootstrap(packageName: String, vertx: Vertx, config: Config, module: com.google.inject.Module) {
             JsonCodec.configure()
 
             val vertxModule = object : KotlinModule() {
@@ -17,10 +17,10 @@ class BootstrapUtils {
             }
             val injector = InjectorUtils.createInjector(
                 packageName,
-                Modules.override(vertxModule).with(appModule)
+                Modules.override(vertxModule).with(module)
             )
 
-            VerticleDeployer.scanAndDeploy(vertx, packageName, injector)
+            VerticleDeployer.scanAndDeploy(vertx, packageName, config, injector)
         }
     }
 }

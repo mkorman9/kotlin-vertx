@@ -4,7 +4,7 @@ import io.vertx.core.*
 
 class VerticleDeployer {
     companion object {
-        fun scanAndDeploy(vertx: Vertx, packageName: String, vararg constructorParams: Any) {
+        fun scanAndDeploy(vertx: Vertx, packageName: String, config: Config, vararg constructorParams: Any) {
             val futures = mutableListOf<Future<*>>()
 
             ReflectionsUtils.findClasses(packageName, DeployVerticle::class.java)
@@ -21,6 +21,7 @@ class VerticleDeployer {
                         val future = vertx.deployVerticle(
                             c.declaredConstructors[0].newInstance(*constructorParams) as Verticle,
                             DeploymentOptions()
+                                .setConfig(config)
                                 .setWorker(annotation.worker)
                                 .setWorkerPoolName(annotation.workerPoolName.ifEmpty { null })
                                 .setWorkerPoolSize(annotation.workerPoolSize)

@@ -27,12 +27,17 @@ class Application {
             sessionFactory = HibernateInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
-            BootstrapUtils.bootstrap(PACKAGE_NAME, vertx, config, object : KotlinModule() {
-                override fun configure() {
-                    bind<SessionFactory>().toInstance(sessionFactory)
-                    bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
+            BootstrapUtils.bootstrap(
+                packageName = PACKAGE_NAME,
+                vertx = vertx,
+                config = config,
+                module = object : KotlinModule() {
+                    override fun configure() {
+                        bind<SessionFactory>().toInstance(sessionFactory)
+                        bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
+                    }
                 }
-            })
+            )
 
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {
