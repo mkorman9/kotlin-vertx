@@ -42,8 +42,3 @@ data class ClientCursorOptions(
     val cursor: String?,
     val limit: Int
 )
-
-data class FindCursorClientParams(
-    val filtering: ClientFilteringOptions,
-    val cursorOptions: ClientCursorOptions
-)
