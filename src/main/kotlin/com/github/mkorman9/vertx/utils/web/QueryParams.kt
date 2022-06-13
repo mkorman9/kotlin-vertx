@@ -11,7 +11,7 @@ class QueryParamValues private constructor(
         fun parse(ctx: RoutingContext, rules: QueryParamsParsingRules): QueryParamValues {
             val values = mutableMapOf<String, Any>()
 
-            rules.forEach { param, func ->
+            rules.forEach { (param, func) ->
                 val value = ctx.request().getParam(param)
 
                 val transformed = func(value)
