@@ -3,7 +3,6 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientServiceGrpcImpl
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.inject.Injector
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.vertx.core.impl.logging.LoggerFactory
@@ -22,12 +21,10 @@ class GrpcServerVerticle(
 
     override suspend fun start() {
         try {
-            val clientsService = injector.getInstance<ClientServiceGrpcImpl>()
-
             vertx.executeBlocking<Void> { call ->
                 server = ServerBuilder
                     .forPort(config.getJsonObject("grpc")?.getInteger("port") ?: 9090)
-                    .addService(clientsService)
+                    .addService(ClientServiceGrpcImpl(injector))
                     .build()
                     .start()
                 call.complete()

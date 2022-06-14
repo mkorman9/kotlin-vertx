@@ -1,22 +1,23 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.protocol.Client
-import com.github.mkorman9.vertx.protocol.CreditCard
 import com.github.mkorman9.vertx.protocol.ClientRequest
 import com.github.mkorman9.vertx.protocol.ClientServiceGrpcKt
+import com.github.mkorman9.vertx.protocol.CreditCard
+import com.google.inject.Injector
 import com.google.protobuf.Timestamp
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class ClientServiceGrpcImpl @Inject constructor(
-    private val clientRepository: ClientRepository
+class ClientServiceGrpcImpl (
+    injector: Injector
 ) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
+    private val clientRepository: ClientRepository = injector.getInstance()
+
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
             val clientsPage = clientRepository.findByCursor(

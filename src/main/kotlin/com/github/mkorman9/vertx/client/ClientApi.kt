@@ -17,7 +17,7 @@ class ClientApi (
     private val clientRepository: ClientRepository = injector.getInstance()
     private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
     private val clientEventsPublisher: ClientEventsPublisher = injector.getInstance()
-    private val websocketApi = ClientEventsWebsocketApi(vertx, injector)
+    private val websocketApi = ClientEventsWebsocketApi(vertx)
 
     val router: Router = Router.router(vertx).apply {
         get("/")
