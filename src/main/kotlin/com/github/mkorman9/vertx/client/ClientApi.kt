@@ -1,13 +1,13 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.utils.AsyncRoot
 import com.github.mkorman9.vertx.utils.web.*
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.CoroutineScope
 
 @Singleton
 class ClientApi @Inject constructor(
@@ -15,8 +15,8 @@ class ClientApi @Inject constructor(
     private val clientRepository: ClientRepository,
     private val authorizationMiddleware: AuthorizationMiddleware,
     private val clientEventsPublisher: ClientEventsPublisher
-) : AsyncRoot(vertx) {
-    fun createRouter(): Router = Router.router(vertx).apply {
+) {
+    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         get("/")
             .asyncHandler(scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)

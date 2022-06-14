@@ -12,6 +12,7 @@ import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.micrometer.PrometheusScrapingHandler
+import kotlinx.coroutines.CoroutineScope
 
 class RestApi (injector: Injector) {
     companion object {
@@ -23,14 +24,14 @@ class RestApi (injector: Injector) {
     private val clientApi = injector.getInstance<ClientApi>()
     private val sessionApi = injector.getInstance<SessionApi>()
 
-    fun createRouter(): Router = Router.router(vertx).apply {
+    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         route().handler(BodyHandler.create())
 
         route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
-        route("/api/v1/client*").subRouter(clientApi.createRouter())
-        route("/api/v1/session*").subRouter(sessionApi.createRouter())
+        route("/api/v1/client*").subRouter(clientApi.create(scope))
+        route("/api/v1/session*").subRouter(sessionApi.create(scope))
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(

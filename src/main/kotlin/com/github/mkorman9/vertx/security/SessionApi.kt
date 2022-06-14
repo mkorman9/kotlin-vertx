@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.github.mkorman9.vertx.utils.AsyncRoot
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.web.*
 import com.google.inject.Inject
@@ -9,6 +8,7 @@ import com.google.inject.Singleton
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.CoroutineScope
 import java.time.LocalDateTime
 
 @Singleton
@@ -17,14 +17,14 @@ class SessionApi @Inject constructor(
     private val accountRepository: AccountRepository,
     private val sessionRepository: SessionRepository,
     private val authorizationMiddleware: AuthorizationMiddleware
-) : AsyncRoot(vertx) {
+) {
     private val sessionIdLength: Long = 24
     private val sessionTokenLength: Long = 48
     private val sessionDurationSeconds: Int = 4 * 60 * 60
 
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
-    fun createRouter(): Router = Router.router(vertx).apply {
+    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         post("/")
             .asyncHandler(scope) { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->

@@ -9,11 +9,12 @@ import io.vertx.core.json.DecodeException
 import io.vertx.core.json.Json
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 fun Route.asyncHandler(scope: CoroutineScope, func: suspend (RoutingContext) -> Unit): Route = handler { ctx ->
-    scope.launch {
+    scope.launch(ctx.vertx().dispatcher()) {
         try {
             func(ctx)
         } catch (t: Throwable) {
