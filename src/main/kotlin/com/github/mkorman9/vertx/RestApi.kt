@@ -6,7 +6,6 @@ import com.github.mkorman9.vertx.utils.web.HealthcheckHandler
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import com.github.mkorman9.vertx.utils.web.endWithJson
 import com.google.inject.Injector
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.ext.web.Router
@@ -14,15 +13,13 @@ import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.micrometer.PrometheusScrapingHandler
 import kotlinx.coroutines.CoroutineScope
 
-class RestApi (injector: Injector) {
+class RestApi (
+    private val vertx: Vertx,
+    private val injector: Injector
+) {
     companion object {
         private val log = LoggerFactory.getLogger(RestApi::class.java)
     }
-
-    private val vertx = injector.getInstance<Vertx>()
-
-    private val clientApi = injector.getInstance<ClientApi>()
-    private val sessionApi = injector.getInstance<SessionApi>()
 
     fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         route().handler(BodyHandler.create())
@@ -30,8 +27,8 @@ class RestApi (injector: Injector) {
         route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
-        route("/api/v1/client*").subRouter(clientApi.create(scope))
-        route("/api/v1/session*").subRouter(sessionApi.create(scope))
+        route("/api/v1/client*").subRouter(ClientApi(vertx, injector).create(scope))
+        route("/api/v1/session*").subRouter(SessionApi(vertx, injector).create(scope))
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(

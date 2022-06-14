@@ -3,21 +3,22 @@ package com.github.mkorman9.vertx.security
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.web.*
-import com.google.inject.Inject
-import com.google.inject.Singleton
+import com.google.inject.Injector
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 import java.time.LocalDateTime
 
-@Singleton
-class SessionApi @Inject constructor(
+class SessionApi (
     private val vertx: Vertx,
-    private val accountRepository: AccountRepository,
-    private val sessionRepository: SessionRepository,
-    private val authorizationMiddleware: AuthorizationMiddleware
+    injector: Injector
 ) {
+    private val accountRepository: AccountRepository = injector.getInstance()
+    private val sessionRepository: SessionRepository = injector.getInstance()
+    private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
+
     private val sessionIdLength: Long = 24
     private val sessionTokenLength: Long = 48
     private val sessionDurationSeconds: Int = 4 * 60 * 60

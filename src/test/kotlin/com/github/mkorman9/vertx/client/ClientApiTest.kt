@@ -50,7 +50,6 @@ class ClientApiTest {
             config = Config(),
             module = object : KotlinModule() {
                 override fun configure() {
-                    bind<ClientApi>()
                     bind<ClientRepository>().toInstance(clientRepository)
                     bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
                     bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)

@@ -43,7 +43,6 @@ class SessionApiTest {
             config = Config(),
             module = object : KotlinModule() {
                 override fun configure() {
-                    bind<SessionApi>()
                     bind<SessionRepository>().toInstance(sessionRepository)
                     bind<AccountRepository>().toInstance(accountRepository)
                     bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))

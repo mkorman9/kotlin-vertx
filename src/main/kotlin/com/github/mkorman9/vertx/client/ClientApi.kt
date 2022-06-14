@@ -2,20 +2,21 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.web.*
-import com.google.inject.Inject
-import com.google.inject.Singleton
+import com.google.inject.Injector
+import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 
-@Singleton
-class ClientApi @Inject constructor(
+class ClientApi (
     private val vertx: Vertx,
-    private val clientRepository: ClientRepository,
-    private val authorizationMiddleware: AuthorizationMiddleware,
-    private val clientEventsPublisher: ClientEventsPublisher
+    injector: Injector
 ) {
+    private val clientRepository: ClientRepository = injector.getInstance()
+    private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
+    private val clientEventsPublisher: ClientEventsPublisher = injector.getInstance()
+
     fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         get("/")
             .asyncHandler(scope) { ctx ->
