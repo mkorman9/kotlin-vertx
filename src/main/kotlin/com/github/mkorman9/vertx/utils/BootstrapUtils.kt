@@ -6,14 +6,17 @@ import io.vertx.core.Vertx
 
 class BootstrapUtils {
     companion object {
-        fun bootstrap(packageName: String, vertx: Vertx, config: Config, module: com.google.inject.Module) {
+        init {
             JsonCodec.configure()
+        }
 
+        fun bootstrap(packageName: String, vertx: Vertx, config: Config, module: com.google.inject.Module) {
             val vertxModule = object : KotlinModule() {
                 override fun configure() {
                     bind<Config>().toInstance(config)
                 }
             }
+
             val injector = InjectorUtils.createInjector(
                 packageName,
                 Modules.override(vertxModule).with(module)
