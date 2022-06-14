@@ -250,7 +250,7 @@ class ClientApiTest {
 
         every { clientRepository.add(payload) } returns Future.succeededFuture(addedClient)
         every { sessionProvider.getSession() } returns activeSession
-        every { clientEventsPublisher.publish(any()) } returns Unit
+        every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
         // when
         val result =
@@ -265,6 +265,7 @@ class ClientApiTest {
         assertThat(clientAddResponse.id).isEqualTo(addedClient.id.toString())
 
         verify { clientEventsPublisher.publish(
+            any(),
             ClientEvent(
                 operation = ClientEventOperation.ADDED,
                 clientId = addedClient.id.toString(),
@@ -372,7 +373,7 @@ class ClientApiTest {
 
         every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
         every { sessionProvider.getSession() } returns activeSession
-        every { clientEventsPublisher.publish(any()) } returns Unit
+        every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
         // when
         val result =
@@ -387,6 +388,7 @@ class ClientApiTest {
         assertThat(statusResponse.status).isEqualTo("ok")
 
         verify { clientEventsPublisher.publish(
+            any(),
             ClientEvent(
                 operation = ClientEventOperation.UPDATED,
                 clientId = client.id.toString(),
@@ -430,7 +432,7 @@ class ClientApiTest {
 
         every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
         every { sessionProvider.getSession() } returns activeSession
-        every { clientEventsPublisher.publish(any()) } returns Unit
+        every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
         // when
         val result =
@@ -445,6 +447,7 @@ class ClientApiTest {
         assertThat(statusResponse.status).isEqualTo("ok")
 
         verify { clientEventsPublisher.publish(
+            any(),
             ClientEvent(
                 operation = ClientEventOperation.DELETED,
                 clientId = clientId.toString(),

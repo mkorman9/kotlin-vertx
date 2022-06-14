@@ -11,7 +11,6 @@ class BootstrapUtils {
 
             val vertxModule = object : KotlinModule() {
                 override fun configure() {
-                    bind<Vertx>().toInstance(vertx)
                     bind<Config>().toInstance(config)
                 }
             }

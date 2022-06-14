@@ -115,6 +115,7 @@ class ClientApi (
                     val client = clientRepository.add(payload).await()
 
                     clientEventsPublisher.publish(
+                        vertx,
                         ClientEvent(
                             operation = ClientEventOperation.ADDED,
                             clientId = client.id.toString(),
@@ -137,6 +138,7 @@ class ClientApi (
                     val client = clientRepository.update(id, payload).await()
                     if (client != null) {
                         clientEventsPublisher.publish(
+                            vertx,
                             ClientEvent(
                                 operation = ClientEventOperation.UPDATED,
                                 clientId = client.id.toString(),
@@ -170,6 +172,7 @@ class ClientApi (
                 val deleted = clientRepository.delete(id).await()
                 if (deleted) {
                     clientEventsPublisher.publish(
+                        vertx,
                         ClientEvent(
                             operation = ClientEventOperation.DELETED,
                             clientId = id,
