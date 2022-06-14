@@ -22,7 +22,6 @@ class HttpServerVerticle(
     override suspend fun start() {
         try {
             val restApiRouter = RestApi(vertx, injector).create(this)
-            val websocketApi = WebsocketApi(vertx, injector)
 
             server = vertx
                 .createHttpServer(
@@ -35,7 +34,6 @@ class HttpServerVerticle(
                     )
                 )
                 .requestHandler { restApiRouter.handle(it) }
-                .webSocketHandler { websocketApi.handle(it) }
                 .listen()
                 .await()
         } catch (e: Exception) {

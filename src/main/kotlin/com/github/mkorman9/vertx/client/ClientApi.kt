@@ -16,6 +16,7 @@ class ClientApi (
     private val clientRepository: ClientRepository = injector.getInstance()
     private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
     private val clientEventsPublisher: ClientEventsPublisher = injector.getInstance()
+    private val websocketApi = ClientEventsWebsocketApi(vertx, injector)
 
     fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
         get("/")
@@ -75,6 +76,16 @@ class ClientApi (
                 ).await()
 
                 ctx.response().endWithJson(clientsCursor)
+            }
+
+        get("/events")
+            .asyncHandler(scope) { ctx ->
+                try {
+                    val websocket = ctx.request().toWebSocket().await()
+                    websocketApi.handle(websocket)
+                } catch (e: Exception) {
+                    // ignore
+                }
             }
 
         get("/:id")
