@@ -15,7 +15,7 @@ class HibernateInitializer {
                 ?: throw RuntimeException("db.password is missing from config")
 
             val poolConfig = config.getJsonObject("db")?.getJsonObject("pool")
-            val poolSize = poolConfig?.getInteger("size") ?: 5
+            val poolSize = poolConfig?.getInteger("size") ?: 8
             val connectTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("connect") ?: 30_000
             val idleTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("idle") ?: 0
             val cleanerPeriod = poolConfig?.getInteger("cleaner") ?: 1000
