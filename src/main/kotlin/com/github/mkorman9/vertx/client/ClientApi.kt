@@ -10,7 +10,8 @@ import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 
 class ClientApi (
-    private val vertx: Vertx,
+    vertx: Vertx,
+    scope: CoroutineScope,
     injector: Injector
 ) {
     private val clientRepository: ClientRepository = injector.getInstance()
@@ -18,7 +19,7 @@ class ClientApi (
     private val clientEventsPublisher: ClientEventsPublisher = injector.getInstance()
     private val websocketApi = ClientEventsWebsocketApi(vertx, injector)
 
-    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         get("/")
             .asyncHandler(scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)

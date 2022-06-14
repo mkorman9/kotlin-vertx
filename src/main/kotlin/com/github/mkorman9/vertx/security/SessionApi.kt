@@ -12,7 +12,8 @@ import kotlinx.coroutines.CoroutineScope
 import java.time.LocalDateTime
 
 class SessionApi (
-    private val vertx: Vertx,
+    vertx: Vertx,
+    scope: CoroutineScope,
     injector: Injector
 ) {
     private val accountRepository: AccountRepository = injector.getInstance()
@@ -25,7 +26,7 @@ class SessionApi (
 
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
-    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         post("/")
             .asyncHandler(scope) { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->

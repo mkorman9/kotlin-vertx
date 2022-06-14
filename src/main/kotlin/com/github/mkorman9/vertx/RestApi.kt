@@ -14,21 +14,22 @@ import io.vertx.micrometer.PrometheusScrapingHandler
 import kotlinx.coroutines.CoroutineScope
 
 class RestApi (
-    private val vertx: Vertx,
-    private val injector: Injector
+    vertx: Vertx,
+    scope: CoroutineScope,
+    injector: Injector
 ) {
     companion object {
         private val log = LoggerFactory.getLogger(RestApi::class.java)
     }
 
-    fun create(scope: CoroutineScope): Router = Router.router(vertx).apply {
+    val router: Router = Router.router(vertx).apply {
         route().handler(BodyHandler.create())
 
         route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
-        route("/api/v1/client*").subRouter(ClientApi(vertx, injector).create(scope))
-        route("/api/v1/session*").subRouter(SessionApi(vertx, injector).create(scope))
+        route("/api/v1/client*").subRouter(ClientApi(vertx, scope, injector).router)
+        route("/api/v1/session*").subRouter(SessionApi(vertx, scope, injector).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(

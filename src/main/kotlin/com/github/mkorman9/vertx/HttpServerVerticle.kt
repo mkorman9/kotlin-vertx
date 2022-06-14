@@ -21,7 +21,7 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         try {
-            val restApiRouter = RestApi(vertx, injector).create(this)
+            val restApi = RestApi(vertx, this, injector)
 
             server = vertx
                 .createHttpServer(
@@ -33,7 +33,7 @@ class HttpServerVerticle(
                         reusePort = true
                     )
                 )
-                .requestHandler { restApiRouter.handle(it) }
+                .requestHandler { restApi.router.handle(it) }
                 .listen()
                 .await()
         } catch (e: Exception) {
