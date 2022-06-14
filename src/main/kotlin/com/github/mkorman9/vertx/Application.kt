@@ -24,28 +24,20 @@ class Application {
         try {
             val config = ConfigReader.read(vertx)
 
-            // initialize dependencies in the context of Vert.x thread pool
-            vertx.executeBlocking<Void> { call ->
-                sessionFactory = HibernateInitializer.initialize(config)
-                gcpPubSubClient = GCPPubSubClient.create(vertx, config)
+            sessionFactory = HibernateInitializer.initialize(vertx, config)
+            gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
-                BootstrapUtils.bootstrap(
-                    packageName = PACKAGE_NAME,
-                    vertx = vertx,
-                    config = config,
-                    module = object : KotlinModule() {
-                        override fun configure() {
-                            bind<SessionFactory>().toInstance(sessionFactory)
-                            bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
-                        }
+            BootstrapUtils.bootstrap(
+                packageName = PACKAGE_NAME,
+                vertx = vertx,
+                config = config,
+                module = object : KotlinModule() {
+                    override fun configure() {
+                        bind<SessionFactory>().toInstance(sessionFactory)
+                        bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
                     }
-                )
-
-                call.complete()
-            }
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
+                }
+            )
 
             log.info("App has been bootstrapped successfully")
         } catch (e: Exception) {

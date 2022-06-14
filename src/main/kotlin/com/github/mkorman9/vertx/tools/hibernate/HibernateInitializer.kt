@@ -1,12 +1,13 @@
 package com.github.mkorman9.vertx.tools.hibernate
 
 import com.github.mkorman9.vertx.utils.Config
+import io.vertx.core.Vertx
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import javax.persistence.Persistence
 
 class HibernateInitializer {
     companion object {
-        fun initialize(config: Config): SessionFactory {
+        fun initialize(vertx: Vertx, config: Config): SessionFactory {
             val uri = config.getJsonObject("db")?.getString("uri")
                 ?: throw RuntimeException("db.uri is missing from config")
             val user = config.getJsonObject("db")?.getString("user")
@@ -40,9 +41,21 @@ class HibernateInitializer {
                 "hibernate.highlight_sql" to highlightSql
             )
 
-            return Persistence
-                .createEntityManagerFactory("default", props)
-                .unwrap(SessionFactory::class.java)
+            // Hibernate needs to be initialized inside the context of Vert.x thread pool
+            return vertx.executeBlocking<SessionFactory> { call ->
+                try {
+                    val sessionFactory = Persistence
+                        .createEntityManagerFactory("default", props)
+                        .unwrap(SessionFactory::class.java)
+
+                    call.complete(sessionFactory)
+                } catch (e: Exception) {
+                    call.fail(e)
+                }
+            }
+                .toCompletionStage()
+                .toCompletableFuture()
+                .join()
         }
     }
 }
