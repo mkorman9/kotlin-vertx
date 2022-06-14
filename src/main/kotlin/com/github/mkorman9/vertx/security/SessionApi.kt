@@ -33,10 +33,10 @@ class SessionApi (
                     if (account == null) {
                         ctx.response().setStatusCode(401).endWithJson(
                             StatusDTO(
-                            status = "error",
-                            message = "invalid credentials",
-                            causes = listOf(Cause("credentials", "invalid"))
-                        )
+                                status = "error",
+                                message = "invalid credentials",
+                                causes = listOf(Cause("credentials", "invalid"))
+                            )
                         )
 
                         return@handleJsonBody
@@ -45,10 +45,10 @@ class SessionApi (
                     if (!account.active) {
                         ctx.response().setStatusCode(401).endWithJson(
                             StatusDTO(
-                            status = "error",
-                            message = "account is not active",
-                            causes = listOf(Cause("account", "inactive"))
-                        )
+                                status = "error",
+                                message = "account is not active",
+                                causes = listOf(Cause("account", "inactive"))
+                            )
                         )
 
                         return@handleJsonBody
@@ -63,10 +63,10 @@ class SessionApi (
                     if (!verificationResult.verified) {
                         ctx.response().setStatusCode(401).endWithJson(
                             StatusDTO(
-                            status = "error",
-                            message = "invalid credentials",
-                            causes = listOf(Cause("credentials", "invalid"))
-                        )
+                                status = "error",
+                                message = "invalid credentials",
+                                causes = listOf(Cause("credentials", "invalid"))
+                            )
                         )
 
                         return@handleJsonBody
