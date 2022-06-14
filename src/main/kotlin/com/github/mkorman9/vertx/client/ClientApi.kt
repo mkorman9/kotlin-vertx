@@ -1,27 +1,22 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
+import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
-import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
-import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.CoroutineScope
 
-class ClientApi (
-    vertx: Vertx,
-    scope: CoroutineScope,
-    injector: Injector
-) {
-    private val clientRepository: ClientRepository = injector.getInstance()
-    private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
-    private val clientEventsPublisher: ClientEventsPublisher = injector.getInstance()
-    private val websocketApi = ClientEventsWebsocketApi(vertx)
+class ClientApi (context: VerticleContext) {
+    private val clientRepository: ClientRepository = context.injector.getInstance()
+    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
+    private val clientEventsPublisher: ClientEventsPublisher = context.injector.getInstance()
 
-    val router: Router = Router.router(vertx).apply {
+    private val websocketApi = ClientEventsWebsocketApi(context)
+
+    val router: Router = Router.router(context.vertx).apply {
         get("/")
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)
                 val filtering = ClientFilteringOptions(
                     gender = queryParams.get("filter[gender]"),
@@ -53,7 +48,7 @@ class ClientApi (
             }
 
         get("/cursor/get")
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_CLIENTS_BY_CURSOR_QUERY_PARAMS)
                 val filtering = ClientFilteringOptions(
                     gender = queryParams.get("filter[gender]"),
@@ -80,7 +75,7 @@ class ClientApi (
             }
 
         get("/events")
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 try {
                     val websocket = ctx.request().toWebSocket().await()
                     websocketApi.handle(websocket)
@@ -90,7 +85,7 @@ class ClientApi (
             }
 
         get("/:id")
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val id = ctx.pathParam("id")
 
                 val client = clientRepository.findById(id).await()
@@ -108,14 +103,14 @@ class ClientApi (
 
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
                     val client = clientRepository.add(payload).await()
 
                     clientEventsPublisher.publish(
-                        vertx,
+                        context.vertx,
                         ClientEvent(
                             operation = ClientEventOperation.ADDED,
                             clientId = client.id.toString(),
@@ -129,7 +124,7 @@ class ClientApi (
 
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
@@ -138,7 +133,7 @@ class ClientApi (
                     val client = clientRepository.update(id, payload).await()
                     if (client != null) {
                         clientEventsPublisher.publish(
-                            vertx,
+                            context.vertx,
                             ClientEvent(
                                 operation = ClientEventOperation.UPDATED,
                                 clientId = client.id.toString(),
@@ -164,7 +159,7 @@ class ClientApi (
 
         delete("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val id = ctx.pathParam("id")
 
                 val account = authorizationMiddleware.getActiveSession(ctx).account
@@ -172,7 +167,7 @@ class ClientApi (
                 val deleted = clientRepository.delete(id).await()
                 if (deleted) {
                     clientEventsPublisher.publish(
-                        vertx,
+                        context.vertx,
                         ClientEvent(
                             operation = ClientEventOperation.DELETED,
                             clientId = id,

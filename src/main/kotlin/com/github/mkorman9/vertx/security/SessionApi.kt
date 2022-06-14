@@ -2,23 +2,17 @@ package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
+import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
-import com.google.inject.Injector
 import dev.misfitlabs.kotlinguice4.getInstance
-import io.vertx.core.Vertx
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.CoroutineScope
 import java.time.LocalDateTime
 
-class SessionApi (
-    vertx: Vertx,
-    scope: CoroutineScope,
-    injector: Injector
-) {
-    private val accountRepository: AccountRepository = injector.getInstance()
-    private val sessionRepository: SessionRepository = injector.getInstance()
-    private val authorizationMiddleware: AuthorizationMiddleware = injector.getInstance()
+class SessionApi (context: VerticleContext) {
+    private val accountRepository: AccountRepository = context.injector.getInstance()
+    private val sessionRepository: SessionRepository = context.injector.getInstance()
+    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
 
     private val sessionIdLength: Long = 24
     private val sessionTokenLength: Long = 48
@@ -26,9 +20,9 @@ class SessionApi (
 
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
 
-    val router: Router = Router.router(vertx).apply {
+    val router: Router = Router.router(context.vertx).apply {
         post("/")
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->
                     val account = accountRepository.findByCredentialsEmail(payload.email).await()
                     if (account == null) {
@@ -55,7 +49,7 @@ class SessionApi (
                         return@handleJsonBody
                     }
 
-                    val verificationResult = vertx.executeBlocking<BCrypt.Result> { call ->
+                    val verificationResult = context.vertx.executeBlocking<BCrypt.Result> { call ->
                         call.complete(
                             bcryptVerifier.verify(payload.password.toCharArray(), account.credentials!!.passwordBcrypt)
                         )
@@ -92,7 +86,7 @@ class SessionApi (
 
         put("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
                 val refreshedSession = sessionRepository.refresh(session).await()
                 ctx.response().endWithJson(refreshedSession)
@@ -100,7 +94,7 @@ class SessionApi (
 
         delete("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .asyncHandler(scope) { ctx ->
+            .asyncHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
                 sessionRepository.delete(session).await()
                 ctx.response().endWithJson(StatusDTO(status = "ok"))

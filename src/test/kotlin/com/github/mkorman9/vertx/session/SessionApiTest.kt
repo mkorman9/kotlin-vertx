@@ -50,7 +50,9 @@ class SessionApiTest {
             }
         )
 
-        vertx.deployVerticle(HttpServerVerticle(injector))
+        val serverVerticle = HttpServerVerticle()
+        serverVerticle.injector = injector
+        vertx.deployVerticle(serverVerticle)
             .onComplete { testContext.completeNow() }
     }
 

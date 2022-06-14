@@ -1,14 +1,12 @@
 package com.github.mkorman9.vertx.client
 
+import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.WebsocketStore
-import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 
-class ClientEventsWebsocketApi (
-    vertx: Vertx
-) {
+class ClientEventsWebsocketApi (context: VerticleContext) {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
     }
@@ -16,7 +14,7 @@ class ClientEventsWebsocketApi (
     private val websockets = WebsocketStore()
 
     init {
-        vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.INCOMING_CHANNEL) { message ->
+        context.vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.INCOMING_CHANNEL) { message ->
             websockets.list().forEach { ws ->
                 ws.writeTextMessage(message.body().encode())
             }

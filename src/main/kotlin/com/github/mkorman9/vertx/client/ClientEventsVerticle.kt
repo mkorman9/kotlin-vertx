@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
+import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.cloud.pubsub.v1.AckReplyConsumerWithResponse
 import com.google.cloud.pubsub.v1.Publisher
@@ -16,21 +17,19 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
-class ClientEventsVerticle(
-    injector: Injector
-) : CoroutineVerticle() {
+class ClientEventsVerticle : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
         const val OUTGOING_CHANNEL = "client.events.outgoing"
         const val INCOMING_CHANNEL = "client.events.incoming"
+
+        private const val topicName = "client.events"
     }
 
-    private val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
-
-    private val topicName = "client.events"
-
     override suspend fun start() {
+        val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
+
         try {
             gcpPubSubClient.createSubscriber(topicName, this::incomingMessageHandler).await()
 

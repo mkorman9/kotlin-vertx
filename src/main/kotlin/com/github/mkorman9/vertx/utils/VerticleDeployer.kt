@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.utils
 
+import com.google.inject.Injector
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
 import kotlin.math.ceil
@@ -8,7 +9,7 @@ class VerticleDeployer {
     companion object {
         private val log = LoggerFactory.getLogger(VerticleDeployer::class.java)
 
-        fun scanAndDeploy(vertx: Vertx, packageName: String, config: Config, vararg constructorParams: Any) {
+        fun scanAndDeploy(vertx: Vertx, packageName: String, config: Config, injector: Injector) {
             val futures = mutableListOf<Future<*>>()
 
             ReflectionsUtils.findClasses(packageName, DeployVerticle::class.java)
@@ -18,8 +19,13 @@ class VerticleDeployer {
                     val instances = parseInstancesNumber(annotation.instances)
 
                     for (i in 0 until instances) {
+                        val instance = c.declaredConstructors[0].newInstance() as Verticle
+                        if (instance is ContextualVerticle) {
+                            instance.injector = injector
+                        }
+
                         val future = vertx.deployVerticle(
-                            c.declaredConstructors[0].newInstance(*constructorParams) as Verticle,
+                            instance,
                             DeploymentOptions()
                                 .setConfig(config)
                                 .setWorker(annotation.worker)

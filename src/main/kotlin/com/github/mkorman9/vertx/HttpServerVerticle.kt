@@ -1,18 +1,15 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.NUM_OF_CPUS
-import com.google.inject.Injector
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
-import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle(instances = NUM_OF_CPUS)
-class HttpServerVerticle(
-    private val injector: Injector
-): CoroutineVerticle() {
+class HttpServerVerticle : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
     }
@@ -21,7 +18,7 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         try {
-            val restApi = RestApi(vertx, this, injector)
+            val restApi = RestApi(context)
 
             server = vertx
                 .createHttpServer(

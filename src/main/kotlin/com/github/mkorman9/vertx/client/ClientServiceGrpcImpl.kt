@@ -4,6 +4,7 @@ import com.github.mkorman9.vertx.protocol.Client
 import com.github.mkorman9.vertx.protocol.ClientRequest
 import com.github.mkorman9.vertx.protocol.ClientServiceGrpcKt
 import com.github.mkorman9.vertx.protocol.CreditCard
+import com.github.mkorman9.vertx.utils.VerticleContext
 import com.google.inject.Injector
 import com.google.protobuf.Timestamp
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -13,10 +14,8 @@ import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class ClientServiceGrpcImpl (
-    injector: Injector
-) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
-    private val clientRepository: ClientRepository = injector.getInstance()
+class ClientServiceGrpcImpl (context: VerticleContext) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
+    private val clientRepository: ClientRepository = context.injector.getInstance()
 
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
