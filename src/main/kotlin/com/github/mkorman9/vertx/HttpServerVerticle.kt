@@ -22,7 +22,7 @@ class HttpServerVerticle(
     override suspend fun start() {
         try {
             val restApiRouter = RestApi(vertx, injector).create(this)
-            val websocketApi = WebsocketApi(injector)
+            val websocketApi = WebsocketApi(vertx, injector)
 
             server = vertx
                 .createHttpServer(

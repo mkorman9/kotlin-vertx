@@ -1,16 +1,15 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.utils.web.WebsocketStore
-import com.google.inject.Inject
-import com.google.inject.Singleton
+import com.google.inject.Injector
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject
 
-@Singleton
-class ClientEventsWebsocketApi @Inject constructor(
-    vertx: Vertx
+class ClientEventsWebsocketApi (
+    vertx: Vertx,
+    injector: Injector
 ) {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsWebsocketApi::class.java)
