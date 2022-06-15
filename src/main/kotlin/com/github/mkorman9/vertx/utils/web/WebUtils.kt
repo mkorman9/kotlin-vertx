@@ -13,10 +13,10 @@ import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-fun Route.asyncHandler(scope: CoroutineScope, func: suspend (RoutingContext) -> Unit): Route = handler { ctx ->
+fun Route.coroutineHandler(scope: CoroutineScope, f: suspend (RoutingContext) -> Unit): Route = handler { ctx ->
     scope.launch(ctx.vertx().dispatcher()) {
         try {
-            func(ctx)
+            f(ctx)
         } catch (t: Throwable) {
             ctx.fail(500, t)
         }

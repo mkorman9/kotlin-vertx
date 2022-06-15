@@ -16,7 +16,7 @@ class ClientApi (context: VerticleContext) {
 
     val router: Router = Router.router(context.vertx).apply {
         get("/")
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_PAGED_CLIENTS_QUERY_PARAMS)
                 val filtering = ClientFilteringOptions(
                     gender = queryParams.get("filter[gender]"),
@@ -48,7 +48,7 @@ class ClientApi (context: VerticleContext) {
             }
 
         get("/cursor/get")
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val queryParams = QueryParamValues.parse(ctx, FIND_CLIENTS_BY_CURSOR_QUERY_PARAMS)
                 val filtering = ClientFilteringOptions(
                     gender = queryParams.get("filter[gender]"),
@@ -75,7 +75,7 @@ class ClientApi (context: VerticleContext) {
             }
 
         get("/events")
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 try {
                     val websocket = ctx.request().toWebSocket().await()
                     websocketApi.handle(websocket)
@@ -85,7 +85,7 @@ class ClientApi (context: VerticleContext) {
             }
 
         get("/:id")
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val id = ctx.pathParam("id")
 
                 val client = clientRepository.findById(id).await()
@@ -103,7 +103,7 @@ class ClientApi (context: VerticleContext) {
 
         post("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
@@ -124,7 +124,7 @@ class ClientApi (context: VerticleContext) {
 
         put("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
@@ -159,7 +159,7 @@ class ClientApi (context: VerticleContext) {
 
         delete("/:id")
             .handler { ctx -> authorizationMiddleware.authorize(ctx, allowedRoles = setOf("CLIENTS_EDITOR")) }
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val id = ctx.pathParam("id")
 
                 val account = authorizationMiddleware.getActiveSession(ctx).account

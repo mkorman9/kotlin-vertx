@@ -22,7 +22,7 @@ class SessionApi (context: VerticleContext) {
 
     val router: Router = Router.router(context.vertx).apply {
         post("/")
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->
                     val account = accountRepository.findByCredentialsEmail(payload.email).await()
                     if (account == null) {
@@ -86,7 +86,7 @@ class SessionApi (context: VerticleContext) {
 
         put("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
                 val refreshedSession = sessionRepository.refresh(session).await()
                 ctx.response().endWithJson(refreshedSession)
@@ -94,7 +94,7 @@ class SessionApi (context: VerticleContext) {
 
         delete("/")
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
-            .asyncHandler(context.scope) { ctx ->
+            .coroutineHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
                 sessionRepository.delete(session).await()
                 ctx.response().endWithJson(StatusDTO(status = "ok"))
