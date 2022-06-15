@@ -13,7 +13,7 @@ data class Session(
     @SequenceGenerator(name="sessions_id_gen", sequenceName = "sessions_id_seq")
     @Column(name = "id", columnDefinition = "bigint")
     @JsonIgnore
-    var id: Long? = null,
+    val id: Long? = null,
 
     @Column(name = "account_id", columnDefinition = "uuid", nullable = false)
     var accountId: UUID,

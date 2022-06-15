@@ -11,7 +11,7 @@ import javax.persistence.*
 data class Client(
     @Id
     @Column(name = "id", columnDefinition = "uuid")
-    var id: UUID,
+    val id: UUID,
 
     @Column(name = "gender", columnDefinition = "char(1)", nullable = false)
     var gender: String = "-",

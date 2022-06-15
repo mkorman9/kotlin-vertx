@@ -10,7 +10,7 @@ import javax.persistence.*
 data class Account(
     @Id
     @Column(name = "id", columnDefinition = "uuid")
-    var id: UUID,
+    val id: UUID,
 
     @Column(name = "username", columnDefinition = "text", nullable = false)
     var username: String,
