@@ -1,8 +1,9 @@
 package com.github.mkorman9.vertx.security
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.Type
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import javax.persistence.*
 
 @Entity(name = "Account")
@@ -15,9 +16,9 @@ data class Account(
     @Column(name = "username", columnDefinition = "text", nullable = false)
     var username: String,
 
-    @Column(name = "roles", columnDefinition = "text", nullable = false)
-    @JsonIgnore
-    var rolesString: String = "",
+    @Column(name = "roles", columnDefinition = "text[]", nullable = false)
+    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringList")
+    var roles: List<String> = listOf(),
 
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     var active: Boolean,
@@ -42,10 +43,4 @@ data class Account(
     )
     @JsonIgnore
     var credentials: AccountCredentials?
-) {
-    var roles: Set<String>
-        get() = rolesString.split(";").toHashSet()
-        set(value) {
-            rolesString = value.joinToString(";")
-        }
-}
+)

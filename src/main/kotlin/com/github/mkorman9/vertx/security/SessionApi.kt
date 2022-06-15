@@ -69,7 +69,7 @@ class SessionApi (context: VerticleContext) {
                     val session = Session(
                         accountId = account.id,
                         token = SecureRandomGenerator.generate(sessionTokenLength),
-                        rolesString = account.rolesString,
+                        roles = account.roles,
                         ip = ctx.request().getClientIp(),
                         issuedAt = LocalDateTime.now(),
                         duration = sessionDurationSeconds,
