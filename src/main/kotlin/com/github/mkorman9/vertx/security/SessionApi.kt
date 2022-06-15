@@ -14,7 +14,6 @@ class SessionApi (context: VerticleContext) {
     private val sessionRepository: SessionRepository = context.injector.getInstance()
     private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
 
-    private val sessionIdLength: Long = 24
     private val sessionTokenLength: Long = 48
     private val sessionDurationSeconds: Int = 4 * 60 * 60
 
@@ -68,7 +67,6 @@ class SessionApi (context: VerticleContext) {
                     }
 
                     val session = Session(
-                        id = SecureRandomGenerator.generate(sessionIdLength),
                         accountId = account.id,
                         token = SecureRandomGenerator.generate(sessionTokenLength),
                         rolesString = account.rolesString,

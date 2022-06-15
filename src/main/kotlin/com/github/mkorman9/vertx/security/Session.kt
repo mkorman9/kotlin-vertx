@@ -9,8 +9,11 @@ import javax.persistence.*
 @Table(name = "sessions")
 data class Session(
     @Id
-    @Column(name = "id", columnDefinition = "text")
-    var id: String,
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sessions_id_gen")
+    @SequenceGenerator(name="sessions_id_gen", sequenceName = "sessions_id_seq")
+    @Column(name = "id", columnDefinition = "bigint")
+    @JsonIgnore
+    var id: Long? = null,
 
     @Column(name = "account_id", columnDefinition = "uuid", nullable = false)
     var accountId: UUID,

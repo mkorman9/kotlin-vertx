@@ -24,7 +24,7 @@ fun fakeSession(
 ): Session {
     val accountId = UUID.randomUUID()
     val session = Session(
-        id = UUID.randomUUID().toString(),
+        id = (Math.random() * 10_000).toLong(),
         accountId = accountId,
         token = UUID.randomUUID().toString(),
         rolesString = "",
