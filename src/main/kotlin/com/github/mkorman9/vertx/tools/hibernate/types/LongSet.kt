@@ -8,13 +8,13 @@ import java.sql.ResultSet
 import java.sql.Types
 import java.util.*
 
-class StringList : UserType {
+class LongSet : UserType {
     override fun sqlTypes(): IntArray {
         return intArrayOf(Types.OTHER)
     }
 
     override fun returnedClass(): Class<*> {
-        return List::class.java
+        return MutableSet::class.java
     }
 
     override fun equals(x: Any, y: Any): Boolean {
@@ -23,7 +23,7 @@ class StringList : UserType {
 
     override fun hashCode(value: Any): Int {
         @Suppress("UNCHECKED_CAST")
-        return (value as List<String>).toTypedArray().contentHashCode()
+        return (value as MutableSet<Long>).toTypedArray().contentHashCode()
     }
 
     override fun nullSafeGet(
@@ -33,7 +33,7 @@ class StringList : UserType {
         owner: Any
     ): Any {
         @Suppress("UNCHECKED_CAST")
-        return (rs.getObject(names[0]) as Array<String>).toList()
+        return (rs.getObject(names[0]) as Array<Long>).toMutableSet()
     }
 
     override fun nullSafeSet(
@@ -46,13 +46,13 @@ class StringList : UserType {
             st.setNull(index, Types.OTHER)
         } else {
             @Suppress("UNCHECKED_CAST")
-            st.setObject(index, (value as List<String>).toTypedArray())
+            st.setObject(index, (value as MutableSet<Long>).toTypedArray())
         }
     }
 
     override fun deepCopy(value: Any): Any {
         @Suppress("UNCHECKED_CAST")
-        return (value as List<String>).toMutableList()
+        return (value as MutableSet<Long>).toMutableSet()
     }
 
     override fun isMutable(): Boolean {
@@ -61,12 +61,12 @@ class StringList : UserType {
 
     override fun disassemble(value: Any): Serializable {
         @Suppress("UNCHECKED_CAST")
-        return (value as List<String>).toTypedArray()
+        return (value as Set<Long>).toTypedArray()
     }
 
     override fun assemble(cached: Serializable, owner: Any): Any {
         @Suppress("UNCHECKED_CAST")
-        return (cached as Array<String>).toList()
+        return (cached as Array<Long>).toMutableSet()
     }
 
     override fun replace(original: Any, target: Any?, owner: Any): Any {

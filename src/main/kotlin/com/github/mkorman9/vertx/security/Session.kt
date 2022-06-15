@@ -23,8 +23,8 @@ data class Session(
     var token: String,
 
     @Column(name = "roles", columnDefinition = "text[]", nullable = false)
-    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringList")
-    var roles: List<String> = listOf(),
+    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringSet")
+    val roles: MutableSet<String> = mutableSetOf(),
 
     @Column(name = "ip", columnDefinition = "text", nullable = false)
     var ip: String,

@@ -17,8 +17,8 @@ data class Account(
     var username: String,
 
     @Column(name = "roles", columnDefinition = "text[]", nullable = false)
-    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringList")
-    var roles: List<String> = listOf(),
+    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringSet")
+    val roles: MutableSet<String> = mutableSetOf(),
 
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     var active: Boolean,

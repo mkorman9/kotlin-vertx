@@ -78,7 +78,7 @@ class AuthorizationMiddlewareImpl @Inject constructor(
         return parts[1]
     }
 
-    private fun verifyRoles(providedRoles: List<String>, allowedRoles: Set<String>): Boolean {
+    private fun verifyRoles(providedRoles: Set<String>, allowedRoles: Set<String>): Boolean {
         return providedRoles.any { role -> allowedRoles.contains(role) }
     }
 }
