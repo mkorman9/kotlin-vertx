@@ -5,7 +5,6 @@ import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.google.cloud.pubsub.v1.AckReplyConsumerWithResponse
 import com.google.cloud.pubsub.v1.Publisher
-import com.google.inject.Injector
 import com.google.protobuf.ByteString
 import com.google.pubsub.v1.PubsubMessage
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -13,7 +12,6 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
