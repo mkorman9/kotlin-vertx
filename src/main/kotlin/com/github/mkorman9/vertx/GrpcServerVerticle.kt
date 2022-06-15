@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.client.ClientServiceGrpcImpl
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.github.mkorman9.vertx.utils.get
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.vertx.core.impl.logging.LoggerFactory
@@ -20,7 +21,7 @@ class GrpcServerVerticle : ContextualVerticle() {
         try {
             vertx.executeBlocking<Void> { call ->
                 server = ServerBuilder
-                    .forPort(config.getJsonObject("grpc")?.getInteger("port") ?: 9090)
+                    .forPort(config.get<Int>("grpc.port") ?: 9090)
                     .addService(ClientServiceGrpcImpl(context))
                     .build()
                     .start()

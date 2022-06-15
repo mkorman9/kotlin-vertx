@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.tools.hibernate
 
 import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Vertx
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import javax.persistence.Persistence
@@ -8,23 +9,19 @@ import javax.persistence.Persistence
 class HibernateInitializer {
     companion object {
         fun initialize(vertx: Vertx, config: Config): SessionFactory {
-            val uri = config.getJsonObject("db")?.getString("uri")
-                ?: throw RuntimeException("db.uri is missing from config")
-            val user = config.getJsonObject("db")?.getString("user")
-                ?: throw RuntimeException("db.user is missing from config")
-            val password = config.getJsonObject("db")?.getString("password")
+            val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
+            val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
+            val password = config.get<String>("db.password")
                 ?: throw RuntimeException("db.password is missing from config")
 
-            val poolConfig = config.getJsonObject("db")?.getJsonObject("pool")
-            val poolSize = poolConfig?.getInteger("size") ?: 8
-            val connectTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("connect") ?: 30_000
-            val idleTimeout = poolConfig?.getJsonObject("timeouts")?.getInteger("idle") ?: 0
-            val cleanerPeriod = poolConfig?.getInteger("cleaner") ?: 1000
+            val poolSize = config.get<Int>("db.pool.size")  ?: 8
+            val connectTimeout = config.get<Int>("db.pool.timeouts.connect") ?: 30_000
+            val idleTimeout = config.get<Int>("db.pool.timeouts.idle") ?: 0
+            val cleanerPeriod = config.get<Int>("db.pool.cleaner") ?: 1000
 
-            val sqlConfig = config.getJsonObject("db")?.getJsonObject("sql")
-            val showSql = sqlConfig?.getBoolean("show") ?: false
-            val formatSql = sqlConfig?.getBoolean("format") ?: false
-            val highlightSql = sqlConfig?.getBoolean("highlight") ?: false
+            val showSql = config.get<Boolean>("db.sql.show") ?: false
+            val formatSql = config.get<Boolean>("db.sql.format") ?: false
+            val highlightSql = config.get<Boolean>("db.sql.highlight") ?: false
 
             val props = mapOf(
                 "hibernate.connection.url" to uri,

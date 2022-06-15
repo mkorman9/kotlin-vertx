@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.NUM_OF_CPUS
+import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -23,8 +24,8 @@ class HttpServerVerticle : ContextualVerticle() {
             server = vertx
                 .createHttpServer(
                     httpServerOptionsOf(
-                        host = config.getJsonObject("server")?.getString("host") ?: "0.0.0.0",
-                        port = config.getJsonObject("server")?.getInteger("port") ?: 8080,
+                        host = config.get<String>("server.host") ?: "0.0.0.0",
+                        port = config.get<Int>("server.port") ?: 8080,
                         tcpFastOpen = true,
                         tcpCork = true,
                         reusePort = true

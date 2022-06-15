@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.tools.gcp
 
 import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.get
 import com.google.api.gax.core.CredentialsProvider
 import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.api.gax.core.NoCredentialsProvider
@@ -35,13 +36,10 @@ class GCPPubSubClient private constructor(
 
     companion object {
         fun create(vertx: Vertx, config: Config): GCPPubSubClient {
-            val gcpConfig = config.getJsonObject("gcp")
+            val projectId = config.get<String>("gcp.project") ?: "default-project-id"
 
-            val projectId = gcpConfig?.getString("project") ?: "default-project-id"
-
-            val emulatorConfig = gcpConfig?.getJsonObject("pubsub")?.getJsonObject("emulator")
-            val emulatorEnabled = emulatorConfig?.getBoolean("enabled") ?: false
-            val emulatorAddress = emulatorConfig?.getString("address") ?: "localhost:8538"
+            val emulatorEnabled = config.get<Boolean>("gcp.pubsub.emulator.enabled") ?: false
+            val emulatorAddress = config.get<String>("gcp.pubsub.emulator.address") ?: "localhost:8538"
 
             val credentialsProvider = if (emulatorEnabled) {
                 NoCredentialsProvider.create()

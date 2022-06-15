@@ -6,8 +6,6 @@ import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 
-typealias Config = JsonObject
-
 class ConfigReader {
     companion object {
         fun read(vertx: Vertx): Config {
