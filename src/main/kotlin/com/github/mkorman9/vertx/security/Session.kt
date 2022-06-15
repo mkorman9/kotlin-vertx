@@ -1,13 +1,19 @@
 package com.github.mkorman9.vertx.security
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.github.mkorman9.vertx.tools.hibernate.types.StringSet
 import org.hibernate.annotations.Type
+import org.hibernate.annotations.TypeDef
+import org.hibernate.annotations.TypeDefs
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
 
 @Entity(name = "Session")
 @Table(name = "sessions")
+@TypeDefs(
+    TypeDef(name = "string-set", typeClass = StringSet::class)
+)
 data class Session(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sessions_id_gen")
@@ -23,7 +29,7 @@ data class Session(
     var token: String,
 
     @Column(name = "roles", columnDefinition = "text[]", nullable = false)
-    @Type(type = "com.github.mkorman9.vertx.tools.hibernate.types.StringSet")
+    @Type(type = "string-set")
     val roles: MutableSet<String> = mutableSetOf(),
 
     @Column(name = "ip", columnDefinition = "text", nullable = false)
