@@ -17,7 +17,7 @@ data class Account(
 
     @Column(name = "roles", columnDefinition = "text", nullable = false)
     @JsonIgnore
-    var rolesString: String,
+    var rolesString: String = "",
 
     @Column(name = "active", columnDefinition = "boolean", nullable = false)
     var active: Boolean,

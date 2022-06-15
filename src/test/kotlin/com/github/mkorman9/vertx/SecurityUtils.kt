@@ -27,7 +27,6 @@ fun fakeSession(
         id = (Math.random() * 10_000).toLong(),
         accountId = accountId,
         token = UUID.randomUUID().toString(),
-        rolesString = "",
         ip = "127.0.0.1",
         issuedAt = LocalDateTime.now().minusMinutes(15),
         duration = 4 * 60 * 60 * 60,  // 4h
@@ -35,7 +34,6 @@ fun fakeSession(
         account = Account(
             id = accountId,
             username = accountName,
-            rolesString = "",
             active = true,
             deleted = false,
             preferredLanguage = "en-US",

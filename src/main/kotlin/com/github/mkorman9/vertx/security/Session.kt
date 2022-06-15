@@ -23,7 +23,7 @@ data class Session(
 
     @Column(name = "roles", columnDefinition = "text", nullable = false)
     @JsonIgnore
-    var rolesString: String,
+    var rolesString: String = "",
 
     @Column(name = "ip", columnDefinition = "text", nullable = false)
     var ip: String,
