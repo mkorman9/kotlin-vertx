@@ -265,38 +265,68 @@ class ClientRepository @Inject constructor(
         predicates.add(criteriaBuilder.equal(root.get<Boolean>("deleted"), false))
 
         if (filtering.gender != null) {
-            predicates.add(criteriaBuilder.equal(root.get<String>("gender"), filtering.gender))
+            predicates.add(
+                criteriaBuilder.equal(
+                    root.get<String>("gender"),
+                    filtering.gender
+                )
+            )
         }
         if (filtering.firstName != null) {
             predicates.add(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), "%${filtering.firstName.lowercase()}%")
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("firstName")),
+                    "%${filtering.firstName.lowercase()}%"
+                )
             )
         }
         if (filtering.lastName != null) {
             predicates.add(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), "%${filtering.lastName.lowercase()}%")
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("lastName")),
+                    "%${filtering.lastName.lowercase()}%"
+                )
             )
         }
         if (filtering.address != null) {
             predicates.add(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("address")), "%${filtering.address.lowercase()}%")
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("address")),
+                    "%${filtering.address.lowercase()}%"
+                )
             )
         }
         if (filtering.phoneNumber != null) {
             predicates.add(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("phoneNumber")), "%${filtering.phoneNumber.lowercase()}%")
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("phoneNumber")),
+                    "%${filtering.phoneNumber.lowercase()}%"
+                )
             )
         }
         if (filtering.email != null) {
             predicates.add(
-                criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), "%${filtering.email.lowercase()}%")
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("email")),
+                    "%${filtering.email.lowercase()}%"
+                )
             )
         }
         if (filtering.bornAfter != null) {
-            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("birthDate"), criteriaBuilder.literal(filtering.bornAfter)))
+            predicates.add(
+                criteriaBuilder.greaterThanOrEqualTo(
+                    root.get("birthDate"),
+                    criteriaBuilder.literal(filtering.bornAfter)
+                )
+            )
         }
         if (filtering.bornBefore != null) {
-            predicates.add(criteriaBuilder.lessThan(root.get("birthDate"), criteriaBuilder.literal(filtering.bornBefore)))
+            predicates.add(
+                criteriaBuilder.lessThan(
+                    root.get("birthDate"),
+                    criteriaBuilder.literal(filtering.bornBefore)
+                )
+            )
         }
         if (filtering.creditCard != null) {
             val subquery = query.subquery(String::class.java)
