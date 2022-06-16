@@ -1,7 +1,6 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.utils.VerticleContext
-import com.github.mkorman9.vertx.utils.web.WebsocketStore
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.JsonObject

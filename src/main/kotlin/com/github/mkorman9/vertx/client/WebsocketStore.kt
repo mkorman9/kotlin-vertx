@@ -1,7 +1,7 @@
-package com.github.mkorman9.vertx.utils.web
+package com.github.mkorman9.vertx.client
 
 import io.vertx.core.http.ServerWebSocket
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class WebsocketStore {
