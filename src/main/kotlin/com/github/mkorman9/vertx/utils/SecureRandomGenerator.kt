@@ -11,7 +11,7 @@ class SecureRandomGenerator {
             return random
                 .ints(length, 0, charset.length)
                 .mapToObj { charset[it] }
-                .collect({ java.lang.StringBuilder() }, StringBuilder::append, StringBuilder::append)
+                .collect({ StringBuilder() }, StringBuilder::append, StringBuilder::append)
                 .toString()
         }
 
