@@ -24,7 +24,8 @@ fun Route.coroutineHandler(scope: CoroutineScope, f: suspend (RoutingContext) ->
 }
 
 fun HttpServerRequest.getClientIp(): String {
-    return getHeader("X-Forwarded-For") ?: remoteAddress().host()
+    val address = getHeader("X-Forwarded-For") ?: remoteAddress().host()
+    return address.split(',')[0]
 }
 
 fun HttpServerRequest.isClientTLS(): Boolean {
