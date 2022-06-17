@@ -27,6 +27,10 @@ fun HttpServerRequest.getClientIp(): String {
     return getHeader("X-Forwarded-For") ?: remoteAddress().host()
 }
 
+fun HttpServerRequest.isClientTLS(): Boolean {
+    return isSSL || getHeader("X-Forwarded-Proto")?.lowercase() == "https"
+}
+
 fun HttpServerResponse.endWithJson(obj: Any) {
     putHeader("Content-Type", "application/json")
         .end(Json.encode(obj))

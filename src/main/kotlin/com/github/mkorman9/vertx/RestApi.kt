@@ -4,6 +4,7 @@ import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.security.SessionApi
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.HealthcheckHandler
+import com.github.mkorman9.vertx.utils.web.SecurityHeadersHandler
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import com.github.mkorman9.vertx.utils.web.endWithJson
 import io.vertx.core.impl.logging.LoggerFactory
@@ -18,7 +19,8 @@ class RestApi (context: VerticleContext) {
 
     val router: Router = Router.router(context.vertx).apply {
         route().handler(BodyHandler.create())
-
+        route().handler(SecurityHeadersHandler.create(context.config))
+        
         route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 

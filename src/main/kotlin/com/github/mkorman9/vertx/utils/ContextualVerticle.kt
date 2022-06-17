@@ -9,6 +9,7 @@ abstract class ContextualVerticle : CoroutineVerticle() {
     val context: VerticleContext by lazy {
         VerticleContext(
             vertx = vertx,
+            config = config,
             scope = this,
             injector = injector
         )

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 
 data class VerticleContext(
     val vertx: Vertx,
+    val config: Config,
     val scope: CoroutineScope,
     val injector: Injector
 )
