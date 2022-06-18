@@ -14,7 +14,7 @@ class SessionApi (context: VerticleContext) {
     private val sessionRepository: SessionRepository = context.injector.getInstance()
     private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
 
-    private val sessionTokenLength: Long = 48
+    private val sessionTokenLength: Long = 64
     private val sessionDurationSeconds: Int = 4 * 60 * 60
 
     private val bcryptVerifier: BCrypt.Verifyer = BCrypt.verifyer()
