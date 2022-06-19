@@ -17,7 +17,7 @@ class VerticleDeployer {
                 .forEach { c ->
                     val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                         .first()
-                    val instances = parseInstancesNumber(annotation.instances)
+                    val instances = parseInstancesNumber(annotation.scalingStrategy, annotation.minInstances)
 
                     for (i in 0 until instances) {
                         val instance = c.declaredConstructors[0].newInstance() as Verticle
@@ -45,10 +45,10 @@ class VerticleDeployer {
                 .join()
         }
 
-        private fun parseInstancesNumber(instances: Int): Int {
-            return when(instances) {
-                NUM_OF_CPUS -> max(Runtime.getRuntime().availableProcessors(), 2)
-                else -> instances
+        private fun parseInstancesNumber(scalingStrategy: VerticesScalingStrategy, minInstances: Int): Int {
+            return when(scalingStrategy) {
+                VerticesScalingStrategy.CONSTANT -> minInstances
+                VerticesScalingStrategy.NUM_OF_CPUS -> max(Runtime.getRuntime().availableProcessors(), minInstances)
             }
         }
     }

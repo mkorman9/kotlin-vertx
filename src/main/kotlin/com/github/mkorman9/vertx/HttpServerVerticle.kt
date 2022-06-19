@@ -1,15 +1,12 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.utils.ContextualVerticle
-import com.github.mkorman9.vertx.utils.DeployVerticle
-import com.github.mkorman9.vertx.utils.NUM_OF_CPUS
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.*
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.coroutines.await
 
-@DeployVerticle(instances = NUM_OF_CPUS)
+@DeployVerticle(scalingStrategy = VerticesScalingStrategy.NUM_OF_CPUS, minInstances = 4)
 class HttpServerVerticle : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
