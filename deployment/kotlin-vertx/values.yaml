@@ -8,6 +8,8 @@ app:
 
   configMap: config
   secrets: secrets
+  backend:
+    config: kotlin-vertx-ingress-backend-config
 
   config:
     db:
@@ -57,6 +59,10 @@ images:
 ingress:
   name: ingress
   hostname: localhost
+
+  class: nginx
+  frontend:
+    config: ingress-frontend-config
 
   useHttps: false
   tlsCertName: ""

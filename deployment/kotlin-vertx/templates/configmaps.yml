@@ -12,6 +12,8 @@ data:
     server:
       host: 0.0.0.0
       port: {{ .Values.app.port }}
+      security:
+        headers: {{ if eq .Values.ingress.class "nginx" }}false{{ else }}true{{ end }}
     db:
       pool:
         size: {{ .Values.app.config.db.pool.size }}

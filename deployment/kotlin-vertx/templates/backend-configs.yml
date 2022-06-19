@@ -1,0 +1,13 @@
+{{ if eq .Values.ingress.class "gce" }}
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: {{ .Values.app.backend.config }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.app.name }}
+    app.kubernetes.io/version: {{ .Values.app.version }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  timeoutSec: {{ .Values.ingress.proxySendTimeout }}
+{{ end }}
