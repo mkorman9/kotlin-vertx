@@ -1,5 +1,5 @@
-kind: PersistentVolume
 apiVersion: v1
+kind: PersistentVolume
 metadata:
   name: {{ .Values.postgres.volume.name }}
   namespace: {{ .Release.Namespace }}
@@ -16,8 +16,8 @@ spec:
   hostPath:
     path: {{ .Values.postgres.volume.path | quote }}
 ---
-kind: PersistentVolumeClaim
 apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.postgres.volume.claimName }}
   namespace: {{ .Release.Namespace }}
