@@ -174,7 +174,7 @@ db:
   user: <POSTGRES_USERNAME>
   password: <POSTGRES_PASSWORD>
 gcp:
-  projectId: <GCP_PROJECT_ID>
+  project: <GCP_PROJECT_ID>
   credentials:
     path: /app/credentials.json
 ```
