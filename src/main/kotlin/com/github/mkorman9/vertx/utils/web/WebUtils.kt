@@ -64,24 +64,22 @@ suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: s
     val payload = try {
         Json.decodeValue(buffer, T::class.java)
     } catch (e: DecodeException) {
-        if (e.cause !is JsonMappingException) {
+        if (e.cause is JsonMappingException) {
+            response().setStatusCode(400).endWithJson(
+                StatusDTO(
+                    status = "error",
+                    message = "error while mapping request body",
+                    causes = listOf(parseJsonExceptionCause(e.cause as JsonMappingException))
+                )
+            )
+        } else {
             response().setStatusCode(400).endWithJson(
                 StatusDTO(
                     status = "error",
                     message = "malformed request body"
                 )
             )
-
-            return
         }
-
-        response().setStatusCode(400).endWithJson(
-            StatusDTO(
-                status = "error",
-                message = "error while mapping request body",
-                causes = listOf(parseJsonExceptionCause(e))
-            )
-        )
 
         return
     }
@@ -104,9 +102,9 @@ suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: s
     func(payload)
 }
 
-fun parseJsonExceptionCause(e: DecodeException): Cause {
-    val field = buildJsonExceptionPath((e.cause as JsonMappingException).path)
-    val code = when (e.cause) {
+fun parseJsonExceptionCause(e: JsonMappingException): Cause {
+    val field = buildJsonExceptionPath(e.path)
+    val code = when (e) {
         is MissingKotlinParameterException -> "required"
         is InvalidFormatException -> "format"
         else -> "invalid"
