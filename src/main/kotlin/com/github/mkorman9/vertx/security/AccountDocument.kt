@@ -12,8 +12,8 @@ data class AccountDocument(
     val deleted: Boolean = false,
     val preferredLanguage: String = "",
     val bannedUntil: Long? = null,
-    val createdAt: Long,
-    val credentials: AccountCredentialsDocument
+    val createdAt: Long = 0,
+    val credentials: AccountCredentialsDocument = AccountCredentialsDocument()
 ) {
     companion object {
         fun fromAccount(account: Account): AccountDocument {
