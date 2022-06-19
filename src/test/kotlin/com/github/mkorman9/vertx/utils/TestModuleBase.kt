@@ -3,7 +3,6 @@ package com.github.mkorman9.vertx.utils
 import com.google.inject.Singleton
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.mockkClass
-import io.vertx.core.Vertx
 import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
