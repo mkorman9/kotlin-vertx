@@ -107,7 +107,7 @@ class ClientRepository @Inject constructor(
             .document()
 
         val client = Client(
-            id = UUID.fromString(doc.id),
+            id = doc.id,
             gender = payload.gender ?: "-",
             firstName = payload.firstName,
             lastName = payload.lastName,

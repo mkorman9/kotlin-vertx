@@ -2,10 +2,9 @@ package com.github.mkorman9.vertx.client
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.*
 
 data class ClientDocument(
-    val id: String = "",
+    val id: String? = null,
     val gender: String = "-",
     val firstName: String = "",
     val lastName: String = "",
@@ -19,7 +18,7 @@ data class ClientDocument(
     companion object {
         fun fromClient(client: Client): ClientDocument {
             return ClientDocument(
-                id = client.id.toString(),
+                id = client.id,
                 gender = client.gender,
                 firstName = client.firstName,
                 lastName = client.lastName,
@@ -35,7 +34,7 @@ data class ClientDocument(
 
     fun toClient(): Client {
         return Client(
-            id = UUID.fromString(id),
+            id = id,
             gender = gender,
             firstName = firstName,
             lastName = lastName,

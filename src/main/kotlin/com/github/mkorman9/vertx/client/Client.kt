@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class Client(
-    var id: UUID? = null,
+    var id: String? = null,
     var gender: String = "-",
     var firstName: String,
     var lastName: String,

@@ -50,7 +50,7 @@ class SessionRepository @Inject constructor(
             val doc = firestore.collection(SESSIONS_COLLECTION)
                 .document()
 
-            session.id = UUID.fromString(doc.id)
+            session.id = doc.id
 
             doc
                 .set(SessionDocument.fromSession(session))

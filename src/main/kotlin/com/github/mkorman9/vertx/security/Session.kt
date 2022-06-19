@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class Session(
-    var id: UUID? = null,
+    var id: String? = null,
     val token: String,
     val roles: MutableSet<String>,
     val ip: String,

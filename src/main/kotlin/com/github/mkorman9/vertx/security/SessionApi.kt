@@ -50,7 +50,7 @@ class SessionApi (context: VerticleContext) {
 
                     val verificationResult = context.vertx.executeBlocking<BCrypt.Result> { call ->
                         call.complete(
-                            bcryptVerifier.verify(payload.password.toCharArray(), account.credentials!!.passwordBcrypt)
+                            bcryptVerifier.verify(payload.password.toCharArray(), account.credentials.passwordBcrypt)
                         )
                     }.await()
 

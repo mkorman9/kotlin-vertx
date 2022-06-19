@@ -2,10 +2,9 @@ package com.github.mkorman9.vertx.security
 
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.*
 
 data class SessionDocument(
-    val id: String = "",
+    val id: String? = null,
     val accountId: String = "",
     val token: String = "",
     val roles: List<String> = listOf(),
@@ -17,7 +16,7 @@ data class SessionDocument(
     companion object {
         fun fromSession(session: Session): SessionDocument {
             return SessionDocument(
-                id = session.id.toString(),
+                id = session.id,
                 accountId = session.account.id.toString(),
                 token = session.token,
                 roles = session.roles.toList(),
@@ -31,7 +30,7 @@ data class SessionDocument(
 
     fun toSession(account: Account): Session {
         return Session(
-            id = UUID.fromString(id),
+            id = id,
             token = token,
             roles = roles.toMutableSet(),
             ip = ip,

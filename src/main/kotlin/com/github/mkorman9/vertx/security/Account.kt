@@ -2,10 +2,9 @@ package com.github.mkorman9.vertx.security
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
-import java.util.*
 
 data class Account(
-    var id: UUID? = null,
+    var id: String? = null,
     var username: String,
     val roles: MutableSet<String>,
     var active: Boolean,

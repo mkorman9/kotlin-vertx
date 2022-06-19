@@ -22,9 +22,8 @@ fun fakeSession(
     email: String = "test.user@example.com",
     password: TestPassword = defaultTestPassword
 ): Session {
-    val accountId = UUID.randomUUID()
-    val session = Session(
-        id = UUID.randomUUID(),
+    return Session(
+        id = UUID.randomUUID().toString(),
         token = UUID.randomUUID().toString(),
         roles = mutableSetOf(),
         ip = "127.0.0.1",
@@ -32,7 +31,7 @@ fun fakeSession(
         duration = 4 * 60 * 60 * 60,  // 4h
         expiresAt = LocalDateTime.now().plusHours(4),
         account = Account(
-            id = accountId,
+            id = UUID.randomUUID().toString(),
             username = accountName,
             roles = mutableSetOf(),
             active = true,
@@ -48,6 +47,4 @@ fun fakeSession(
             )
         )
     )
-
-    return session
 }

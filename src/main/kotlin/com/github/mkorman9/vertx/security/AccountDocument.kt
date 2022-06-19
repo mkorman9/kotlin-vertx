@@ -5,7 +5,7 @@ import java.time.ZoneOffset
 import java.util.*
 
 data class AccountDocument(
-    val id: String = "",
+    val id: String? = null,
     val username: String = "",
     val roles: List<String> = listOf(),
     val active: Boolean = true,
@@ -18,7 +18,7 @@ data class AccountDocument(
     companion object {
         fun fromAccount(account: Account): AccountDocument {
             return AccountDocument(
-                id = account.id.toString(),
+                id = account.id,
                 username = account.username,
                 roles = account.roles.toList(),
                 active = account.active,
@@ -33,7 +33,7 @@ data class AccountDocument(
 
     fun toAccount(): Account {
         return Account(
-            id = UUID.fromString(id),
+            id = id,
             username = username,
             roles = roles.toMutableSet(),
             active = active,

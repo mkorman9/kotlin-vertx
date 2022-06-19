@@ -71,7 +71,7 @@ class ClientApiTest {
             page = 1,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -109,7 +109,7 @@ class ClientApiTest {
             page = 2,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -152,7 +152,7 @@ class ClientApiTest {
             page = 1,
             data = listOf(
                 Client(
-                    id = UUID.randomUUID(),
+                    id = UUID.randomUUID().toString(),
                     firstName = "Test",
                     lastName = "User"
                 )
@@ -193,7 +193,7 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
         val client = Client(
-            id = UUID.fromString(id),
+            id = UUID.fromString(id).toString(),
             firstName = "Test",
             lastName = "User"
         )
@@ -243,7 +243,7 @@ class ClientApiTest {
             lastName = "User"
         )
         val addedClient = Client(
-            id = UUID.randomUUID(),
+            id = UUID.randomUUID().toString(),
             firstName = payload.firstName,
             lastName = payload.lastName
         )
@@ -365,7 +365,7 @@ class ClientApiTest {
             email = "test.user@example.com"
         )
         val client = Client(
-            id = UUID.randomUUID(),
+            id = UUID.randomUUID().toString(),
             firstName = "Test",
             lastName = "User",
             email = "test.user@example.com"
