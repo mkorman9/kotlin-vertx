@@ -3,6 +3,7 @@ package com.github.mkorman9.vertx.utils
 import com.google.inject.Injector
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
+import java.lang.Integer.max
 import kotlin.math.ceil
 
 class VerticleDeployer {
@@ -46,9 +47,7 @@ class VerticleDeployer {
 
         private fun parseInstancesNumber(instances: Int): Int {
             return when(instances) {
-                NUM_OF_CPUS -> Runtime.getRuntime().availableProcessors()
-                HALF_NUM_OF_CPUS -> ceil(Runtime.getRuntime().availableProcessors() / 2.0).toInt()
-                TWICE_NUM_OF_CPUS -> Runtime.getRuntime().availableProcessors() * 2
+                NUM_OF_CPUS -> max(Runtime.getRuntime().availableProcessors(), 2)
                 else -> instances
             }
         }
