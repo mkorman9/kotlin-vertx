@@ -10,9 +10,9 @@ import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-fun createTestInjector(vertx: Vertx, packageName: String, config: Config, module: KotlinModule): Injector {
+fun createTestInjector(packageName: String, config: Config, module: KotlinModule): Injector {
     return Guice.createInjector(
-        Modules.override(TestModuleBase(vertx, packageName, config)).with(module)
+        Modules.override(TestModuleBase(packageName, config)).with(module)
     )
 }
 

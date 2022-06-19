@@ -38,7 +38,6 @@ class SessionApiTest {
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
-            vertx = vertx,
             packageName = Application.PACKAGE_NAME,
             config = Config(),
             module = object : KotlinModule() {
