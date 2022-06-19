@@ -7,7 +7,7 @@ import java.util.*
 data class AccountDocument(
     val id: String = "",
     val username: String = "",
-    val roles: Set<String> = setOf(),
+    val roles: List<String> = listOf(),
     val active: Boolean = true,
     val deleted: Boolean = false,
     val preferredLanguage: String = "",
@@ -20,7 +20,7 @@ data class AccountDocument(
             return AccountDocument(
                 id = account.id.toString(),
                 username = account.username,
-                roles = account.roles.toMutableSet(),
+                roles = account.roles.toList(),
                 active = account.active,
                 deleted = account.deleted,
                 preferredLanguage = account.preferredLanguage,
