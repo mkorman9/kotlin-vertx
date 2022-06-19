@@ -19,11 +19,6 @@ Start the app
 java -jar build/libs/app.jar
 ```
 
-Optionally upload some random data for tests
-```bash
-testdata/upload.sh
-```
-
 Cleanup docker-compose stack:
 ```bash
 docker-compose down
@@ -169,10 +164,6 @@ Make sure `credentials.json` exists and contains Service Account credentials for
 
 Create `secrets.yml` file and populate it with data
 ```
-db:
-  uri: jdbc:postgresql://<POSTGRES_HOST>:5432/<POSTGRES_DB_NAME>
-  user: <POSTGRES_USERNAME>
-  password: <POSTGRES_PASSWORD>
 gcp:
   project: <GCP_PROJECT_ID>
   credentials:

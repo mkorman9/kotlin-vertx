@@ -45,7 +45,6 @@ class ClientApiTest {
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
-            vertx = vertx,
             packageName = Application.PACKAGE_NAME,
             config = Config(),
             module = object : KotlinModule() {
@@ -70,7 +69,6 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
             page = 1,
-            totalPages = 1,
             data = listOf(
                 Client(
                     id = UUID.randomUUID(),
@@ -80,7 +78,7 @@ class ClientApiTest {
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
+        every { clientRepository.findPaged(any(), any(), any(), any()) } returns Future.succeededFuture(page)
 
         // when
         val result =
@@ -95,6 +93,7 @@ class ClientApiTest {
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
+            any(),
             filtering = ClientFilteringOptions(),
             paging = ClientPagingOptions(pageNumber = 1, pageSize = 10),
             sorting = ClientSortingOptions(sortBy = "id", sortReverse = false)
@@ -108,7 +107,6 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
             page = 2,
-            totalPages = 2,
             data = listOf(
                 Client(
                     id = UUID.randomUUID(),
@@ -118,7 +116,7 @@ class ClientApiTest {
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
+        every { clientRepository.findPaged(any(), any(), any(), any()) } returns Future.succeededFuture(page)
 
         // when
         val result =
@@ -138,6 +136,7 @@ class ClientApiTest {
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
+            any(),
             filtering = ClientFilteringOptions(lastName = "User"),
             paging = ClientPagingOptions(pageNumber = 2, pageSize = 20),
             sorting = ClientSortingOptions(sortBy = "firstName", sortReverse = true)
@@ -151,7 +150,6 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
             page = 1,
-            totalPages = 1,
             data = listOf(
                 Client(
                     id = UUID.randomUUID(),
@@ -161,7 +159,7 @@ class ClientApiTest {
             )
         )
 
-        every { clientRepository.findPaged(any(), any(), any()) } returns Future.succeededFuture(page)
+        every { clientRepository.findPaged(any(), any(), any(), any()) } returns Future.succeededFuture(page)
 
         // when
         val result =
@@ -181,6 +179,7 @@ class ClientApiTest {
         assertThat(returnedPage).isEqualTo(page)
 
         verify { clientRepository.findPaged(
+            any(),
             filtering = ClientFilteringOptions(),
             paging = ClientPagingOptions(pageNumber = 1, pageSize = 100),
             sorting = ClientSortingOptions(sortBy = "id", sortReverse = false)
@@ -199,7 +198,7 @@ class ClientApiTest {
             lastName = "User"
         )
 
-        every { clientRepository.findById(id) } returns Future.succeededFuture(client)
+        every { clientRepository.findById(any(), id) } returns Future.succeededFuture(client)
 
         // when
         val result =
@@ -221,7 +220,7 @@ class ClientApiTest {
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
 
-        every { clientRepository.findById(id) } returns Future.succeededFuture(null)
+        every { clientRepository.findById(any(), id) } returns Future.succeededFuture(null)
 
         // when
         val result =
@@ -250,7 +249,7 @@ class ClientApiTest {
         )
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.add(payload) } returns Future.succeededFuture(addedClient)
+        every { clientRepository.add(any(), payload) } returns Future.succeededFuture(addedClient)
         every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
@@ -373,7 +372,7 @@ class ClientApiTest {
         )
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.update(client.id.toString(), payload) } returns Future.succeededFuture(client)
+        every { clientRepository.update(any(), client.id.toString(), payload) } returns Future.succeededFuture(client)
         every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
@@ -410,7 +409,7 @@ class ClientApiTest {
         val clientId = UUID.randomUUID()
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.update(clientId.toString(), payload) } returns Future.succeededFuture(null)
+        every { clientRepository.update(any(), clientId.toString(), payload) } returns Future.succeededFuture(null)
         every { sessionProvider.getSession() } returns activeSession
 
         // when
@@ -432,7 +431,7 @@ class ClientApiTest {
         val clientId = UUID.randomUUID()
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(true)
+        every { clientRepository.delete(any(), clientId.toString()) } returns Future.succeededFuture(true)
         every { sessionProvider.getSession() } returns activeSession
         every { clientEventsPublisher.publish(any(), any()) } returns Unit
 
@@ -466,7 +465,7 @@ class ClientApiTest {
         val clientId = UUID.randomUUID()
         val activeSession = fakeSession("test.account")
 
-        every { clientRepository.delete(clientId.toString()) } returns Future.succeededFuture(false)
+        every { clientRepository.delete(any(), clientId.toString()) } returns Future.succeededFuture(false)
         every { sessionProvider.getSession() } returns activeSession
 
         // when

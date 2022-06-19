@@ -38,7 +38,6 @@ class SessionApiTest {
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
-            vertx = vertx,
             packageName = Application.PACKAGE_NAME,
             config = Config(),
             module = object : KotlinModule() {
@@ -67,8 +66,8 @@ class SessionApiTest {
         )
         val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
 
-        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
-        every { sessionRepository.add(any()) } returns Future.succeededFuture(session)
+        every { accountRepository.findByCredentialsEmail(any(), payload.email) } returns Future.succeededFuture(session.account)
+        every { sessionRepository.add(any(), any()) } returns Future.succeededFuture(session)
 
         // when
         val result =
@@ -91,7 +90,7 @@ class SessionApiTest {
             password = defaultTestPassword.plaintext
         )
 
-        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(null)
+        every { accountRepository.findByCredentialsEmail(any(), payload.email) } returns Future.succeededFuture(null)
 
         // when
         val result =
@@ -115,7 +114,7 @@ class SessionApiTest {
         )
         val session = fakeSession("test.user", email = payload.email, password = defaultTestPassword)
 
-        every { accountRepository.findByCredentialsEmail(payload.email) } returns Future.succeededFuture(session.account)
+        every { accountRepository.findByCredentialsEmail(any(), payload.email) } returns Future.succeededFuture(session.account)
 
         // when
         val result =
@@ -136,7 +135,7 @@ class SessionApiTest {
         val session = fakeSession("test.user")
 
         every { sessionProvider.getSession() } returns session
-        every { sessionRepository.refresh(session) } returns Future.succeededFuture(session)
+        every { sessionRepository.refresh(any(), session) } returns Future.succeededFuture(session)
 
         // when
         val result =
@@ -157,7 +156,7 @@ class SessionApiTest {
         val session = fakeSession("test.user")
 
         every { sessionProvider.getSession() } returns session
-        every { sessionRepository.delete(session) } returns Future.succeededFuture(true)
+        every { sessionRepository.delete(any(), session) } returns Future.succeededFuture()
 
         // when
         val result =

@@ -1,63 +1,106 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.tools.hibernate.withSession
-import com.github.mkorman9.vertx.tools.hibernate.withTransaction
+import com.google.cloud.firestore.Firestore
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Future
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
+import io.vertx.core.Vertx
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @Singleton
 class SessionRepository @Inject constructor(
-    private val sessionFactory: SessionFactory
+    private val firestore: Firestore,
+    private val accountRepository: AccountRepository
 ) {
-    fun findByToken(token: String): Future<Session?> {
-        return withSession(sessionFactory) { session ->
-            val query = session.createQuery(
-                "from Session s where s.token = :token and (s.expiresAt is null or s.expiresAt > current_timestamp())",
-                Session::class.java
-            )
-            query.setParameter("token", token)
-            query.singleResultOrNull
+    companion object {
+        private const val SESSIONS_COLLECTION = "sessions"
+    }
+
+    fun findByToken(vertx: Vertx, token: String): Future<Session?> {
+        return vertx.executeBlocking<Session?> { call ->
+            val docs = firestore.collection(SESSIONS_COLLECTION)
+                .whereEqualTo("token", token)
+                .whereGreaterThan("expiresAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                .get()
+                .get()
+                .documents
+
+            if (docs.isEmpty()) {
+                call.complete(null)
+            } else {
+                val sessionDocument = docs[0].toObject(SessionDocument::class.java)
+
+                accountRepository.findById(vertx, sessionDocument.accountId)
+                    .onSuccess { account ->
+                        if (account != null) {
+                            call.complete(sessionDocument.toSession(account))
+                        } else {
+                            call.complete(null)
+                        }
+                    }
+                    .onFailure { cause -> call.fail(cause) }
+            }
         }
     }
 
-    fun add(sessionObject: Session): Future<Session> {
-        return withTransaction(sessionFactory) { session, _ ->
-            session.merge(sessionObject)
+    fun add(vertx: Vertx, session: Session): Future<Session> {
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(session.id.toString())
+                .set(SessionDocument.fromSession(session))
+                .get()
+
+            call.complete(session)
         }
     }
 
-    fun refresh(sessionObject: Session): Future<Session> {
-        if (sessionObject.duration == null) {
-            return Future.succeededFuture(sessionObject)
+    fun refresh(vertx: Vertx, session: Session): Future<Session> {
+        if (session.duration == null) {
+            return Future.succeededFuture(session)
         }
 
-        return withTransaction(sessionFactory) { session, _ ->
-            sessionObject.expiresAt = LocalDateTime.now().plusSeconds(sessionObject.duration!!.toLong())
-            session.merge(sessionObject)
-        }
-    }
+        session.expiresAt = LocalDateTime.now().plusSeconds(session.duration!!.toLong())
 
-    fun delete(sessionObject: Session): Future<Boolean> {
-        return withTransaction(sessionFactory) { session, _ ->
-            val query = session.createQuery<Void>("delete from Session s where s.id = :id")
-            query.setParameter("id", sessionObject.id)
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(session.id.toString())
+                .set(SessionDocument.fromSession(session))
+                .get()
 
-            query.executeUpdate()
-                .onItem().ifNotNull().transform { deletedRecords ->
-                    deletedRecords > 0
-                }
+            call.complete(session)
         }
     }
 
-    fun deleteExpired(): Future<Int> {
-        return withTransaction(sessionFactory) { session, _ ->
-            val query = session.createQuery<Void>(
-                "delete from Session s where s.expiresAt < current_timestamp()"
-            )
-            query.executeUpdate()
+    fun delete(vertx: Vertx, sessionObject: Session): Future<Void> {
+        return vertx.executeBlocking { call ->
+            firestore.collection(SESSIONS_COLLECTION)
+                .document(sessionObject.id.toString())
+                .delete()
+                .get()
+
+            call.complete()
+        }
+    }
+
+    fun deleteExpired(vertx: Vertx): Future<Int> {
+        return vertx.executeBlocking { call ->
+            val docs = firestore.collection(SESSIONS_COLLECTION)
+                .whereLessThan("expiresAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+                .get()
+                .get()
+                .documents
+            val count = docs.size
+
+            val batch = firestore.batch()
+            docs.forEach {
+                batch.delete(it.reference)
+            }
+
+            batch.commit()
+                .get()
+
+            call.complete(count)
         }
     }
 }

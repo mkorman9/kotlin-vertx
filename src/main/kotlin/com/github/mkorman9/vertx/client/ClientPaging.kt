@@ -5,8 +5,7 @@ import java.time.LocalDateTime
 
 data class ClientPage(
     val data: List<Client>,
-    val page: Int,
-    val totalPages: Int
+    val page: Int
 )
 
 data class ClientFilteringOptions(

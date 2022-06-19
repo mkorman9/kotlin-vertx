@@ -1,19 +1,13 @@
 version: '3.9'
 
 services:
-  postgres:
-    image: postgres:12
+  firestore:
+    image: mtlynch/firestore-emulator
     environment:
-      POSTGRES_DB: kotlinvertx
-      POSTGRES_USER: username
-      POSTGRES_PASSWORD: password
+      - FIRESTORE_PROJECT_ID=local-run
+      - PORT=8200
     ports:
-      - "127.0.0.1:5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U username -d kotlinvertx"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - "127.0.0.1:8200:8200"
 
   gcp-pubsub:
     image: bigtruedata/gcloud-pubsub-emulator:latest

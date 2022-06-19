@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.tools.hibernate.AdvisoryLock
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import dev.misfitlabs.kotlinguice4.getInstance
@@ -17,17 +16,14 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
 
     override suspend fun start() {
         val sessionRepository = injector.getInstance<SessionRepository>()
-        val advisoryLock = injector.getInstance<AdvisoryLock>()
 
         try {
             vertx.setPeriodic(taskDelayMs.toLong()) {
-                advisoryLock.acquire(lockId) {
-                    log.info("Starting ExpiredSessionsCleaner task")
+                log.info("Starting ExpiredSessionsCleaner task")
 
-                    sessionRepository.deleteExpired()
-                        .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
-                        .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
-                }
+                sessionRepository.deleteExpired(vertx)
+                    .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
+                    .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
             }
         } catch (e: Exception) {
             log.error("Failed to deploy ExpiredSessionsCleanerVerticle", e)

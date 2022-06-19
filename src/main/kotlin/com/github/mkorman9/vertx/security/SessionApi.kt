@@ -23,7 +23,7 @@ class SessionApi (context: VerticleContext) {
         post("/")
             .coroutineHandler(context.scope) { ctx ->
                 ctx.handleJsonBody<StartSessionPayload> { payload ->
-                    val account = accountRepository.findByCredentialsEmail(payload.email).await()
+                    val account = accountRepository.findByCredentialsEmail(context.vertx, payload.email).await()
                     if (account == null) {
                         ctx.response().setStatusCode(401).endWithJson(
                             StatusDTO(
@@ -67,7 +67,6 @@ class SessionApi (context: VerticleContext) {
                     }
 
                     val session = Session(
-                        accountId = account.id,
                         token = SecureRandomGenerator.generate(sessionTokenLength),
                         roles = account.roles,
                         ip = ctx.request().getClientIp(),
@@ -77,7 +76,7 @@ class SessionApi (context: VerticleContext) {
                         account = account
                     )
 
-                    val newSession = sessionRepository.add(session).await()
+                    val newSession = sessionRepository.add(context.vertx, session).await()
                     ctx.response().endWithJson(newSession)
                 }
             }
@@ -86,7 +85,7 @@ class SessionApi (context: VerticleContext) {
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
             .coroutineHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
-                val refreshedSession = sessionRepository.refresh(session).await()
+                val refreshedSession = sessionRepository.refresh(context.vertx, session).await()
                 ctx.response().endWithJson(refreshedSession)
             }
 
@@ -94,7 +93,7 @@ class SessionApi (context: VerticleContext) {
             .handler { ctx -> authorizationMiddleware.authorize(ctx) }
             .coroutineHandler(context.scope) { ctx ->
                 val session = authorizationMiddleware.getActiveSession(ctx)
-                sessionRepository.delete(session).await()
+                sessionRepository.delete(context.vertx, session).await()
                 ctx.response().endWithJson(StatusDTO(status = "ok"))
             }
     }

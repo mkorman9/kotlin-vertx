@@ -1,343 +1,256 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.tools.hibernate.withSession
-import com.github.mkorman9.vertx.tools.hibernate.withTransaction
+import com.google.cloud.firestore.CollectionReference
+import com.google.cloud.firestore.Firestore
+import com.google.cloud.firestore.Query
 import com.google.inject.Inject
 import com.google.inject.Singleton
-import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
-import java.lang.Integer.max
+import io.vertx.core.Vertx
+import java.time.ZoneOffset
 import java.util.*
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
-import javax.persistence.criteria.Predicate
-import javax.persistence.criteria.Root
-import kotlin.math.ceil
 
 @Singleton
 class ClientRepository @Inject constructor(
-    private val sessionFactory: SessionFactory
+    private val firestore: Firestore
 ) {
+    companion object {
+        private const val CLIENTS_COLLECTION = "clients"
+    }
 
-    fun findAll(): Future<List<Client>> {
-        return withSession(sessionFactory) { session ->
-            session.createQuery("from Client c where c.deleted = false", Client::class.java).resultList
+    fun findAll(vertx: Vertx): Future<List<Client>> {
+        return vertx.executeBlocking { call ->
+            val docs = firestore.collection(CLIENTS_COLLECTION)
+                .get()
+                .get()
+            val clientDocuments = docs.toObjects(ClientDocument::class.java)
+
+            call.complete(clientDocuments.map { it.toClient() })
         }
     }
 
     fun findPaged(
+        vertx: Vertx,
         filtering: ClientFilteringOptions,
         paging: ClientPagingOptions,
         sorting: ClientSortingOptions
     ): Future<ClientPage> {
-        val criteriaBuilder = sessionFactory.criteriaBuilder
-        val dataQuery = buildDataQuery(filtering, sorting, criteriaBuilder)
-        val countQuery = buildCountQuery(filtering, criteriaBuilder)
+        return vertx.executeBlocking { call ->
+            val collection = firestore.collection(CLIENTS_COLLECTION)
+            var query = createQueryWithFilters(collection, filtering)
+            query = addPagingToQuery(query, paging)
+            query = addSortingToQuery(query, sorting)
 
-        return withSession(sessionFactory) { session ->
-            Uni.combine().all().unis(
-                session.createQuery(dataQuery)
-                    .setFirstResult((paging.pageNumber - 1) * paging.pageSize)
-                    .setMaxResults(paging.pageSize)
-                    .resultList,
-                session.createQuery(countQuery)
-                    .singleResult
+            val docs = query
+                .get()
+                .get()
+            val clientDocuments = docs.toObjects(ClientDocument::class.java)
+
+            val clientPage = ClientPage(
+                data = clientDocuments.map { it.toClient() },
+                page = paging.pageNumber
             )
-                .asTuple()
-                .onItem().transform { tuple ->
-                    ClientPage(
-                        data = tuple.item1,
-                        page = paging.pageNumber,
-                        totalPages = max(1, ceil(tuple.item2.toDouble() / paging.pageSize.toDouble()).toInt())
-                    )
-                }
+            call.complete(clientPage)
         }
     }
 
     fun findByCursor(
-        filtering: ClientFilteringOptions,
-        cursorOptions: ClientCursorOptions
-    ): Future<ClientCursor> {
-        val criteriaBuilder = sessionFactory.criteriaBuilder
-        val query = buildCursorQuery(filtering, cursorOptions, criteriaBuilder)
-
-        return withSession(sessionFactory) { session ->
-            session.createQuery(query)
-                .setMaxResults(cursorOptions.limit)
-                .resultList
-                .onItem().transform { clients ->
-                    var nextCursor: UUID? = null
-                    if (clients.isNotEmpty()) {
-                        nextCursor = clients[clients.size - 1].id
-                    }
-
-                    ClientCursor(
-                        data = clients,
-                        nextCursor = nextCursor?.toString()
-                    )
-                }
-        }
-    }
-
-    fun findById(id: String): Future<Client?> {
-        val idUUID = try {
-            UUID.fromString(id)
-        } catch (e: IllegalArgumentException) {
-            return Future.succeededFuture(null)
-        }
-
-        return withSession(sessionFactory) { session ->
-            session.find(Client::class.java, idUUID)
-                .onItem().ifNotNull().transform { client ->
-                    if (client.deleted) {
-                        null
-                    } else {
-                        client
-                    }
-                }
-        }
-    }
-
-    fun add(payload: ClientAddPayload): Future<Client> {
-        val id = UUID.randomUUID()
-
-        return withTransaction(sessionFactory) { session, _ ->
-            session.merge(Client(
-                id = id,
-                gender = payload.gender ?: "-",
-                firstName = payload.firstName,
-                lastName = payload.lastName,
-                address = payload.address,
-                phoneNumber = payload.phoneNumber,
-                email = payload.email,
-                birthDate = payload.birthDate,
-                creditCards = (payload.creditCards ?: listOf()).map {
-                    CreditCard(
-                        clientId = id,
-                        number = it.number
-                    )
-                }.toMutableList()
-            ))
-        }
-    }
-
-    fun update(id: String, payload: ClientUpdatePayload): Future<Client?> {
-        val idUUID = try {
-            UUID.fromString(id)
-        } catch (e: IllegalArgumentException) {
-            return Future.succeededFuture(null)
-        }
-
-        return withTransaction(sessionFactory) { session, _ ->
-            session.find(Client::class.java, idUUID)
-                .onItem().ifNotNull().call { client ->
-                    if (payload.gender != null) {
-                        client.gender = payload.gender
-                    }
-                    if (payload.firstName != null) {
-                        client.firstName = payload.firstName
-                    }
-                    if (payload.lastName != null) {
-                        client.lastName = payload.lastName
-                    }
-                    if (payload.address != null) {
-                        client.address = payload.address
-                    }
-                    if (payload.phoneNumber != null) {
-                        client.phoneNumber = payload.phoneNumber
-                    }
-                    if (payload.email != null) {
-                        client.email = payload.email
-                    }
-                    if (payload.birthDate != null) {
-                        client.birthDate = payload.birthDate
-                    }
-                    if (payload.creditCards != null) {
-                        client.creditCards.removeIf { cc1 ->
-                            !payload.creditCards.any { cc2 -> cc1.number == cc2.number }
-                        }
-
-                        payload.creditCards.forEach { cc1 ->
-                            if(!client.creditCards.any { cc2 -> cc1.number == cc2.number }) {
-                                client.creditCards.add(
-                                    CreditCard(
-                                        clientId = idUUID,
-                                        number = cc1.number
-                                    )
-                                )
-                            }
-                        }
-                    }
-
-                    session.merge(client)
-                }
-        }
-    }
-
-    fun delete(id: String): Future<Boolean> {
-        val idUUID = try {
-            UUID.fromString(id)
-        } catch (e: IllegalArgumentException) {
-            return Future.succeededFuture(false)
-        }
-
-        return withTransaction(sessionFactory) { session, _ ->
-            session.find(Client::class.java, idUUID)
-                .onItem().ifNotNull().transform { client ->
-                    client.deleted = true
-                    session.merge(client)
-                    true
-                }
-                .onItem().ifNull().continueWith(false)
-        }
-    }
-
-    private fun buildCountQuery(
-        filtering: ClientFilteringOptions,
-        criteriaBuilder: CriteriaBuilder
-    ): CriteriaQuery<Long> {
-        val query = criteriaBuilder.createQuery(Long::class.java)
-        val root = query.from(Client::class.java)
-
-        val whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
-
-        query.select(criteriaBuilder.count(root))
-        query.where(whereClause)
-
-        return query
-    }
-
-    private fun buildDataQuery(
-        filtering: ClientFilteringOptions,
-        sorting: ClientSortingOptions,
-        criteriaBuilder: CriteriaBuilder,
-    ): CriteriaQuery<Client> {
-        val query = criteriaBuilder.createQuery(Client::class.java)
-        val root = query.from(Client::class.java)
-
-        val whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
-
-        query.select(root)
-        query.where(whereClause)
-
-        if (sorting.sortReverse) {
-            query.orderBy(criteriaBuilder.desc(root.get<String>(sorting.sortBy)))
-        } else {
-            query.orderBy(criteriaBuilder.asc(root.get<String>(sorting.sortBy)))
-        }
-
-        return query
-    }
-
-    private fun buildCursorQuery(
+        vertx: Vertx,
         filtering: ClientFilteringOptions,
         cursorOptions: ClientCursorOptions,
-        criteriaBuilder: CriteriaBuilder,
-    ): CriteriaQuery<Client> {
-        val query = criteriaBuilder.createQuery(Client::class.java)
-        val root = query.from(Client::class.java)
+    ): Future<ClientCursor> {
+        return vertx.executeBlocking { call ->
+            val collection = firestore.collection(CLIENTS_COLLECTION)
+            var query = createQueryWithFilters(collection, filtering)
+            query = query.orderBy("id", Query.Direction.ASCENDING)
+                .limit(cursorOptions.limit)
 
-        var whereClause = buildPredicate(filtering, criteriaBuilder, query, root)
+            if (cursorOptions.cursor != null) {
+                query = query.whereGreaterThan("id", cursorOptions.cursor)
+            }
 
-        if (cursorOptions.cursor != null) {
-            whereClause = criteriaBuilder.and(
-                whereClause,
-                criteriaBuilder.greaterThan(root.get("id"), cursorOptions.cursor)
-            )
+            val docs = query
+                .get()
+                .get()
+            val clientDocuments = docs.toObjects(ClientDocument::class.java)
+            val clients = clientDocuments.map { it.toClient() }
+
+            val cursor = if (clients.isNotEmpty()) {
+                ClientCursor(data = clients, nextCursor = clients[clients.size - 1].id.toString())
+            } else {
+                ClientCursor(data = clients, nextCursor = null)
+            }
+
+            call.complete(cursor)
+        }
+    }
+
+    fun findById(vertx: Vertx, id: String): Future<Client?> {
+        return vertx.executeBlocking { call ->
+            val doc = firestore.collection(CLIENTS_COLLECTION)
+                .document(id)
+                .get()
+                .get()
+
+            val clientDocument = doc.toObject(ClientDocument::class.java)
+            if (clientDocument == null || clientDocument.deleted) {
+                call.complete(null)
+            } else {
+                call.complete(clientDocument.toClient())
+            }
+        }
+    }
+
+    fun add(vertx: Vertx, payload: ClientAddPayload): Future<Client> {
+        val doc = firestore
+            .collection(CLIENTS_COLLECTION)
+            .document()
+
+        val client = Client(
+            id = UUID.fromString(doc.id),
+            gender = payload.gender ?: "-",
+            firstName = payload.firstName,
+            lastName = payload.lastName,
+            address = payload.address ?: "",
+            phoneNumber = payload.phoneNumber ?: "",
+            email = payload.email ?: "",
+            birthDate = payload.birthDate,
+            creditCards = (payload.creditCards ?: listOf()).map { it.number }.toMutableList()
+        )
+
+        return vertx.executeBlocking { call ->
+            doc
+                .set(ClientDocument.fromClient(client))
+                .get()
+
+            call.complete(client)
+        }
+    }
+
+    fun update(vertx: Vertx, id: String, payload: ClientUpdatePayload): Future<Client?> {
+        return vertx.executeBlocking { call ->
+            val doc = firestore.collection(CLIENTS_COLLECTION)
+                .document(id)
+                .get()
+                .get()
+
+            val clientDocument = doc.toObject(ClientDocument::class.java)
+            if (clientDocument == null || clientDocument.deleted) {
+                call.complete(null)
+            } else {
+                val client = clientDocument.toClient()
+
+                if (payload.gender != null) {
+                    client.gender = payload.gender
+                }
+                if (payload.firstName != null) {
+                    client.firstName = payload.firstName
+                }
+                if (payload.lastName != null) {
+                    client.lastName = payload.lastName
+                }
+                if (payload.address != null) {
+                    client.address = payload.address
+                }
+                if (payload.phoneNumber != null) {
+                    client.phoneNumber = payload.phoneNumber
+                }
+                if (payload.email != null) {
+                    client.email = payload.email
+                }
+                if (payload.birthDate != null) {
+                    client.birthDate = payload.birthDate
+                }
+                if (payload.creditCards != null) {
+                    client.creditCards = payload.creditCards.map { it.number }.toMutableList()
+                }
+
+                firestore.collection(CLIENTS_COLLECTION)
+                    .document(id)
+                    .set(ClientDocument.fromClient(client))
+                    .get()
+
+                call.complete(client)
+            }
+        }
+    }
+
+    fun delete(vertx: Vertx, id: String): Future<Boolean> {
+        return vertx.executeBlocking { call ->
+            val doc = firestore.collection(CLIENTS_COLLECTION)
+                .document(id)
+                .get()
+                .get()
+
+            val clientDocument = doc.toObject(ClientDocument::class.java)
+            if (clientDocument == null || clientDocument.deleted) {
+                call.complete(false)
+            } else {
+                val client = clientDocument.toClient()
+                client.deleted = true
+
+                firestore.collection(CLIENTS_COLLECTION)
+                    .document(id)
+                    .set(ClientDocument.fromClient(client))
+                    .get()
+
+                call.complete(true)
+            }
+        }
+    }
+
+    private fun createQueryWithFilters(collection: CollectionReference, filtering: ClientFilteringOptions): Query {
+        var query = collection.whereEqualTo("deleted", false)
+
+        if (filtering.gender != null) {
+            query = query.whereEqualTo("gender", filtering.gender)
         }
 
-        query.select(root)
-        query.where(whereClause)
-        query.orderBy(criteriaBuilder.asc(root.get<String>("id")))
+        if (filtering.firstName != null) {
+            query = query.whereEqualTo("firstName", filtering.firstName)
+        }
+
+        if (filtering.lastName != null) {
+            query = query.whereEqualTo("lastName", filtering.lastName)
+        }
+
+        if (filtering.address != null) {
+            query = query.whereEqualTo("address", filtering.address)
+        }
+
+        if (filtering.phoneNumber != null) {
+            query = query.whereEqualTo("phoneNumber", filtering.phoneNumber)
+        }
+
+        if (filtering.email != null) {
+            query = query.whereEqualTo("email", filtering.email)
+        }
+
+        if (filtering.bornAfter != null) {
+            query = query.whereGreaterThanOrEqualTo("birthDate", filtering.bornAfter.toEpochSecond(ZoneOffset.UTC))
+        }
+
+        if (filtering.bornBefore != null) {
+            query = query.whereLessThan("birthDate", filtering.bornBefore.toEpochSecond(ZoneOffset.UTC))
+        }
+
+        if (filtering.creditCard != null) {
+            query = query.whereArrayContains("creditCards", filtering.creditCard)
+        }
 
         return query
     }
 
-    private fun <T> buildPredicate(
-        filtering: ClientFilteringOptions,
-        criteriaBuilder: CriteriaBuilder,
-        query: CriteriaQuery<T>,
-        root: Root<Client>
-    ): Predicate {
-        val predicates = mutableListOf<Predicate>()
+    private fun addSortingToQuery(query: Query, sorting: ClientSortingOptions): Query {
+        return query.orderBy(
+            sorting.sortBy,
+            if (sorting.sortReverse) Query.Direction.DESCENDING else Query.Direction.ASCENDING
+        )
+    }
 
-        predicates.add(criteriaBuilder.equal(root.get<Boolean>("deleted"), false))
-
-        if (filtering.gender != null) {
-            predicates.add(
-                criteriaBuilder.equal(
-                    root.get<String>("gender"),
-                    filtering.gender
-                )
-            )
-        }
-        if (filtering.firstName != null) {
-            predicates.add(
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("firstName")),
-                    "%${filtering.firstName.lowercase()}%"
-                )
-            )
-        }
-        if (filtering.lastName != null) {
-            predicates.add(
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("lastName")),
-                    "%${filtering.lastName.lowercase()}%"
-                )
-            )
-        }
-        if (filtering.address != null) {
-            predicates.add(
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("address")),
-                    "%${filtering.address.lowercase()}%"
-                )
-            )
-        }
-        if (filtering.phoneNumber != null) {
-            predicates.add(
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("phoneNumber")),
-                    "%${filtering.phoneNumber.lowercase()}%"
-                )
-            )
-        }
-        if (filtering.email != null) {
-            predicates.add(
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("email")),
-                    "%${filtering.email.lowercase()}%"
-                )
-            )
-        }
-        if (filtering.bornAfter != null) {
-            predicates.add(
-                criteriaBuilder.greaterThanOrEqualTo(
-                    root.get("birthDate"),
-                    criteriaBuilder.literal(filtering.bornAfter)
-                )
-            )
-        }
-        if (filtering.bornBefore != null) {
-            predicates.add(
-                criteriaBuilder.lessThan(
-                    root.get("birthDate"),
-                    criteriaBuilder.literal(filtering.bornBefore)
-                )
-            )
-        }
-        if (filtering.creditCard != null) {
-            val subquery = query.subquery(String::class.java)
-            val creditCardRoot = subquery.from(CreditCard::class.java)
-
-            subquery.select(creditCardRoot.get("clientId"))
-            subquery.where(criteriaBuilder.like(creditCardRoot.get("number"), "%${filtering.creditCard}%"))
-
-            predicates.add(root.get<String>("id").`in`(subquery))
-        }
-
-        return criteriaBuilder.and(*predicates.toTypedArray())
+    private fun addPagingToQuery(query: Query, paging: ClientPagingOptions): Query {
+        return query
+            .offset((paging.pageNumber - 1) * paging.pageSize)
+            .limit(paging.pageSize)
     }
 }

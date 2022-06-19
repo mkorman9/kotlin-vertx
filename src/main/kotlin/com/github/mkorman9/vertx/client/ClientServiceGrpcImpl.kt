@@ -14,12 +14,15 @@ import kotlinx.coroutines.flow.flow
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class ClientServiceGrpcImpl (context: VerticleContext) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
-    private val clientRepository: ClientRepository = context.injector.getInstance()
+class ClientServiceGrpcImpl (
+    private val verticleContext: VerticleContext
+) : ClientServiceGrpcKt.ClientServiceCoroutineImplBase() {
+    private val clientRepository: ClientRepository = verticleContext.injector.getInstance()
 
     override fun getClients(request: ClientRequest): Flow<Client> {
         return flow {
             val clientsPage = clientRepository.findByCursor(
+                verticleContext.vertx,
                 ClientFilteringOptions(),
                 ClientCursorOptions(cursor = null, limit = 10)
             ).await()
@@ -37,7 +40,7 @@ class ClientServiceGrpcImpl (context: VerticleContext) : ClientServiceGrpcKt.Cli
                         .setBirthDate(toTimestamp(it.birthDate))
                         .addAllCreditCards(it.creditCards.map { cc ->
                             CreditCard.newBuilder()
-                                .setNumber(cc.number)
+                                .setNumber(cc)
                                 .build()
                         })
                         .build()

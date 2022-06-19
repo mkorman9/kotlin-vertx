@@ -10,9 +10,6 @@ buildscript {
         // Commons
         jacksonVersion = '2.13.3'
 
-        // Hibernate
-        mutinyVersion = '2.22.0'
-
         // gRPC
         grpcVersion = '1.47.0'
         grpcKotlinVersion = '1.3.0'
@@ -20,7 +17,6 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlinVersion"
     }
 }
 
@@ -33,7 +29,6 @@ plugins {
 }
 
 apply plugin: 'kotlin'
-apply plugin: "kotlin-jpa"
 
 scmVersion {
     useHighestVersion = true
@@ -89,12 +84,8 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.12.4'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
-    // Hibernate
-    implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.6.Final'
-    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
-    implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
-
     // GCP
+    implementation 'com.google.firebase:firebase-admin:8.1.0'
     implementation 'com.google.cloud:google-cloud-pubsub:1.119.1'
 
     // gRPC

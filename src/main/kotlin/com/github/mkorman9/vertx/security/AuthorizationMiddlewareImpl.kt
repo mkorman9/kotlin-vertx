@@ -28,7 +28,7 @@ class AuthorizationMiddlewareImpl @Inject constructor(
             return
         }
 
-        sessionRepository.findByToken(token)
+        sessionRepository.findByToken(ctx.vertx(), token)
             .onSuccess { session ->
                 if (session == null) {
                     ctx.response().setStatusCode(401).endWithJson(

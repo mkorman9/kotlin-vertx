@@ -24,9 +24,9 @@ fun fakeSession(
 ): Session {
     val accountId = UUID.randomUUID()
     val session = Session(
-        id = (Math.random() * 10_000).toLong(),
-        accountId = accountId,
+        id = UUID.randomUUID(),
         token = UUID.randomUUID().toString(),
+        roles = mutableSetOf(),
         ip = "127.0.0.1",
         issuedAt = LocalDateTime.now().minusMinutes(15),
         duration = 4 * 60 * 60 * 60,  // 4h
@@ -34,22 +34,19 @@ fun fakeSession(
         account = Account(
             id = accountId,
             username = accountName,
+            roles = mutableSetOf(),
             active = true,
             deleted = false,
             preferredLanguage = "en-US",
             bannedUntil = if (isBanned) LocalDateTime.MAX else LocalDateTime.MIN,
             createdAt = LocalDateTime.now().minusYears(1),
-            credentials = null
+            credentials = AccountCredentials(
+                email = email,
+                passwordBcrypt = password.bcryptEncoded,
+                lastChangeAt = LocalDateTime.now().minusYears(1),
+                lastChangeIp = "127.0.0.1",
+            )
         )
-    )
-
-    session.account.credentials = AccountCredentials(
-        accountId = accountId,
-        email = email,
-        passwordBcrypt = password.bcryptEncoded,
-        lastChangeAt = session.account.createdAt,
-        lastChangeIp = "127.0.0.1",
-        account = session.account
     )
 
     return session

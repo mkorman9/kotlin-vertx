@@ -1,13 +1,13 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.tools.firestore.FirestoreInitializer
 import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
-import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.ConfigReader
+import com.google.cloud.firestore.Firestore
 import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
 class Application {
@@ -17,14 +17,14 @@ class Application {
         const val PACKAGE_NAME = "com.github.mkorman9.vertx"
     }
 
-    private lateinit var sessionFactory: SessionFactory
+    private lateinit var firestore: Firestore
     private lateinit var gcpPubSubClient: GCPPubSubClient
 
     fun bootstrap(vertx: Vertx) {
         try {
             val config = ConfigReader.read(vertx)
 
-            sessionFactory = HibernateInitializer.initialize(vertx, config)
+            firestore = FirestoreInitializer.initialize(config)
             gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
             BootstrapUtils.bootstrap(
@@ -33,7 +33,7 @@ class Application {
                 config = config,
                 module = object : KotlinModule() {
                     override fun configure() {
-                        bind<SessionFactory>().toInstance(sessionFactory)
+                        bind<Firestore>().toInstance(firestore)
                         bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
                     }
                 }
@@ -48,7 +48,7 @@ class Application {
 
     fun shutdown() {
         gcpPubSubClient.stop()
-        sessionFactory.close()
+        firestore.close()
 
         log.info("App has been stopped")
     }

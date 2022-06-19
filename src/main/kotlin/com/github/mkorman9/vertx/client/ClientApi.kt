@@ -39,6 +39,7 @@ class ClientApi (context: VerticleContext) {
                 )
 
                 val clientsPage = clientRepository.findPaged(
+                    vertx = context.vertx,
                     filtering = filtering,
                     paging = paging,
                     sorting = sorting
@@ -67,6 +68,7 @@ class ClientApi (context: VerticleContext) {
                 )
 
                 val clientsCursor = clientRepository.findByCursor(
+                    context.vertx,
                     filtering = filtering,
                     cursorOptions = cursorOptions
                 ).await()
@@ -88,7 +90,7 @@ class ClientApi (context: VerticleContext) {
             .coroutineHandler(context.scope) { ctx ->
                 val id = ctx.pathParam("id")
 
-                val client = clientRepository.findById(id).await()
+                val client = clientRepository.findById(context.vertx, id).await()
                 if (client != null) {
                     ctx.response().endWithJson(client)
                 } else {
@@ -107,7 +109,7 @@ class ClientApi (context: VerticleContext) {
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
                 ctx.handleJsonBody<ClientAddPayload> { payload ->
-                    val client = clientRepository.add(payload).await()
+                    val client = clientRepository.add(context.vertx, payload).await()
 
                     clientEventsPublisher.publish(
                         context.vertx,
@@ -130,7 +132,7 @@ class ClientApi (context: VerticleContext) {
                 ctx.handleJsonBody<ClientUpdatePayload> { payload ->
                     val id = ctx.pathParam("id")
 
-                    val client = clientRepository.update(id, payload).await()
+                    val client = clientRepository.update(context.vertx, id, payload).await()
                     if (client != null) {
                         clientEventsPublisher.publish(
                             context.vertx,
@@ -164,7 +166,7 @@ class ClientApi (context: VerticleContext) {
 
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
-                val deleted = clientRepository.delete(id).await()
+                val deleted = clientRepository.delete(context.vertx, id).await()
                 if (deleted) {
                     clientEventsPublisher.publish(
                         context.vertx,
