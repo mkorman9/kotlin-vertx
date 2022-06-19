@@ -7,6 +7,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.util.*
 
 @Singleton
 class SessionRepository @Inject constructor(
@@ -46,8 +47,12 @@ class SessionRepository @Inject constructor(
 
     fun add(vertx: Vertx, session: Session): Future<Session> {
         return vertx.executeBlocking { call ->
-            firestore.collection(SESSIONS_COLLECTION)
-                .document(session.id.toString())
+            val doc = firestore.collection(SESSIONS_COLLECTION)
+                .document()
+
+            session.id = UUID.fromString(doc.id)
+
+            doc
                 .set(SessionDocument.fromSession(session))
                 .get()
 
