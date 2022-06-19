@@ -10,5 +10,5 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   redirectToHttps:
-    enabled: "{{ .Values.ingress.useHttps }}"
+    enabled: {{ .Values.ingress.useHttps }}
 {{ end }}
