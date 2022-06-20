@@ -89,6 +89,9 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.12.4'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
+    // Redis
+    implementation "io.vertx:vertx-redis-client:$vertxVersion"
+
     // Hibernate
     implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.6.Final'
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
