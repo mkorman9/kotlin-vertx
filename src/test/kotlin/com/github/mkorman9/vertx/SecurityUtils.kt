@@ -43,6 +43,7 @@ fun fakeSession(
     )
 
     session.account.credentials = AccountCredentials(
+        accountId = accountId,
         email = email,
         passwordBcrypt = password.bcryptEncoded,
         lastChangeAt = session.account.createdAt,
