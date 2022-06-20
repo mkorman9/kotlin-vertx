@@ -30,7 +30,7 @@ data class AccountCredentials(
     var lastChangeIp: String,
 
     @OneToOne
-    @JoinColumn(name = "account_id")
+    @JoinColumn(name = "account_id", columnDefinition = "uuid" , nullable = false)
     val account: Account
 ) {
     override fun hashCode(): Int {

@@ -25,7 +25,6 @@ fun fakeSession(
     val accountId = UUID.randomUUID()
     val session = Session(
         id = (Math.random() * 10_000).toLong(),
-        accountId = accountId,
         token = UUID.randomUUID().toString(),
         ip = "127.0.0.1",
         issuedAt = LocalDateTime.now().minusMinutes(15),
@@ -44,7 +43,6 @@ fun fakeSession(
     )
 
     session.account.credentials = AccountCredentials(
-        accountId = accountId,
         email = email,
         passwordBcrypt = password.bcryptEncoded,
         lastChangeAt = session.account.createdAt,

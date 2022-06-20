@@ -22,9 +22,6 @@ data class Session(
     @JsonIgnore
     val id: Long? = null,
 
-    @Column(name = "account_id", columnDefinition = "uuid", nullable = false)
-    var accountId: UUID,
-
     @Column(name = "token", columnDefinition = "text", unique = true, nullable = false)
     var token: String,
 
@@ -45,7 +42,7 @@ data class Session(
     var expiresAt: LocalDateTime? = null,
 
     @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "account_id", columnDefinition = "uuid", nullable = false)
     @JsonIgnore
     val account: Account
 )
