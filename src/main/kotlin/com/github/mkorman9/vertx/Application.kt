@@ -25,6 +25,10 @@ class Application {
             val config = ConfigReader.read(vertx)
 
             sessionFactory = HibernateInitializer.initialize(vertx, config)
+                .toCompletionStage()
+                .toCompletableFuture()
+                .join()
+
             gcpPubSubClient = GCPPubSubClient.create(vertx, config)
 
             BootstrapUtils.bootstrap(

@@ -2,13 +2,14 @@ package com.github.mkorman9.vertx.tools.hibernate
 
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
+import io.vertx.core.Future
 import io.vertx.core.Vertx
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import javax.persistence.Persistence
 
 class HibernateInitializer {
     companion object {
-        fun initialize(vertx: Vertx, config: Config): SessionFactory {
+        fun initialize(vertx: Vertx, config: Config): Future<SessionFactory> {
             val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
             val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
             val password = config.get<String>("db.password")
@@ -39,7 +40,7 @@ class HibernateInitializer {
             )
 
             // Hibernate needs to be initialized inside the context of Vert.x thread pool
-            return vertx.executeBlocking<SessionFactory> { call ->
+            return vertx.executeBlocking { call ->
                 try {
                     val sessionFactory = Persistence
                         .createEntityManagerFactory("default", props)
@@ -50,9 +51,6 @@ class HibernateInitializer {
                     call.fail(e)
                 }
             }
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
         }
     }
 }
