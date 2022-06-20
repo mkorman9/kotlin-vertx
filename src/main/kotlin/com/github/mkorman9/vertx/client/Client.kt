@@ -39,11 +39,11 @@ data class Client(
     var deleted: Boolean = false,
 
     @OneToMany(
-        mappedBy = "clientId",
         fetch = FetchType.EAGER,
         cascade = [CascadeType.ALL],
         orphanRemoval = true
     )
+    @JoinColumn(name = "client_id", columnDefinition = "uuid")
     @BatchSize(size = 10)
     var creditCards: MutableList<CreditCard> = mutableListOf()
 )
