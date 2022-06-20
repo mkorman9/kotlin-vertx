@@ -42,11 +42,11 @@ data class Account(
     var createdAt: LocalDateTime,
 
     @OneToOne(
-        mappedBy = "account",
         fetch = FetchType.EAGER,
         cascade = [CascadeType.ALL],
         orphanRemoval = true
     )
+    @JoinColumn(name = "credentials_id", columnDefinition = "bigint")
     @JsonIgnore
     var credentials: AccountCredentials?
 )
