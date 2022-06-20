@@ -32,8 +32,8 @@ fun HttpServerRequest.getClientIp(): String {
     val address = getHeader("X-Forwarded-For") ?: remoteAddress().host()
     val parts = address.split(',')
 
-    return if (parts.size == 3) {
-        parts[1]
+    return if (parts.size > 2) {
+        parts[parts.size - 2]
     } else {
         parts[0]
     }
