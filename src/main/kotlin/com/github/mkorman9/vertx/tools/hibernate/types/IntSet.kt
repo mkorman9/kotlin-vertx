@@ -30,7 +30,7 @@ class IntSet : UserType {
         rs: ResultSet,
         names: Array<String>,
         session: SharedSessionContractImplementor,
-        owner: Any
+        owner: Any?
     ): Any {
         @Suppress("UNCHECKED_CAST")
         return (rs.getObject(names[0]) as Array<Int>).toMutableSet()

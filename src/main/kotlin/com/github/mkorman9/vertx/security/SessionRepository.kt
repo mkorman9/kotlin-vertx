@@ -25,7 +25,8 @@ class SessionRepository @Inject constructor(
 
     fun add(sessionObject: Session): Future<Session> {
         return withTransaction(sessionFactory) { session, _ ->
-            session.merge(sessionObject)
+            session.persist(sessionObject)
+                .map { sessionObject }
         }
     }
 
