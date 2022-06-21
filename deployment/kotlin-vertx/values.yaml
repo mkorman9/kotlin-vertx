@@ -34,7 +34,7 @@ app:
       timeoutSeconds: 5
 
   autoscaling:
-    name: app-hpa
+    name: kotlin-vertx-hpa
 
     min: 1
     default: 1
