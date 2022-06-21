@@ -4,14 +4,14 @@ app:
   imageName: mkorman/kotlin-vertx
   port: 8080
   historicRevisions: 3
-  environment: default
 
   configMap: config
   secrets: secrets
-  backend:
+  ingress:
     config: kotlin-vertx-ingress-backend-config
 
   config:
+    environmentName: default
     db:
       pool:
         size: 8
@@ -37,7 +37,6 @@ app:
     name: kotlin-vertx-hpa
 
     min: 1
-    default: 1
     max: 3
 
     targetMetrics:
@@ -64,8 +63,7 @@ ingress:
   hostname: localhost
 
   class: nginx
-  frontend:
-    config: ingress-frontend-config
+  frontendConfig: ingress-frontend-config
 
   useHttps: false
   tlsCertName: ""
