@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.github.mkorman9.vertx.tools.hibernate.isUniqueConstraintViolation
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
@@ -41,13 +42,33 @@ class AccountApi (context: VerticleContext) {
                         )
                     )
 
-                    accountRepository.add(account).await()
+                    try {
+                        accountRepository.add(account).await()
 
-                    ctx.response().endWithJson(
-                        StatusDTO(
-                            status = "ok"
+                        ctx.response().endWithJson(
+                            StatusDTO(
+                                status = "ok"
+                            )
                         )
-                    )
+                    } catch(e: Exception) {
+                        if (isUniqueConstraintViolation(e, "unique_accounts_username")) {
+                            ctx.response().setStatusCode(400).endWithJson(
+                                StatusDTO(
+                                    status = "error",
+                                    causes = listOf(Cause("username", "unique"))
+                                )
+                            )
+                        } else if (isUniqueConstraintViolation(e, "unique_accounts_credentials_email")) {
+                            ctx.response().setStatusCode(400).endWithJson(
+                                StatusDTO(
+                                    status = "error",
+                                    causes = listOf(Cause("email", "unique"))
+                                )
+                            )
+                        } else {
+                            throw e
+                        }
+                    }
                 }
             }
     }

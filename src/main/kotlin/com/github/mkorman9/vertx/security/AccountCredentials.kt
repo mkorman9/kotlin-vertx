@@ -4,7 +4,12 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity(name = "AccountCredentials")
-@Table(name = "accounts_credentials")
+@Table(
+    name = "accounts_credentials",
+    uniqueConstraints = [
+        UniqueConstraint(name = "unique_accounts_credentials_email", columnNames = ["email"])
+    ]
+)
 data class AccountCredentials(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accounts_credentials_id_gen")
@@ -12,7 +17,7 @@ data class AccountCredentials(
     @Column(name = "id", columnDefinition = "bigint")
     var id: Long? = null,
 
-    @Column(name = "email", columnDefinition = "text", unique = true, nullable = false)
+    @Column(name = "email", columnDefinition = "text", nullable = false)
     var email: String,
 
     @Column(name = "password_bcrypt", columnDefinition = "text", nullable = false)
