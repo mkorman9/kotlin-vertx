@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.tools.hibernate.withSession
+import com.github.mkorman9.vertx.tools.hibernate.withTransaction
 import com.google.inject.Inject
 import com.google.inject.Singleton
 import io.vertx.core.Future
@@ -23,6 +24,12 @@ class AccountRepository @Inject constructor(
                         account
                     }
                 }
+        }
+    }
+
+    fun add(account: Account): Future<Account> {
+        return withTransaction(sessionFactory) { session, _ ->
+            session.merge(account)
         }
     }
 }

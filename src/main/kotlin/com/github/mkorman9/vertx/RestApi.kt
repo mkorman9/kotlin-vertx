@@ -1,6 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientApi
+import com.github.mkorman9.vertx.security.AccountApi
 import com.github.mkorman9.vertx.security.SessionApi
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.HealthcheckHandler
@@ -26,6 +27,7 @@ class RestApi (context: VerticleContext) {
 
         route("/api/v1/client*").subRouter(ClientApi(context).router)
         route("/api/v1/session*").subRouter(SessionApi(context).router)
+        route("/api/v1/account*").subRouter(AccountApi(context).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(
