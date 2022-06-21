@@ -64,12 +64,12 @@ class LongSet : UserType {
         return (value as Set<Long>).toTypedArray()
     }
 
-    override fun assemble(cached: Serializable, owner: Any): Any {
+    override fun assemble(cached: Serializable, owner: Any?): Any {
         @Suppress("UNCHECKED_CAST")
         return (cached as Array<Long>).toMutableSet()
     }
 
-    override fun replace(original: Any, target: Any?, owner: Any): Any {
+    override fun replace(original: Any, target: Any?, owner: Any?): Any {
         return deepCopy(original)
     }
 }
