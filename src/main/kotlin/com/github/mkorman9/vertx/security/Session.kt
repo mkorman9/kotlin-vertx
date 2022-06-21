@@ -6,11 +6,15 @@ import org.hibernate.annotations.Type
 import org.hibernate.annotations.TypeDef
 import org.hibernate.annotations.TypeDefs
 import java.time.LocalDateTime
-import java.util.*
 import javax.persistence.*
 
 @Entity(name = "Session")
-@Table(name = "sessions")
+@Table(
+    name = "sessions",
+    uniqueConstraints = [
+        UniqueConstraint(name = "unique_sessions_token", columnNames = ["token"])
+    ]
+)
 @TypeDefs(
     TypeDef(name = "string-set", typeClass = StringSet::class)
 )
@@ -22,7 +26,7 @@ data class Session(
     @JsonIgnore
     val id: Long? = null,
 
-    @Column(name = "token", columnDefinition = "text", unique = true, nullable = false)
+    @Column(name = "token", columnDefinition = "text", nullable = false)
     var token: String,
 
     @Column(name = "roles", columnDefinition = "text[]", nullable = false)
