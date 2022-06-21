@@ -13,7 +13,7 @@ import javax.persistence.PersistenceException
 data class UniqueConstraintViolation(
     val table: String,
     val constraint: String
-) : RuntimeException()
+) : RuntimeException("Duplicate value when inserting to $table, constraint: $constraint")
 
 fun isUniqueConstraintViolation(t: Throwable, constraint: String): Boolean {
     return t is UniqueConstraintViolation && t.constraint == constraint

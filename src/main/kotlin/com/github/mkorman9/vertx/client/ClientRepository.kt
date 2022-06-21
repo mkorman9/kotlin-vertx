@@ -103,7 +103,7 @@ class ClientRepository @Inject constructor(
         val id = UUID.randomUUID()
 
         return withTransaction(sessionFactory) { session, _ ->
-            session.merge(Client(
+            val client = Client(
                 id = id,
                 gender = payload.gender ?: "-",
                 firstName = payload.firstName,
@@ -118,7 +118,10 @@ class ClientRepository @Inject constructor(
                         number = it.number
                     )
                 }.toMutableList()
-            ))
+            )
+
+            session.persist(client)
+                .map { client }
         }
     }
 

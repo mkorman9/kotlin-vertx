@@ -27,9 +27,9 @@ class AccountRepository @Inject constructor(
         }
     }
 
-    fun add(account: Account): Future<Account> {
+    fun add(account: Account): Future<Void> {
         return withTransaction(sessionFactory) { session, _ ->
-            session.merge(account)
+            session.persist(account)
         }
     }
 }
