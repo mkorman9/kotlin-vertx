@@ -5,8 +5,8 @@ app:
   port: 8080
   historicRevisions: 3
 
-  configMap: config
-  secrets: secrets
+  configMap: kotlin-vertx-config
+  secrets: kotlin-vertx-secrets
   ingress:
     config: kotlin-vertx-ingress-backend-config
 

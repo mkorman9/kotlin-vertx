@@ -4,7 +4,6 @@ import com.google.inject.Injector
 import io.vertx.core.*
 import io.vertx.core.impl.logging.LoggerFactory
 import java.lang.Integer.max
-import kotlin.math.ceil
 
 class VerticleDeployer {
     companion object {
@@ -17,7 +16,7 @@ class VerticleDeployer {
                 .forEach { c ->
                     val annotation = c.annotations.filterIsInstance<DeployVerticle>()
                         .first()
-                    val instances = parseInstancesNumber(annotation.scalingStrategy, annotation.minInstances)
+                    val instances = calculateInstancesNumber(annotation.scalingStrategy, annotation.minInstances)
 
                     for (i in 0 until instances) {
                         val instance = c.declaredConstructors[0].newInstance() as Verticle
@@ -45,7 +44,7 @@ class VerticleDeployer {
                 .join()
         }
 
-        private fun parseInstancesNumber(scalingStrategy: VerticesScalingStrategy, minInstances: Int): Int {
+        private fun calculateInstancesNumber(scalingStrategy: VerticesScalingStrategy, minInstances: Int): Int {
             return when(scalingStrategy) {
                 VerticesScalingStrategy.CONSTANT -> minInstances
                 VerticesScalingStrategy.NUM_OF_CPUS -> max(Runtime.getRuntime().availableProcessors(), minInstances)

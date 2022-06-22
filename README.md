@@ -181,7 +181,7 @@ gcp:
 
 Upload it
 ```bash
-kubectl create secret generic secrets --from-file=secrets.yml --from-file=credentials.json
+kubectl create secret generic kotlin-vertx-secrets --from-file=secrets.yml --from-file=credentials.json
 ```
 
 ### TLS certificate
