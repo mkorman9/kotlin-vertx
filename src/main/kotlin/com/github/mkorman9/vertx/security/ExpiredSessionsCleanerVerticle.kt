@@ -21,12 +21,13 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
 
         try {
             vertx.setPeriodic(taskDelayMs.toLong()) {
-                advisoryLock.acquire(lockId) {
+                advisoryLock.acquire(lockId) { promise ->
                     log.info("Starting ExpiredSessionsCleaner task")
 
                     sessionRepository.deleteExpired()
                         .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
                         .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
+                        .onComplete { promise.complete() }
                 }
             }
         } catch (e: Exception) {

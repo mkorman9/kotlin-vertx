@@ -41,12 +41,15 @@ class AdvisoryLock @Inject constructor(
                             query.setParameter("lockId", lockId)
                             query.singleResultOrNull
                         }
+                            .onSuccess {
+                                log.debug("Released advisory lock '${lockId}'")
+                            }
                             .onFailure { failure ->
-                                log.debug("Failed to unlock advisory lock '${lockId}'", failure)
+                                log.debug("Failed to release advisory lock '${lockId}'", failure)
                             }
                     }
                 } else {
-                    log.debug("Failed to acquire advisory lock '${lockId}'")
+                    log.debug("Unable to acquire advisory lock '${lockId}'")
                 }
             }
             .onFailure { failure -> throw failure }
