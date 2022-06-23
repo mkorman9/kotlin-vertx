@@ -3,8 +3,10 @@ package com.github.mkorman9.vertx.security
 import com.github.mkorman9.vertx.tools.hibernate.AdvisoryLock
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
+import com.github.mkorman9.vertx.utils.setPeriodicCoroutine
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
 class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
@@ -20,14 +22,16 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
         val advisoryLock = injector.getInstance<AdvisoryLock>()
 
         try {
-            vertx.setPeriodic(taskDelayMs.toLong()) {
-                advisoryLock.acquire(lockId) { promise ->
+            vertx.setPeriodicCoroutine(taskDelayMs.toLong(), context.scope) {
+                advisoryLock.acquire(lockId) {
                     log.info("Starting ExpiredSessionsCleaner task")
 
-                    sessionRepository.deleteExpired()
-                        .onSuccess { deletedRecords -> log.info("Successfully deleted $deletedRecords expired sessions") }
-                        .onFailure { failure -> log.error("ExpiredSessionsCleaner task has failed", failure) }
-                        .onComplete { promise.complete() }
+                    try {
+                        val deletedRecords = sessionRepository.deleteExpired().await()
+                        log.info("Successfully deleted $deletedRecords expired sessions")
+                    } catch (e: Exception) {
+                        log.error("ExpiredSessionsCleaner task has failed", e)
+                    }
                 }
             }
         } catch (e: Exception) {
