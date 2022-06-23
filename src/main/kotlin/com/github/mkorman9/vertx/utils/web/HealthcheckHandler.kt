@@ -6,7 +6,7 @@ import io.vertx.ext.web.RoutingContext
 
 class HealthcheckHandler {
     companion object {
-        private val info = DeploymentInfo.create()
+        private val info = DeploymentInfo.get()
 
         fun create(): Handler<RoutingContext> = Handler { ctx ->
             ctx.response().endWithJson(

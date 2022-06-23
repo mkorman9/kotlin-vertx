@@ -20,7 +20,7 @@ class DeploymentInfo private constructor(
                 environment = System.getenv("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT
             )
 
-        fun create(): DeploymentInfo {
+        fun get(): DeploymentInfo {
             return instance
         }
 
