@@ -17,7 +17,7 @@ class ClientEventsWebsocketApi (context: VerticleContext) {
 
     init {
         context.vertx.eventBus().consumer<JsonObject>(ClientEventsVerticle.INCOMING_CHANNEL) { message ->
-            websockets.list().forEach { wsContext ->
+            websockets.forEach { wsContext ->
                 wsContext.socket.writeTextMessage(message.body().encode())
             }
         }
