@@ -23,9 +23,9 @@ class WebsocketStore {
         map.remove(id)
     }
 
-    fun forEach(f: (WebsocketContext) -> Unit) {
-        map.forEachValue(Long.MAX_VALUE) { context ->
-            f(context)
+    fun forEach(f: (UUID, WebsocketContext) -> Unit) {
+        map.forEach(Long.MAX_VALUE) { id, context ->
+            f(id, context)
         }
     }
 
