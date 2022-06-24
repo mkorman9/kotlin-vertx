@@ -3,13 +3,19 @@ package com.github.mkorman9.vertx.client
 import io.vertx.core.http.ServerWebSocket
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
+
+data class WebsocketContext(
+    val socket: ServerWebSocket,
+    var lastHeartbeatTimestamp: AtomicLong
+)
 
 class WebsocketStore {
-    private val map = ConcurrentHashMap<UUID, ServerWebSocket>()
+    private val map = ConcurrentHashMap<UUID, WebsocketContext>()
 
-    fun add(ws: ServerWebSocket): UUID {
+    fun add(wsContext: WebsocketContext): UUID {
         val id = UUID.randomUUID()
-        map[id] = ws
+        map[id] = wsContext
         return id
     }
 
@@ -17,7 +23,17 @@ class WebsocketStore {
         map.remove(id)
     }
 
-    fun list(): Collection<ServerWebSocket> {
+    fun list(): Collection<WebsocketContext> {
         return map.values
+    }
+
+    fun execute(id: UUID, f: (WebsocketContext) -> Unit) {
+        map.compute(id) { _, context ->
+            if (context != null) {
+                f(context)
+            }
+
+            context
+        }
     }
 }
