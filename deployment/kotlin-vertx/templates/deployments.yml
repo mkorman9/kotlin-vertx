@@ -55,7 +55,6 @@ spec:
               cpu: {{ .Values.app.resources.cpu.request }}
               memory: {{ .Values.app.resources.memory.request }}
             limits:
-              cpu: {{ .Values.app.resources.cpu.limit }}
               memory: {{ .Values.app.resources.memory.limit }}
           volumeMounts:
             - name: config
