@@ -51,14 +51,14 @@ class AccountApi (context: VerticleContext) {
                             )
                         )
                     } catch(e: Exception) {
-                        if (isUniqueConstraintViolation(e, "unique_accounts_username")) {
+                        if (isUniqueConstraintViolation(e, Account.USERNAME_UNIQUE_CONSTRAINT)) {
                             ctx.response().setStatusCode(400).endWithJson(
                                 StatusDTO(
                                     status = "error",
                                     causes = listOf(Cause("username", "unique"))
                                 )
                             )
-                        } else if (isUniqueConstraintViolation(e, "unique_accounts_credentials_email")) {
+                        } else if (isUniqueConstraintViolation(e, AccountCredentials.EMAIL_UNIQUE_CONSTRAINT)) {
                             ctx.response().setStatusCode(400).endWithJson(
                                 StatusDTO(
                                     status = "error",

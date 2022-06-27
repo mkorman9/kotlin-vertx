@@ -7,7 +7,7 @@ import javax.persistence.*
 @Table(
     name = "accounts_credentials",
     uniqueConstraints = [
-        UniqueConstraint(name = "unique_accounts_credentials_email", columnNames = ["email"])
+        UniqueConstraint(name = AccountCredentials.EMAIL_UNIQUE_CONSTRAINT, columnNames = ["email"])
     ]
 )
 data class AccountCredentials(
@@ -28,4 +28,8 @@ data class AccountCredentials(
 
     @Column(name = "last_change_ip", columnDefinition = "text")
     var lastChangeIp: String
-)
+) {
+    companion object {
+        const val EMAIL_UNIQUE_CONSTRAINT = "unique_accounts_credentials_email"
+    }
+}

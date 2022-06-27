@@ -13,7 +13,7 @@ import javax.persistence.*
 @Table(
     name = "accounts",
     uniqueConstraints = [
-        UniqueConstraint(name = "unique_accounts_username", columnNames = ["username"])
+        UniqueConstraint(name = Account.USERNAME_UNIQUE_CONSTRAINT, columnNames = ["username"])
     ]
 )
 @TypeDefs(
@@ -54,4 +54,8 @@ data class Account(
     @JoinColumn(name = "credentials_id", columnDefinition = "bigint")
     @JsonIgnore
     var credentials: AccountCredentials?
-)
+) {
+    companion object {
+        const val USERNAME_UNIQUE_CONSTRAINT = "unique_accounts_username"
+    }
+}
