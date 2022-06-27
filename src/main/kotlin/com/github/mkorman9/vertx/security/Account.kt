@@ -10,12 +10,7 @@ import java.util.*
 import javax.persistence.*
 
 @Entity(name = "Account")
-@Table(
-    name = "accounts",
-    uniqueConstraints = [
-        UniqueConstraint(name = Account.USERNAME_UNIQUE_CONSTRAINT, columnNames = ["username"])
-    ]
-)
+@Table(name = "accounts",)
 @TypeDefs(
     TypeDef(name = "string-set", typeClass = StringSet::class)
 )

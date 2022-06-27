@@ -14,7 +14,7 @@
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL10Dialect" />
-            <property name="javax.persistence.schema-generation.database.action" value="update" />
+            <property name="javax.persistence.schema-generation.database.action" value="none" />
         </properties>
     </persistence-unit>
 

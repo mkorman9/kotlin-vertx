@@ -4,12 +4,7 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity(name = "AccountCredentials")
-@Table(
-    name = "accounts_credentials",
-    uniqueConstraints = [
-        UniqueConstraint(name = AccountCredentials.EMAIL_UNIQUE_CONSTRAINT, columnNames = ["email"])
-    ]
-)
+@Table(name = "accounts_credentials")
 data class AccountCredentials(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accounts_credentials_id_gen")

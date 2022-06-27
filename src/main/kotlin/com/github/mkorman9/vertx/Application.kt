@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
+import com.github.mkorman9.vertx.tools.hibernate.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.ConfigReader
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -23,6 +24,8 @@ class Application {
     fun bootstrap(vertx: Vertx) {
         try {
             val config = ConfigReader.read(vertx)
+
+            LiquibaseExecutor.migrateSchema(vertx, config)
 
             sessionFactory = HibernateInitializer.initialize(vertx, config)
                 .toCompletionStage()

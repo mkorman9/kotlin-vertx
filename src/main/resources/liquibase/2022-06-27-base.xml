@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet author="mkorman" id="2022-06-27-base">
+        <!-- clients -->
+        <createTable tableName="clients">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="clients_pkey" />
+            </column>
+            <column name="home_address" type="text" />
+            <column name="birth_date" type="timestamp" />
+            <column name="deleted" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="email" type="text" />
+            <column name="first_name" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="gender" type="char(1)">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_name" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="phone_number" type="text" />
+        </createTable>
+
+        <!-- clients credit cards -->
+        <createTable tableName="clients_credit_cards">
+            <column name="client_id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="clients_credit_cards_pkey" />
+            </column>
+            <column name="number" type="text">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="clients_credit_cards_pkey" />
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseColumnNames="client_id"
+                baseTableName="clients_credit_cards"
+                referencedColumnNames="id"
+                referencedTableName="clients"
+                constraintName="clients_credit_cards_clients_fk"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"
+        />
+
+        <!-- accounts credentials -->
+        <createSequence
+                cycle="false"
+                dataType="bigint"
+                incrementBy="50"
+                sequenceName="accounts_credentials_id_seq"
+                startValue="1"
+        />
+        <createTable tableName="accounts_credentials">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="accounts_credentials_pkey" />
+            </column>
+            <column name="email" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_change_at" type="timestamp" />
+            <column name="last_change_ip" type="text" />
+            <column name="password_bcrypt" type="text">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addUniqueConstraint
+                columnNames="email"
+                constraintName="unique_accounts_credentials_email"
+                tableName="accounts_credentials"
+        />
+
+        <!-- accounts -->
+        <createTable tableName="accounts">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="accounts_pkey" />
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="banned_until" type="timestamp" />
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="deleted" type="boolean">
+                <constraints nullable="false" />
+            </column>
+            <column name="preferred_language" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="roles" type="text[]">
+                <constraints nullable="false" />
+            </column>
+            <column name="username" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="credentials_id" type="bigint" />
+        </createTable>
+        <addUniqueConstraint
+                columnNames="username"
+                constraintName="unique_accounts_username"
+                tableName="accounts"
+        />
+        <addForeignKeyConstraint
+                baseColumnNames="credentials_id"
+                baseTableName="accounts"
+                referencedColumnNames="id"
+                referencedTableName="accounts_credentials"
+                constraintName="accounts_accounts_credentials_fk"
+        />
+
+        <!-- sessions -->
+        <createSequence
+                cycle="false"
+                dataType="bigint"
+                incrementBy="50"
+                sequenceName="sessions_id_seq"
+                startValue="1"
+        />
+        <createTable tableName="sessions">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="sessions_pkey" />
+            </column>
+            <column name="duration" type="integer" />
+            <column name="expires_at" type="timestamp" />
+            <column name="ip" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="issued_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="roles" type="text[]">
+                <constraints nullable="false" />
+            </column>
+            <column name="token" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <addUniqueConstraint
+                columnNames="token"
+                constraintName="unique_sessions_token"
+                tableName="sessions"
+        />
+        <addForeignKeyConstraint
+                baseColumnNames="account_id"
+                baseTableName="sessions"
+                referencedColumnNames="id"
+                referencedTableName="accounts"
+                constraintName="sessions_accounts_fk"
+                onDelete="CASCADE"
+                onUpdate="CASCADE"
+        />
+    </changeSet>
+
+</databaseChangeLog>

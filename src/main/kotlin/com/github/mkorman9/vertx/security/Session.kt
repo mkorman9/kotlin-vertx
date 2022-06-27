@@ -9,12 +9,7 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity(name = "Session")
-@Table(
-    name = "sessions",
-    uniqueConstraints = [
-        UniqueConstraint(name = Session.TOKEN_UNIQUE_CONSTRAINT, columnNames = ["token"])
-    ]
-)
+@Table(name = "sessions")
 @TypeDefs(
     TypeDef(name = "string-set", typeClass = StringSet::class)
 )
