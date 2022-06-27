@@ -12,7 +12,7 @@ import javax.persistence.*
 @Table(
     name = "sessions",
     uniqueConstraints = [
-        UniqueConstraint(name = "unique_sessions_token", columnNames = ["token"])
+        UniqueConstraint(name = Session.TOKEN_UNIQUE_CONSTRAINT, columnNames = ["token"])
     ]
 )
 @TypeDefs(
@@ -49,4 +49,8 @@ data class Session(
     @JoinColumn(name = "account_id", columnDefinition = "uuid", nullable = false)
     @JsonIgnore
     val account: Account
-)
+) {
+    companion object {
+        const val TOKEN_UNIQUE_CONSTRAINT = "unique_sessions_token"
+    }
+}
