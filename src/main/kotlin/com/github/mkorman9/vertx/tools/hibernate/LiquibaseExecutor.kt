@@ -16,6 +16,8 @@ import java.sql.Connection
 
 class LiquibaseExecutor {
     companion object {
+        private const val CHANGELOG_PATH = "classpath:/liquibase/changelog.xml"
+
         fun migrateSchema(vertx: Vertx, config: Config) {
             val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
             val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
@@ -39,9 +41,8 @@ class LiquibaseExecutor {
             val database = DatabaseFactory.getInstance()
                 .findCorrectDatabaseImplementation(JdbcConnection(connection))
 
-            val changelog = "classpath:/liquibase/changelog.xml"
             val resourceAccessor = ClassLoaderResourceAccessor()
-            val liquibase = Liquibase(changelog, resourceAccessor, database)
+            val liquibase = Liquibase(CHANGELOG_PATH, resourceAccessor, database)
 
             liquibase.update(null as Contexts?)
 
