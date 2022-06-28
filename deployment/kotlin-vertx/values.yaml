@@ -49,6 +49,10 @@ app:
       request: 512Mi
       limit: 2Gi
 
+  pdb:
+    name: kotlin-vertx-pdb
+    minAvailable: 1
+
 gitlab:
   project: ""
   environment: ""
