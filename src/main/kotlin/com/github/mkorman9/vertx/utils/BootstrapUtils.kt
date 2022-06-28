@@ -10,7 +10,7 @@ object BootstrapUtils {
     }
 
     fun bootstrap(packageName: String, vertx: Vertx, config: Config, module: com.google.inject.Module) {
-        val vertxModule = object : KotlinModule() {
+        val baseModule = object : KotlinModule() {
             override fun configure() {
                 bind<Config>().toInstance(config)
             }
@@ -18,7 +18,7 @@ object BootstrapUtils {
 
         val injector = InjectorUtils.createInjector(
             packageName,
-            Modules.override(vertxModule).with(module)
+            Modules.override(baseModule).with(module)
         )
 
         VerticleDeployer.scanAndDeploy(vertx, packageName, config, injector)
