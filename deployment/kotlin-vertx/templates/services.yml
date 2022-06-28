@@ -12,7 +12,7 @@ metadata:
     prometheus.io/port: "{{ .Values.app.port }}"
     prometheus.io/path: "/metrics"
     {{- if eq .Values.ingress.class "gce" }}
-    cloud.google.com/backend-config: '{"default": "{{ .Values.app.ingress.config }}"}'
+    cloud.google.com/backend-config: '{"default": "{{ .Values.app.backendConfig }}"}'
     {{- end }}
 spec:
   selector:

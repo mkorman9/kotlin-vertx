@@ -7,8 +7,7 @@ app:
 
   configMap: kotlin-vertx-config
   secrets: kotlin-vertx-secrets
-  ingress:
-    config: kotlin-vertx-ingress-backend-config
+  backendConfig: kotlin-vertx-ingress-backend-config
 
   config:
     environmentName: default
