@@ -30,6 +30,8 @@ object LiquibaseExecutor {
                 .put("user", user)
                 .put("password", password)
                 .put("driver_class", "org.postgresql.Driver")
+                .put("acquire_retry_attempts", 3)
+                .put("acquire_retry_delay", 1000)
         ) as JDBCClientImpl
 
         val connection = client.connection
