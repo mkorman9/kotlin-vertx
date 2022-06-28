@@ -5,13 +5,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.vertx.core.json.jackson.DatabindCodec
 
-class JsonCodec {
-    companion object {
-        fun configure() {
-            val objectMapper = DatabindCodec.mapper()
-            objectMapper.registerModule(KotlinModule.Builder().build())
-            objectMapper.registerModule(JavaTimeModule())
-            objectMapper.dateFormat = StdDateFormat()
-        }
+object JsonCodec {
+    fun configure() {
+        val objectMapper = DatabindCodec.mapper()
+        objectMapper.registerModule(KotlinModule.Builder().build())
+        objectMapper.registerModule(JavaTimeModule())
+        objectMapper.dateFormat = StdDateFormat()
     }
 }

@@ -6,69 +6,67 @@ import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 
-class ConfigReader {
-    companion object {
-        fun read(vertx: Vertx): Config {
-            val configFileStore = ConfigStoreOptions()
-                .setType("file")
-                .setFormat("yaml")
-                .setOptional(true)
-                .setConfig(
-                    JsonObject()
-                    .put("path", System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
-                )
-            val secretsFileStore = ConfigStoreOptions()
-                .setType("file")
-                .setFormat("yaml")
-                .setOptional(true)
-                .setConfig(
-                    JsonObject()
-                    .put("path", System.getenv().getOrDefault("SECRETS_FILE", "./secrets.yml"))
-                )
-            val envVarsStore = ConfigStoreOptions()
-                .setType("env")
-
-            return ConfigRetriever.create(vertx, ConfigRetrieverOptions()
-                .addStore(configFileStore)
-                .addStore(secretsFileStore)
-                .addStore(envVarsStore)
-                .setScanPeriod(0)
+object ConfigReader {
+    fun read(vertx: Vertx): Config {
+        val configFileStore = ConfigStoreOptions()
+            .setType("file")
+            .setFormat("yaml")
+            .setOptional(true)
+            .setConfig(
+                JsonObject()
+                .put("path", System.getenv().getOrDefault("CONFIG_FILE", "./config.yml"))
             )
-                .setConfigurationProcessor { config ->
-                    val newConfig = mutableMapOf<String, Any>()
+        val secretsFileStore = ConfigStoreOptions()
+            .setType("file")
+            .setFormat("yaml")
+            .setOptional(true)
+            .setConfig(
+                JsonObject()
+                .put("path", System.getenv().getOrDefault("SECRETS_FILE", "./secrets.yml"))
+            )
+        val envVarsStore = ConfigStoreOptions()
+            .setType("env")
 
-                    config.map.forEach { entry ->
-                        val key = entry.key.lowercase()
-                        val value = entry.value
+        return ConfigRetriever.create(vertx, ConfigRetrieverOptions()
+            .addStore(configFileStore)
+            .addStore(secretsFileStore)
+            .addStore(envVarsStore)
+            .setScanPeriod(0)
+        )
+            .setConfigurationProcessor { config ->
+                val newConfig = mutableMapOf<String, Any>()
 
-                        val splits = key.split("_")
-                        if (splits.size == 1) {
-                            newConfig[key] = value
-                        } else {
-                            var ptr = newConfig
-                            splits.forEachIndexed { index, s ->
-                                if (index < splits.size - 1) {
-                                    if (!ptr.containsKey(s)) {
-                                        ptr[s] = mutableMapOf<String, Any>()
-                                    }
+                config.map.forEach { entry ->
+                    val key = entry.key.lowercase()
+                    val value = entry.value
 
-                                    if (ptr[s] is Map<*, *>) {
-                                        @Suppress("UNCHECKED_CAST")
-                                        ptr = ptr[s] as MutableMap<String, Any>
-                                    }
-                                } else {
-                                    ptr[s] = value
+                    val splits = key.split("_")
+                    if (splits.size == 1) {
+                        newConfig[key] = value
+                    } else {
+                        var ptr = newConfig
+                        splits.forEachIndexed { index, s ->
+                            if (index < splits.size - 1) {
+                                if (!ptr.containsKey(s)) {
+                                    ptr[s] = mutableMapOf<String, Any>()
                                 }
+
+                                if (ptr[s] is Map<*, *>) {
+                                    @Suppress("UNCHECKED_CAST")
+                                    ptr = ptr[s] as MutableMap<String, Any>
+                                }
+                            } else {
+                                ptr[s] = value
                             }
                         }
                     }
-
-                    JsonObject(newConfig)
                 }
-                .config
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
-        }
+
+                JsonObject(newConfig)
+            }
+            .config
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
     }
 }

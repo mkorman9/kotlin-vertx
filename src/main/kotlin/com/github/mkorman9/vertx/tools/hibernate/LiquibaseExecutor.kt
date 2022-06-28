@@ -14,39 +14,37 @@ import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
 import java.sql.Connection
 
-class LiquibaseExecutor {
-    companion object {
-        private const val CHANGELOG_PATH = "classpath:/liquibase/changelog.xml"
+object LiquibaseExecutor {
+    private const val CHANGELOG_PATH = "classpath:/liquibase/changelog.xml"
 
-        fun migrateSchema(vertx: Vertx, config: Config) {
-            val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
-            val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
-            val password = config.get<String>("db.password")
-                ?: throw RuntimeException("db.password is missing from config")
+    fun migrateSchema(vertx: Vertx, config: Config) {
+        val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
+        val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
+        val password = config.get<String>("db.password")
+            ?: throw RuntimeException("db.password is missing from config")
 
-            val client = JDBCClient.createShared(
-                vertx,
-                JsonObject()
-                    .put("url", uri)
-                    .put("user", user)
-                    .put("password", password)
-                    .put("driver_class", "org.postgresql.Driver")
-            ) as JDBCClientImpl
+        val client = JDBCClient.createShared(
+            vertx,
+            JsonObject()
+                .put("url", uri)
+                .put("user", user)
+                .put("password", password)
+                .put("driver_class", "org.postgresql.Driver")
+        ) as JDBCClientImpl
 
-            val connection = client.connection
-                .map<Connection>(SQLConnection::unwrap)
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
-            val database = DatabaseFactory.getInstance()
-                .findCorrectDatabaseImplementation(JdbcConnection(connection))
+        val connection = client.connection
+            .map<Connection>(SQLConnection::unwrap)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+        val database = DatabaseFactory.getInstance()
+            .findCorrectDatabaseImplementation(JdbcConnection(connection))
 
-            val resourceAccessor = ClassLoaderResourceAccessor()
-            val liquibase = Liquibase(CHANGELOG_PATH, resourceAccessor, database)
+        val resourceAccessor = ClassLoaderResourceAccessor()
+        val liquibase = Liquibase(CHANGELOG_PATH, resourceAccessor, database)
 
-            liquibase.update(null as Contexts?)
+        liquibase.update(null as Contexts?)
 
-            client.close()
-        }
+        client.close()
     }
 }
