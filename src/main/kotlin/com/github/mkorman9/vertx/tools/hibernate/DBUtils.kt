@@ -4,11 +4,7 @@ import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.pgclient.PgException
-import org.hibernate.HibernateException
-import org.hibernate.reactive.mutiny.Mutiny.Session
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
-import org.hibernate.reactive.mutiny.Mutiny.Transaction
-import javax.persistence.PersistenceException
+import org.hibernate.reactive.mutiny.Mutiny.*
 
 data class UniqueConstraintViolation(
     val table: String,
