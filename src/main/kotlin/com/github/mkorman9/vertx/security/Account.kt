@@ -48,7 +48,7 @@ data class Account(
     )
     @JoinColumn(name = "credentials_id", columnDefinition = "bigint")
     @JsonIgnore
-    var credentials: AccountCredentials?
+    var credentials: AccountCredentials
 ) {
     companion object {
         const val USERNAME_UNIQUE_CONSTRAINT = "unique_accounts_username"

@@ -13,7 +13,10 @@ class AccountRepository @Inject constructor(
 ) {
     fun findByCredentialsEmail(email: String): Future<Account?> {
         return withSession(sessionFactory) { session ->
-            val query = session.createQuery("from Account a where a.credentials.email = :email", Account::class.java)
+            val query = session.createQuery(
+                "from Account a where a.credentials.email = :email",
+                Account::class.java
+            )
             query.setParameter("email", email)
 
             query.singleResultOrNull
