@@ -6,8 +6,7 @@ import io.mockk.mockkClass
 import kotlin.jvm.internal.Reflection
 
 class TestModuleBase(
-    private val packageName: String,
-    private val config: Config
+    private val packageName: String
 ) : KotlinModule() {
     companion object {
         init {
@@ -16,8 +15,6 @@ class TestModuleBase(
     }
 
     override fun configure() {
-        bind<Config>().toInstance(config)
-
         ReflectionsUtils.findClasses(packageName, Singleton::class.java)
             .forEach {
                 val kclass = Reflection.createKotlinClass(Class.forName(it.name))

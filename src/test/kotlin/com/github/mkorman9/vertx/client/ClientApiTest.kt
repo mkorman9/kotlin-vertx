@@ -46,7 +46,6 @@ class ClientApiTest {
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
         val injector = createTestInjector(
             packageName = Application.PACKAGE_NAME,
-            config = Config(),
             module = object : KotlinModule() {
                 override fun configure() {
                     bind<ClientRepository>().toInstance(clientRepository)
