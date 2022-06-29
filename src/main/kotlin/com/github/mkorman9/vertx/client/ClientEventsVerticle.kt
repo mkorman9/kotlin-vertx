@@ -33,7 +33,7 @@ class ClientEventsVerticle : ContextualVerticle() {
 
             val pubSubPublisher = gcpPubSubClient.createPublisher(topicName).await()
             redirectToPubSub(pubSubPublisher)
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
             throw e
         }
