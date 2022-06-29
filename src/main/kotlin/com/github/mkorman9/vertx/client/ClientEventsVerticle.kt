@@ -22,16 +22,16 @@ class ClientEventsVerticle : ContextualVerticle() {
         const val OUTGOING_CHANNEL = "client.events.outgoing"
         const val INCOMING_CHANNEL = "client.events.incoming"
 
-        private const val topicName = "client.events"
+        private const val PUBSUB_TOPIC_NAME = "client.events"
     }
 
     override suspend fun start() {
         val gcpPubSubClient = injector.getInstance<GCPPubSubClient>()
 
         try {
-            gcpPubSubClient.createSubscriber(topicName, this::incomingMessageHandler).await()
+            gcpPubSubClient.createSubscriber(PUBSUB_TOPIC_NAME, this::incomingMessageHandler).await()
 
-            val pubSubPublisher = gcpPubSubClient.createPublisher(topicName).await()
+            val pubSubPublisher = gcpPubSubClient.createPublisher(PUBSUB_TOPIC_NAME).await()
             redirectToPubSub(pubSubPublisher)
         } catch (e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
