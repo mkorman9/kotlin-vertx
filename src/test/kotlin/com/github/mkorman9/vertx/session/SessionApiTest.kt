@@ -5,8 +5,7 @@ import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.defaultTestPassword
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.*
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.asyncTest
+import com.github.mkorman9.vertx.utils.coroutineTest
 import com.github.mkorman9.vertx.utils.createTestInjector
 import com.github.mkorman9.vertx.utils.web.StatusDTO
 import dev.misfitlabs.kotlinguice4.KotlinModule
@@ -56,7 +55,7 @@ class SessionApiTest {
 
     @Test
     @DisplayName("should authorize user by credentials and start new session")
-    fun testStartNewSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testStartNewSession(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = StartSessionPayload(
@@ -81,7 +80,7 @@ class SessionApiTest {
 
     @Test
     @DisplayName("should deny authorization with invalid email")
-    fun testStartNewSessionInvalidEmail(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testStartNewSessionInvalidEmail(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = StartSessionPayload(
@@ -104,7 +103,7 @@ class SessionApiTest {
 
     @Test
     @DisplayName("should deny authorization with invalid password")
-    fun testStartNewSessionInvalidPassword(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testStartNewSessionInvalidPassword(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = StartSessionPayload(
@@ -128,7 +127,7 @@ class SessionApiTest {
 
     @Test
     @DisplayName("should refresh active session")
-    fun testRefreshSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testRefreshSession(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val session = fakeSession("test.user")
@@ -149,7 +148,7 @@ class SessionApiTest {
 
     @Test
     @DisplayName("should revoke active session")
-    fun testRevokeSession(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testRevokeSession(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val session = fakeSession("test.user")

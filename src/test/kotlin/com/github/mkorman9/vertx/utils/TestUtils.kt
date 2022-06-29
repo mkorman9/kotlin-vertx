@@ -16,7 +16,7 @@ fun createTestInjector(packageName: String, module: KotlinModule): Injector {
     )
 }
 
-fun asyncTest(vertx: Vertx, testContext: VertxTestContext, testBody: suspend () -> Unit) {
+fun coroutineTest(vertx: Vertx, testContext: VertxTestContext, testBody: suspend () -> Unit) {
     GlobalScope.launch(vertx.dispatcher()) {
         try {
             testBody()

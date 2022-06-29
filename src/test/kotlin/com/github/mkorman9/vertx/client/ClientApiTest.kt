@@ -6,8 +6,7 @@ import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.asyncTest
+import com.github.mkorman9.vertx.utils.coroutineTest
 import com.github.mkorman9.vertx.utils.createTestInjector
 import com.github.mkorman9.vertx.utils.web.Cause
 import com.github.mkorman9.vertx.utils.web.StatusDTO
@@ -63,7 +62,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return paged clients with default settings when queried without parameters")
-    fun testDefaultPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testDefaultPaging(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
@@ -101,7 +100,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return paged clients with specified settings when queried with parameters")
-    fun testSpecificPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testSpecificPaging(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
@@ -144,7 +143,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return paged clients with default settings when queried with invalid parameters")
-    fun testInvalidPaging(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testInvalidPaging(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val page = ClientPage(
@@ -187,7 +186,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return client when queried by id")
-    fun testFindById(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testFindById(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
@@ -214,7 +213,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 404 when queried by id of non-existing client")
-    fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testFindByIdMissingClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val id = UUID.randomUUID().toString()
@@ -234,7 +233,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should add new client when called with valid payload")
-    fun testAddClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testAddClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = ClientAddPayload(
@@ -276,7 +275,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 400 when trying to add client without firstName field")
-    fun testAddNoFirstName(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testAddNoFirstName(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
@@ -302,7 +301,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 400 when trying to add client without lastName field")
-    fun testAddNoLastName(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testAddNoLastName(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = JsonObject()
@@ -328,7 +327,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 400 when trying to add client with invalid email")
-    fun testAddInvalidFields(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testAddInvalidFields(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = ClientAddPayload(
@@ -357,7 +356,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should update existing client when called with valid payload")
-    fun testUpdateClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testUpdateClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = ClientUpdatePayload(
@@ -399,7 +398,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 404 when trying to update non-existing client")
-    fun testUpdateNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testUpdateNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val payload = ClientUpdatePayload(
@@ -424,7 +423,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should delete existing client when called with valid id")
-    fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testDeleteClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val clientId = UUID.randomUUID()
@@ -458,7 +457,7 @@ class ClientApiTest {
 
     @Test
     @DisplayName("should return 404 when trying to delete non-existing client")
-    fun testDeleteNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = asyncTest(vertx, testContext) {
+    fun testDeleteNonExistingClient(vertx: Vertx, testContext: VertxTestContext) = coroutineTest(vertx, testContext) {
         // given
         val httpClient = vertx.createHttpClient()
         val clientId = UUID.randomUUID()
