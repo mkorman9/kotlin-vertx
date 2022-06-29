@@ -61,11 +61,11 @@ images:
   pullSecret: ""
 
 ingress:
-  name: ingress
+  name: kotlin-vertx-ingress
   hostname: localhost
 
   class: nginx
-  frontendConfig: ingress-frontend-config
+  frontendConfig: kotlin-vertx-ingress-frontend-config
 
   useHttps: false
   tlsCertName: ""
