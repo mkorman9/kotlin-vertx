@@ -19,7 +19,7 @@ class RestApi (context: VerticleContext) {
     }
 
     val router: Router = Router.router(context.vertx).apply {
-        route().handler(BodyHandler.create())
+        route().handler(BodyHandler.create().setHandleFileUploads(false))
         route().handler(SecurityHeadersHandler.create(context.config))
         
         route("/health").handler(HealthcheckHandler.create())
