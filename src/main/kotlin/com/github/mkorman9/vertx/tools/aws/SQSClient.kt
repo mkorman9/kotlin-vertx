@@ -2,6 +2,9 @@ package com.github.mkorman9.vertx.tools.aws
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.Protocol
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sns.AmazonSNS
@@ -55,6 +58,11 @@ class SQSClient private constructor(
                         Regions.US_EAST_1.name
                     )
                 )
+                .withCredentials(
+                    AWSStaticCredentialsProvider(
+                        BasicAWSCredentials("ACCESS_KEY", "SECRET_ACCESS_KEY")
+                    )
+                )
                 .withClientConfiguration(
                     ClientConfiguration()
                         .withProtocol(Protocol.HTTP)
@@ -65,6 +73,11 @@ class SQSClient private constructor(
                     AwsClientBuilder.EndpointConfiguration(
                         emulatorAddress,
                         Regions.US_EAST_1.name
+                    )
+                )
+                .withCredentials(
+                    AWSStaticCredentialsProvider(
+                        BasicAWSCredentials("ACCESS_KEY", "SECRET_ACCESS_KEY")
                     )
                 )
                 .withClientConfiguration(
