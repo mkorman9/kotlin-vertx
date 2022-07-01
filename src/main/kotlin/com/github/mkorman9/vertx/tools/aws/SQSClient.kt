@@ -23,6 +23,14 @@ import java.util.concurrent.ConcurrentHashMap
 class SQSClient private constructor(
     config: Config
 ) {
+    companion object {
+        private val log = LoggerFactory.getLogger(SQSClient::class.java)
+
+        fun create(config: Config): SQSClient {
+            return SQSClient(config)
+        }
+    }
+
     private val sqsClient: AmazonSQS
     private val snsClient: AmazonSNS
     private val emulatorEnabled: Boolean
@@ -31,14 +39,6 @@ class SQSClient private constructor(
     private val topicCache: ConcurrentHashMap<String, String> = ConcurrentHashMap()
     private val ephemeralQueues: ConcurrentHashSet<String> = ConcurrentHashSet()
     private val activeSubscriptions: MutableList<SQSSubscription> = mutableListOf()
-
-    companion object {
-        private val log = LoggerFactory.getLogger(SQSClient::class.java)
-
-        fun create(config: Config): SQSClient {
-            return SQSClient(config)
-        }
-    }
 
     init {
         emulatorEnabled = config.get<Boolean>("aws.sqs.emulator.enabled") ?: false
