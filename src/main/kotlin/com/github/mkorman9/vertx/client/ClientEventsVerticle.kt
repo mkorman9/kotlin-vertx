@@ -23,14 +23,12 @@ class ClientEventsVerticle : ContextualVerticle() {
         private const val SQS_TOPIC_NAME = "ClientEvents"
     }
 
-    private lateinit var sqsClient: SQSClient
-
     override suspend fun start() {
-        sqsClient = injector.getInstance()
+        val sqsClient = injector.getInstance<SQSClient>()
 
         try {
             sqsClient.createSubscription(vertx, SQS_TOPIC_NAME, this::incomingMessageHandler).await()
-            redirectToSqs()
+            redirectToSqs(sqsClient)
         } catch (e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
             throw e
@@ -47,7 +45,7 @@ class ClientEventsVerticle : ContextualVerticle() {
         return Future.succeededFuture()
     }
 
-    private fun redirectToSqs() {
+    private fun redirectToSqs(sqsClient: SQSClient) {
         vertx.eventBus().consumer<JsonObject>(OUTGOING_CHANNEL) { message ->
             val data = message.body().encode()
             sqsClient.publish(vertx, SQS_TOPIC_NAME, data)
