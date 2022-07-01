@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx
 
-import com.github.mkorman9.vertx.tools.gcp.GCPPubSubClient
+import com.github.mkorman9.vertx.tools.aws.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.hibernate.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
@@ -19,7 +19,7 @@ class Application {
     }
 
     private lateinit var sessionFactory: SessionFactory
-    private lateinit var gcpPubSubClient: GCPPubSubClient
+    private lateinit var sqsClient: SQSClient
 
     fun bootstrap(vertx: Vertx) {
         try {
@@ -32,7 +32,7 @@ class Application {
                 .toCompletableFuture()
                 .join()
 
-            gcpPubSubClient = GCPPubSubClient.create(vertx, config)
+            sqsClient = SQSClient.create(config)
 
             BootstrapUtils.bootstrap(
                 packageName = PACKAGE_NAME,
@@ -41,7 +41,7 @@ class Application {
                 module = object : KotlinModule() {
                     override fun configure() {
                         bind<SessionFactory>().toInstance(sessionFactory)
-                        bind<GCPPubSubClient>().toInstance(gcpPubSubClient)
+                        bind<SQSClient>().toInstance(sqsClient)
                     }
                 }
             )
@@ -54,7 +54,7 @@ class Application {
     }
 
     fun shutdown() {
-        gcpPubSubClient.stop()
+        sqsClient.close()
         sessionFactory.close()
 
         log.info("App has been stopped")

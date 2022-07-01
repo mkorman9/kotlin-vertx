@@ -15,8 +15,7 @@ services:
       timeout: 5s
       retries: 5
 
-  gcp-pubsub:
-    image: bigtruedata/gcloud-pubsub-emulator:latest
-    command: start --host-port 0.0.0.0:8538
+  goaws:
+    image: pafortin/goaws:latest
     ports:
-      - "127.0.0.1:8538:8538"
+      - "127.0.0.1:4100:4100"

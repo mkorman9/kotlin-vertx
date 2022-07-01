@@ -103,8 +103,8 @@ dependencies {
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
 
-    // GCP
-    implementation 'com.google.cloud:google-cloud-pubsub:1.119.1'
+    // AWS
+    implementation 'com.amazonaws:aws-java-sdk:1.12.251'
 
     // gRPC
     implementation "io.grpc:grpc-netty:$grpcVersion"

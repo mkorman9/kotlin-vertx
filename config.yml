@@ -10,9 +10,8 @@ db:
   user: username
   password: password
 
-gcp:
-  project: local-run
-  pubsub:
+aws:
+  sqs:
     emulator:
       enabled: true
-      address: localhost:8538
+      address: localhost:4100
