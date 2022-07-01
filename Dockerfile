@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11
 
 RUN mkdir -p /app
 WORKDIR /app
