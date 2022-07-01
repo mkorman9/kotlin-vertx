@@ -187,10 +187,14 @@ class ClientRepository @Inject constructor(
 
         return withTransaction(sessionFactory) { session, _ ->
             session.find(Client::class.java, idUUID)
-                .onItem().ifNotNull().transform { client ->
-                    client.deleted = true
-                    session.merge(client)
-                    true
+                .onItem().ifNotNull().transformToUni { client ->
+                    if (client.deleted) {
+                        Uni.createFrom().item(false)
+                    } else {
+                        client.deleted = true
+                        session.merge(client)
+                            .map { true }
+                    }
                 }
                 .onItem().ifNull().continueWith(false)
         }
