@@ -2,7 +2,6 @@ package com.github.mkorman9.vertx.tools.aws
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.Protocol
-import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
@@ -13,7 +12,6 @@ import com.amazonaws.services.sns.model.PublishRequest
 import com.amazonaws.services.sns.util.Topics
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
-import com.amazonaws.services.sqs.model.Message
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future
@@ -130,7 +128,7 @@ class SQSClient private constructor(
         }
     }
 
-    fun createSubscription(vertx: Vertx, topicName: String, handler: (Message) -> Future<Void>): Future<Void> {
+    fun createSubscription(vertx: Vertx, topicName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
         return vertx.executeBlocking { call ->
             try {
                 val topicArn = getTopic(topicName)
