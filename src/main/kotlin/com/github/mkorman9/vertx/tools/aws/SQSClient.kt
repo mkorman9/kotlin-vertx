@@ -1,8 +1,9 @@
 package com.github.mkorman9.vertx.tools.aws
 
+import com.amazon.sqs.javamessaging.ProviderConfiguration
+import com.amazon.sqs.javamessaging.SQSConnectionFactory
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.Protocol
-import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
@@ -13,7 +14,6 @@ import com.amazonaws.services.sns.model.PublishRequest
 import com.amazonaws.services.sns.util.Topics
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
-import com.amazonaws.services.sqs.model.Message
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future
@@ -22,6 +22,7 @@ import io.vertx.core.impl.ConcurrentHashSet
 import io.vertx.core.impl.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import javax.jms.TextMessage
 
 class SQSClient private constructor(
     config: Config
@@ -36,6 +37,8 @@ class SQSClient private constructor(
 
     private val sqsClient: AmazonSQS
     private val snsClient: AmazonSNS
+    private val sqsConnectionFactory: SQSConnectionFactory
+
     private val emulatorEnabled: Boolean
     private val emulatorAddress: String
 
@@ -88,6 +91,10 @@ class SQSClient private constructor(
 
         sqsClient = sqsBuilder.build()
         snsClient = snsBuilder.build()
+        sqsConnectionFactory = SQSConnectionFactory(
+            ProviderConfiguration(),
+            sqsClient
+        )
     }
 
     fun close() {
@@ -130,12 +137,18 @@ class SQSClient private constructor(
         }
     }
 
-    fun createSubscription(vertx: Vertx, topicName: String, handler: (Message) -> Future<Void>): Future<Void> {
+    fun createSubscription(
+        vertx: Vertx,
+        topicName: String,
+        autoAck: Boolean,
+        handler: (SQSDelivery) -> Unit,
+    ): Future<Void> {
         return vertx.executeBlocking { call ->
             try {
                 val topicArn = getTopic(topicName)
 
-                val createQueueResult = sqsClient.createQueue("${topicName}_${UUID.randomUUID()}")
+                val queueName = "${topicName}_${UUID.randomUUID()}"
+                val createQueueResult = sqsClient.createQueue(queueName)
                 val queueUrl = fixEmulatorQueueUrl(createQueueResult.queueUrl)
                 ephemeralQueues.add(queueUrl)
 
@@ -144,10 +157,12 @@ class SQSClient private constructor(
                 activeSubscriptions.add(
                     SQSSubscription(
                         subscriptionArn = subscriptionArn,
-                        queueUrl = queueUrl,
                         handler = handler,
                         vertx = vertx,
-                        sqsClient = sqsClient
+                        queueName = queueName,
+                        queueUrl = queueUrl,
+                        sqsConnectionFactory = sqsConnectionFactory,
+                        autoAck = autoAck
                     )
                 )
 
