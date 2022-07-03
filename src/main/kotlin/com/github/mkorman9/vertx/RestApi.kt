@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.appinfo.AppInfoApi
 import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.security.AccountApi
 import com.github.mkorman9.vertx.security.SessionApi
@@ -25,6 +26,7 @@ class RestApi (context: VerticleContext) {
         route("/health").handler(HealthcheckHandler.create())
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
+        route("/api/v1/info*").subRouter(AppInfoApi(context).router)
         route("/api/v1/client*").subRouter(ClientApi(context).router)
         route("/api/v1/session*").subRouter(SessionApi(context).router)
         route("/api/v1/account*").subRouter(AccountApi(context).router)
