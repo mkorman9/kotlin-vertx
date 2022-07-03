@@ -1,10 +1,12 @@
 package com.github.mkorman9.vertx.client
 
+import com.amazonaws.services.sqs.model.Message
 import com.github.mkorman9.vertx.tools.aws.SQSClient
-import com.github.mkorman9.vertx.tools.aws.SQSDelivery
+import com.github.mkorman9.vertx.tools.aws.getContent
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import dev.misfitlabs.kotlinguice4.getInstance
+import io.vertx.core.Future
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
@@ -25,23 +27,25 @@ class ClientEventsVerticle : ContextualVerticle() {
         val sqsClient = injector.getInstance<SQSClient>()
 
         try {
-            sqsClient.createSubscription(vertx, SQS_TOPIC_NAME, true, this::incomingSqsDeliveryHandler).await()
-            redirectMessageBusToSqs(sqsClient)
+            sqsClient.createSubscription(vertx, SQS_TOPIC_NAME, this::incomingMessageHandler).await()
+            redirectToSqs(sqsClient)
         } catch (e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
             throw e
         }
     }
 
-    private fun incomingSqsDeliveryHandler(delivery: SQSDelivery) {
-        val event = Json.decodeValue(delivery.content, ClientEvent::class.java)
+    private fun incomingMessageHandler(message: Message): Future<Void> {
+        val event = Json.decodeValue(message.getContent(), ClientEvent::class.java)
 
         log.info("ClientEvent has been received $event")
 
         vertx.eventBus().publish(INCOMING_CHANNEL, JsonObject.mapFrom(event))
+
+        return Future.succeededFuture()
     }
 
-    private fun redirectMessageBusToSqs(sqsClient: SQSClient) {
+    private fun redirectToSqs(sqsClient: SQSClient) {
         vertx.eventBus().consumer<JsonObject>(OUTGOING_CHANNEL) { message ->
             val data = message.body().encode()
             sqsClient.publish(vertx, SQS_TOPIC_NAME, data)

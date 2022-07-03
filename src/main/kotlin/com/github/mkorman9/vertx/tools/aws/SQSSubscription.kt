@@ -1,48 +1,47 @@
 package com.github.mkorman9.vertx.tools.aws
 
-import com.amazon.sqs.javamessaging.DestinationUtils
-import com.amazon.sqs.javamessaging.SQSConnectionFactory
-import com.amazon.sqs.javamessaging.SQSSession
+import com.amazonaws.services.sqs.AmazonSQS
+import com.amazonaws.services.sqs.model.Message
+import io.vertx.core.CompositeFuture
+import io.vertx.core.Future
 import io.vertx.core.Vertx
-import javax.jms.Message
-import javax.jms.MessageListener
-import javax.jms.Session
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class SQSSubscription(
     val subscriptionArn: String,
-    private val handler: (SQSDelivery) -> Unit,
+    private val queueUrl: String,
+    private val handler: (Message) -> Future<Void>,
     private val vertx: Vertx,
-    queueName: String,
-    queueUrl: String,
-    sqsConnectionFactory: SQSConnectionFactory,
-    autoAck: Boolean
-): MessageListener {
-    private val connection = sqsConnectionFactory.createConnection()
-
-    init {
-        val ackMode = if (autoAck) {
-            Session.AUTO_ACKNOWLEDGE
-        } else {
-            SQSSession.UNORDERED_ACKNOWLEDGE
-        }
-
-        val session = connection.createSession(false, ackMode)
-        val consumer = session.createConsumer(DestinationUtils.createDestination(queueName, queueUrl))
-
-        consumer.messageListener = this
-
-        connection.start()
+    private val sqsClient: AmazonSQS
+) {
+    companion object {
+        private const val RECEIVE_DELAY: Long = 100
     }
 
-    override fun onMessage(message: Message?) {
-        if (message != null) {
-            vertx.runOnContext {
-                handler(SQSDelivery(message))
+    private val handlerFinished = AtomicBoolean(true)
+
+    private val timerId: Long = vertx.setPeriodic(RECEIVE_DELAY) {
+        if (handlerFinished.get()) {
+            handlerFinished.set(false)
+
+            val messages = sqsClient.receiveMessage(queueUrl).messages
+            if (messages.isEmpty()) {
+                handlerFinished.set(true)
+            } else {
+                val futures = mutableListOf<Future<*>>()
+
+                messages.forEach { message ->
+                    val f = handler(message)
+                    futures.add(f)
+                }
+
+                CompositeFuture.all(futures)
+                    .onComplete { handlerFinished.set(true) }
             }
         }
     }
 
     fun stop() {
-        connection.stop()
+        vertx.cancelTimer(timerId)
     }
 }
