@@ -110,7 +110,7 @@ class SQSClient private constructor(
         snsClient.shutdown()
     }
 
-    fun publish(vertx: Vertx, topicName: String, message: String): Future<Void> {
+    fun publishToTopic(vertx: Vertx, topicName: String, message: String): Future<Void> {
         return vertx.executeBlocking { call ->
             try {
                 val topicArn = getTopic(topicName)
@@ -128,7 +128,7 @@ class SQSClient private constructor(
         }
     }
 
-    fun createSubscription(vertx: Vertx, topicName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
+    fun subscribeToTopic(vertx: Vertx, topicName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
         return vertx.executeBlocking { call ->
             try {
                 val topicArn = getTopic(topicName)
