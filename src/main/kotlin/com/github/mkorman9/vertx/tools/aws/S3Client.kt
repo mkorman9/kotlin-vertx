@@ -8,6 +8,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import java.io.ByteArrayInputStream
+import java.io.File
 
 class S3Client private constructor() {
     companion object {
@@ -54,6 +55,22 @@ class S3Client private constructor() {
                     key,
                     ByteArrayInputStream(content.bytes),
                     ObjectMetadata()
+                )
+
+                call.complete()
+            } catch (e: Exception) {
+                call.fail(e)
+            }
+        }
+    }
+
+    fun putFile(vertx: Vertx, bucketName: String, key: String, filePath: String): Future<Void> {
+        return vertx.executeBlocking { call ->
+            try {
+                client.putObject(
+                    bucketName,
+                    key,
+                    File(filePath)
                 )
 
                 call.complete()
