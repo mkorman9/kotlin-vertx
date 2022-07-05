@@ -16,7 +16,7 @@ internal class SQSSubscription(
     companion object {
         private val log = LoggerFactory.getLogger(SQSSubscription::class.java)
 
-        private const val RECEIVE_DELAY: Long = 100  // 100 ms
+        private const val RECEIVE_DELAY: Long = 10  // 10 ms
         private const val LONG_POLLING_TIME_SEC = 20
     }
 
