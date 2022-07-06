@@ -7,6 +7,18 @@ import io.vertx.core.eventbus.MessageConsumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+fun Vertx.setTimerCoroutine(
+    delay: Long,
+    scope: CoroutineScope,
+    f: suspend (Long) -> Unit
+) {
+    setTimer(delay) { timerId ->
+        scope.launch {
+            f(timerId)
+        }
+    }
+}
+
 fun Vertx.setPeriodicCoroutine(
     delay: Long,
     scope: CoroutineScope,
