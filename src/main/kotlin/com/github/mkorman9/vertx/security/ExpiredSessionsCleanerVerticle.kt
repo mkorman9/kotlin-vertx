@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.security
 
-import com.github.mkorman9.vertx.tools.hibernate.AdvisoryLock
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.Scheduler
@@ -19,19 +18,16 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
 
     override suspend fun start() {
         val sessionRepository = injector.getInstance<SessionRepository>()
-        val advisoryLock = injector.getInstance<AdvisoryLock>()
 
         try {
-            Scheduler.schedule(vertx, this, "* */30 * * * ?", ZoneOffset.UTC) {
-                advisoryLock.acquire(lockId) {
-                    log.info("Starting ExpiredSessionsCleaner task")
+            Scheduler.schedule(vertx, this, "0 00 22 ? * *", ZoneOffset.UTC) {
+                log.info("Starting ExpiredSessionsCleaner task")
 
-                    try {
-                        val deletedRecords = sessionRepository.deleteExpired().await()
-                        log.info("Successfully deleted $deletedRecords expired sessions")
-                    } catch (e: Exception) {
-                        log.error("ExpiredSessionsCleaner task has failed", e)
-                    }
+                try {
+                    val deletedRecords = sessionRepository.deleteExpired().await()
+                    log.info("Successfully deleted $deletedRecords expired sessions")
+                } catch (e: Exception) {
+                    log.error("ExpiredSessionsCleaner task has failed", e)
                 }
             }
         } catch (e: Exception) {
