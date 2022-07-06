@@ -7,7 +7,6 @@ import io.vertx.core.impl.logging.LoggerFactory
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal class SQSSubscription(
-    val subscriptionArn: String,
     private val queueUrl: String,
     private val handler: (SQSDelivery) -> Unit,
     private val vertx: Vertx,

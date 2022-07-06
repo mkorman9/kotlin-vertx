@@ -12,6 +12,7 @@ import com.amazonaws.services.sns.model.PublishRequest
 import com.amazonaws.services.sns.util.Topics
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import com.amazonaws.services.sqs.model.SendMessageRequest
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future
@@ -38,8 +39,10 @@ class SQSClient private constructor(
     private val emulatorAddress: String
 
     private val topicCache: ConcurrentHashMap<String, String> = ConcurrentHashMap()
+    private val queueCache: ConcurrentHashMap<String, String> = ConcurrentHashMap()
     private val ephemeralQueues: ConcurrentHashSet<String> = ConcurrentHashSet()
     private val activeSubscriptions: MutableList<SQSSubscription> = mutableListOf()
+    private val ephemeralSubscriptions: ConcurrentHashSet<String> = ConcurrentHashSet()
 
     init {
         emulatorEnabled = config.get<Boolean>("aws.sqs.emulator.enabled") ?: false
@@ -92,9 +95,16 @@ class SQSClient private constructor(
         activeSubscriptions.forEach { subscription ->
             try {
                 subscription.stop()
-                snsClient.unsubscribe(subscription.subscriptionArn)
             } catch (e: Exception) {
                 log.error("Failed to unsubscribe SNS topic", e)
+            }
+        }
+
+        ephemeralSubscriptions.forEach { subscriptionArn ->
+            try {
+                snsClient.unsubscribe(subscriptionArn)
+            } catch (e: Exception) {
+                log.error("Failed to remove SNS subscription", e)
             }
         }
 
@@ -128,20 +138,57 @@ class SQSClient private constructor(
         }
     }
 
+    fun publishToQueue(vertx: Vertx, queueName: String, message: String): Future<Void> {
+        return vertx.executeBlocking { call ->
+            try {
+                val queueUrl = getQueue(queueName)
+
+                sqsClient.sendMessage(
+                    SendMessageRequest()
+                        .withQueueUrl(queueUrl)
+                        .withMessageBody(message)
+                )
+
+                call.complete()
+            } catch (e: Exception) {
+                call.fail(e)
+            }
+        }
+    }
+
     fun subscribeToTopic(vertx: Vertx, topicName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
         return vertx.executeBlocking { call ->
             try {
                 val topicArn = getTopic(topicName)
-
-                val createQueueResult = sqsClient.createQueue("${topicName}_${UUID.randomUUID()}")
-                val queueUrl = fixEmulatorQueueUrl(createQueueResult.queueUrl)
+                val queueUrl = getQueue("${topicName}_${UUID.randomUUID()}")
                 ephemeralQueues.add(queueUrl)
 
                 val subscriptionArn = Topics.subscribeQueue(snsClient, sqsClient, topicArn, queueUrl)
+                ephemeralSubscriptions.add(subscriptionArn)
 
                 activeSubscriptions.add(
                     SQSSubscription(
-                        subscriptionArn = subscriptionArn,
+                        queueUrl = queueUrl,
+                        handler = handler,
+                        vertx = vertx,
+                        sqsClient = sqsClient
+                    )
+                )
+
+                call.complete()
+            } catch (e: Exception) {
+                call.fail(e)
+            }
+        }
+    }
+
+    fun subscribeToQueue(vertx: Vertx, queueName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
+        return vertx.executeBlocking { call ->
+            try {
+                val queueUrl = getQueue(queueName)
+
+                activeSubscriptions.add(
+                    SQSSubscription(
                         queueUrl = queueUrl,
                         handler = handler,
                         vertx = vertx,
@@ -163,8 +210,23 @@ class SQSClient private constructor(
         }
 
         val newTopicArn = snsClient.createTopic(topicName).topicArn
+
         topicCache[topicName] = newTopicArn
         return newTopicArn
+    }
+
+    private fun getQueue(queueName: String): String {
+        val queueUrl = queueCache[queueName]
+        if (queueUrl != null) {
+            return queueUrl
+        }
+
+        val newQueueUrl = fixEmulatorQueueUrl(
+            sqsClient.createQueue(queueName).queueUrl
+        )
+
+        queueCache[queueName] = newQueueUrl
+        return newQueueUrl
     }
 
     private fun fixEmulatorQueueUrl(queueUrl: String): String {
