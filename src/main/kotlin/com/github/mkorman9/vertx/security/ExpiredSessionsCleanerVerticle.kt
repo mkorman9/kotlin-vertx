@@ -14,8 +14,6 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
         private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
     }
 
-    private val lockId: Long = 1000
-
     override suspend fun start() {
         val sessionRepository = injector.getInstance<SessionRepository>()
 
