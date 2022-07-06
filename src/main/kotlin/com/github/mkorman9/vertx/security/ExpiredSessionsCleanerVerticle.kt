@@ -2,7 +2,7 @@ package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
-import com.github.mkorman9.vertx.utils.Scheduler
+import com.github.mkorman9.vertx.utils.setCronPeriodic
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.await
@@ -18,7 +18,7 @@ class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
         val sessionRepository = injector.getInstance<SessionRepository>()
 
         try {
-            Scheduler.schedule(vertx, this, "0 00 22 ? * *", ZoneOffset.UTC) {
+            vertx.setCronPeriodic("0 00 22 ? * *", ZoneOffset.UTC, this) {
                 log.info("Starting ExpiredSessionsCleaner task")
 
                 try {
