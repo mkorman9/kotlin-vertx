@@ -24,19 +24,9 @@ fun Route.coroutineHandler(scope: CoroutineScope, f: suspend (RoutingContext) ->
 }
 
 fun HttpServerRequest.getClientIp(): String {
-    /*
-        GCP Load Balancer sets up the X-Forwarded-For header in the following format:
-        X-Forwarded-For: <supplied-value>,<client-ip>,<load-balancer-ip>
-        We need to extract the middle part, or the first one in case if there was no supplied value
-    */
     val address = getHeader("X-Forwarded-For") ?: remoteAddress().host()
     val parts = address.split(',')
-
-    return if (parts.size > 2) {
-        parts[parts.size - 2]
-    } else {
-        parts[0]
-    }
+    return parts[parts.size - 1].trim()
 }
 
 fun HttpServerRequest.isClientTLS(): Boolean {
