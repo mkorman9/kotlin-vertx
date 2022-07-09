@@ -2,7 +2,7 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.tools.aws.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
-import com.github.mkorman9.vertx.tools.hibernate.LiquibaseExecutor
+import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.ConfigReader
 import dev.misfitlabs.kotlinguice4.KotlinModule

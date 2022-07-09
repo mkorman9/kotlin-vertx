@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.tools.hibernate
+package com.github.mkorman9.vertx.tools.postgres
 
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
