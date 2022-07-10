@@ -72,8 +72,6 @@ dependencies {
     implementation "io.vertx:vertx-config:$vertxVersion"
     implementation "io.vertx:vertx-config-yaml:$vertxVersion"
     implementation "io.vertx:vertx-micrometer-metrics:$vertxVersion"
-    implementation "io.vertx:vertx-pg-client:$vertxVersion"
-    implementation "io.vertx:vertx-jdbc-client:$vertxVersion"
     implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64"
     implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
@@ -95,7 +93,9 @@ dependencies {
     testImplementation 'io.mockk:mockk:1.12.4'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
-    // Liquibase
+    // Postgres
+    implementation "io.vertx:vertx-pg-client:$vertxVersion"
+    implementation "io.vertx:vertx-jdbc-client:$vertxVersion"
     implementation 'org.liquibase:liquibase-core:4.12.0'
     implementation 'org.postgresql:postgresql:42.4.0'
     implementation 'com.mattbertolini:liquibase-slf4j:4.1.0'
