@@ -116,9 +116,6 @@ class SQSClient private constructor(
                 log.error("Failed to delete ephemeral SQS queue", e)
             }
         }
-
-        sqsClient.shutdown()
-        snsClient.shutdown()
     }
 
     fun publishToTopic(vertx: Vertx, topicName: String, message: String): Future<Void> {

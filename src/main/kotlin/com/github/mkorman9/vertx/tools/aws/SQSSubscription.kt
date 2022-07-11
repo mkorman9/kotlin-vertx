@@ -1,5 +1,6 @@
 package com.github.mkorman9.vertx.tools.aws
 
+import com.amazonaws.AbortedException
 import com.amazonaws.services.sqs.AmazonSQS
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest
 import io.vertx.core.Vertx
@@ -23,7 +24,12 @@ internal class SQSSubscription(
     private val thread = Thread {
         while (true) {
             receiveMessages()
-            Thread.sleep(RECEIVE_DELAY)
+
+            try {
+                Thread.sleep(RECEIVE_DELAY)
+            } catch (e: InterruptedException) {
+                // ignore
+            }
         }
     }
 
@@ -58,6 +64,8 @@ internal class SQSSubscription(
             messages.forEach { message ->
                 sqsClient.deleteMessage(queueUrl, message.receiptHandle)
             }
+        } catch (e: AbortedException) {
+            // ignore
         } catch (e: Exception) {
             log.error("Error while receiving SQS messages from queue '${queueUrl}'", e)
         } finally {
