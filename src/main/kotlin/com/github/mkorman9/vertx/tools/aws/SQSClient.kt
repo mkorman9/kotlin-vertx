@@ -19,6 +19,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.impl.ConcurrentHashSet
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.core.json.JsonObject
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -200,6 +201,30 @@ class SQSClient private constructor(
             } catch (e: Exception) {
                 call.fail(e)
             }
+        }
+    }
+
+    fun createTopicSink(vertx: Vertx, messageBusAddress: String, topicName: String) {
+        vertx.eventBus().consumer<JsonObject>(messageBusAddress) { message ->
+            publishToTopic(vertx, topicName, message.body().encode())
+        }
+    }
+
+    fun createQueueSink(vertx: Vertx, messageBusAddress: String, queueName: String) {
+        vertx.eventBus().consumer<JsonObject>(messageBusAddress) { message ->
+            publishToQueue(vertx, queueName, message.body().encode())
+        }
+    }
+
+    fun redirectTopicToEventBus(vertx: Vertx, topicName: String, eventBusAddress: String) {
+        subscribeToTopic(vertx, topicName) { message ->
+            vertx.eventBus().publish(eventBusAddress, JsonObject(message.content))
+        }
+    }
+
+    fun redirectQueueToEventBus(vertx: Vertx, queueName: String, eventBusAddress: String) {
+        subscribeToQueue(vertx, queueName) { message ->
+            vertx.eventBus().publish(eventBusAddress, JsonObject(message.content))
         }
     }
 

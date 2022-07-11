@@ -1,14 +1,10 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.tools.aws.SQSClient
-import com.github.mkorman9.vertx.tools.aws.SQSDelivery
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
-import io.vertx.core.json.Json
-import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.coroutines.await
 
 @DeployVerticle
 class ClientEventsVerticle : ContextualVerticle() {
@@ -25,26 +21,11 @@ class ClientEventsVerticle : ContextualVerticle() {
         val sqsClient = injector.getInstance<SQSClient>()
 
         try {
-            sqsClient.subscribeToTopic(vertx, SNS_TOPIC_NAME, this::incomingSqsDeliveryHandler).await()
-            redirectMessageBusToSqs(sqsClient)
+            sqsClient.createTopicSink(vertx, OUTGOING_CHANNEL, SNS_TOPIC_NAME)
+            sqsClient.redirectTopicToEventBus(vertx, SNS_TOPIC_NAME, INCOMING_CHANNEL)
         } catch (e: Exception) {
             log.error("Failed to deploy ClientEventsVerticle", e)
             throw e
-        }
-    }
-
-    private fun incomingSqsDeliveryHandler(delivery: SQSDelivery) {
-        val event = Json.decodeValue(delivery.content, ClientEvent::class.java)
-
-        log.info("ClientEvent has been received $event")
-
-        vertx.eventBus().publish(INCOMING_CHANNEL, JsonObject.mapFrom(event))
-    }
-
-    private fun redirectMessageBusToSqs(sqsClient: SQSClient) {
-        vertx.eventBus().consumer<JsonObject>(OUTGOING_CHANNEL) { message ->
-            val data = message.body().encode()
-            sqsClient.publishToTopic(vertx, SNS_TOPIC_NAME, data)
         }
     }
 }
