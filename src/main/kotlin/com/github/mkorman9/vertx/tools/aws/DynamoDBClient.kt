@@ -215,20 +215,6 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    fun <REQUEST : AmazonWebServiceRequest, RESULT> createAsyncHandler(
-        promise: Promise<RESULT>
-    ): AsyncHandler<REQUEST, RESULT> {
-        return object : AsyncHandler<REQUEST, RESULT> {
-            override fun onError(exception: Exception?) {
-                promise.fail(exception)
-            }
-
-            override fun onSuccess(request: REQUEST, result: RESULT) {
-                promise.complete(result)
-            }
-        }
-    }
-
     fun waitForTableActive(tableName: String): Future<Void> {
         val promise = Promise.promise<Void>()
 

@@ -6,16 +6,21 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.regions.Regions
-import com.amazonaws.services.sns.AmazonSNS
-import com.amazonaws.services.sns.AmazonSNSClientBuilder
+import com.amazonaws.services.sns.AmazonSNSAsync
+import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder
+import com.amazonaws.services.sns.model.CreateTopicResult
 import com.amazonaws.services.sns.model.PublishRequest
+import com.amazonaws.services.sns.model.PublishResult
 import com.amazonaws.services.sns.util.Topics
-import com.amazonaws.services.sqs.AmazonSQS
-import com.amazonaws.services.sqs.AmazonSQSClientBuilder
+import com.amazonaws.services.sqs.AmazonSQSAsync
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
+import com.amazonaws.services.sqs.model.CreateQueueResult
 import com.amazonaws.services.sqs.model.SendMessageRequest
+import com.amazonaws.services.sqs.model.SendMessageResult
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future
+import io.vertx.core.Promise
 import io.vertx.core.Vertx
 import io.vertx.core.impl.ConcurrentHashSet
 import io.vertx.core.impl.logging.LoggerFactory
@@ -34,8 +39,8 @@ class SQSClient private constructor(
         }
     }
 
-    private val sqsClient: AmazonSQS
-    private val snsClient: AmazonSNS
+    private val sqsClient: AmazonSQSAsync
+    private val snsClient: AmazonSNSAsync
     private val emulatorEnabled: Boolean
     private val emulatorAddress: String
 
@@ -49,8 +54,8 @@ class SQSClient private constructor(
         emulatorEnabled = config.get<Boolean>("aws.sqs.emulator.enabled") ?: false
         emulatorAddress = config.get<String>("aws.sqs.emulator.address") ?: "localhost:4100"
 
-        val sqsBuilder = AmazonSQSClientBuilder.standard()
-        val snsBuilder = AmazonSNSClientBuilder.standard()
+        val sqsBuilder = AmazonSQSAsyncClientBuilder.standard()
+        val snsBuilder = AmazonSNSAsyncClientBuilder.standard()
 
         if (emulatorEnabled) {
             sqsBuilder
@@ -118,73 +123,87 @@ class SQSClient private constructor(
         }
     }
 
-    fun publishToTopic(vertx: Vertx, topicName: String, message: String): Future<Void> {
-        return vertx.executeBlocking { call ->
-            try {
-                val topicArn = getTopic(topicName)
+    fun publishToTopic(topicName: String, message: String): Future<PublishResult> {
+        val promise = Promise.promise<PublishResult>()
 
-                snsClient.publish(
+        getTopic(topicName)
+            .onSuccess { topicArn ->
+                snsClient.publishAsync(
                     PublishRequest()
                         .withTopicArn(topicArn)
-                        .withMessage(message)
+                        .withMessage(message),
+                    createAsyncHandler(promise)
                 )
-
-                call.complete()
-            } catch (e: Exception) {
-                call.fail(e)
             }
-        }
+            .onFailure { cause ->
+                promise.fail(cause)
+            }
+
+        return promise.future()
     }
 
-    fun publishToQueue(vertx: Vertx, queueName: String, message: String): Future<Void> {
-        return vertx.executeBlocking { call ->
-            try {
-                val queueUrl = getQueue(queueName)
+    fun publishToQueue(queueName: String, message: String): Future<SendMessageResult> {
+        val promise = Promise.promise<SendMessageResult>()
 
-                sqsClient.sendMessage(
+        getQueue(queueName)
+            .onSuccess { queueUrl ->
+                sqsClient.sendMessageAsync(
                     SendMessageRequest()
                         .withQueueUrl(queueUrl)
-                        .withMessageBody(message)
+                        .withMessageBody(message),
+                    createAsyncHandler(promise)
                 )
-
-                call.complete()
-            } catch (e: Exception) {
-                call.fail(e)
             }
-        }
+            .onFailure { cause ->
+                promise.fail(cause)
+            }
+
+        return promise.future()
     }
 
     fun subscribeToTopic(vertx: Vertx, topicName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
-        return vertx.executeBlocking { call ->
-            try {
-                val topicArn = getTopic(topicName)
-                val queueUrl = getQueue("${topicName}_${UUID.randomUUID()}")
-                ephemeralQueues.add(queueUrl)
+        val promise = Promise.promise<Void>()
 
-                val subscriptionArn = Topics.subscribeQueue(snsClient, sqsClient, topicArn, queueUrl)
-                ephemeralSubscriptions.add(subscriptionArn)
+        getTopic(topicName)
+            .onSuccess { topicArn ->
+                getQueue("${topicName}_${UUID.randomUUID()}")
+                    .onSuccess { queueUrl ->
+                        ephemeralQueues.add(queueUrl)
 
-                activeSubscriptions.add(
-                    SQSSubscription(
-                        queueUrl = queueUrl,
-                        handler = handler,
-                        vertx = vertx,
-                        sqsClient = sqsClient
-                    )
-                )
+                        vertx.executeBlocking<Void> { call ->
+                            val subscriptionArn = Topics.subscribeQueue(snsClient, sqsClient, topicArn, queueUrl)
+                            ephemeralSubscriptions.add(subscriptionArn)
 
-                call.complete()
-            } catch (e: Exception) {
-                call.fail(e)
+                            call.complete()
+                        }
+
+                        activeSubscriptions.add(
+                            SQSSubscription(
+                                queueUrl = queueUrl,
+                                handler = handler,
+                                vertx = vertx,
+                                sqsClient = sqsClient
+                            )
+                        )
+
+                        promise.complete()
+                    }
+                    .onFailure { cause ->
+                        promise.fail(cause)
+                    }
             }
-        }
+            .onFailure { cause ->
+                promise.fail(cause)
+            }
+
+        return promise.future()
     }
 
     fun subscribeToQueue(vertx: Vertx, queueName: String, handler: (SQSDelivery) -> Unit): Future<Void> {
-        return vertx.executeBlocking { call ->
-            try {
-                val queueUrl = getQueue(queueName)
+        val promise = Promise.promise<Void>()
 
+        getQueue(queueName)
+            .onSuccess { queueUrl ->
                 activeSubscriptions.add(
                     SQSSubscription(
                         queueUrl = queueUrl,
@@ -194,22 +213,24 @@ class SQSClient private constructor(
                     )
                 )
 
-                call.complete()
-            } catch (e: Exception) {
-                call.fail(e)
+                promise.complete()
             }
-        }
+            .onFailure { cause ->
+                promise.fail(cause)
+            }
+
+        return promise.future()
     }
 
     fun createTopicSink(vertx: Vertx, messageBusAddress: String, topicName: String) {
         vertx.eventBus().consumer<JsonObject>(messageBusAddress) { message ->
-            publishToTopic(vertx, topicName, message.body().encode())
+            publishToTopic(topicName, message.body().encode())
         }
     }
 
     fun createQueueSink(vertx: Vertx, messageBusAddress: String, queueName: String) {
         vertx.eventBus().consumer<JsonObject>(messageBusAddress) { message ->
-            publishToQueue(vertx, queueName, message.body().encode())
+            publishToQueue(queueName, message.body().encode())
         }
     }
 
@@ -225,30 +246,50 @@ class SQSClient private constructor(
         }
     }
 
-    private fun getTopic(topicName: String): String {
+    private fun getTopic(topicName: String): Future<String> {
         val topicArn = topicCache[topicName]
         if (topicArn != null) {
-            return topicArn
+            return Future.succeededFuture(topicArn)
         }
 
-        val newTopicArn = snsClient.createTopic(topicName).topicArn
+        val promise = Promise.promise<CreateTopicResult>()
 
-        topicCache[topicName] = newTopicArn
-        return newTopicArn
-    }
-
-    private fun getQueue(queueName: String): String {
-        val queueUrl = queueCache[queueName]
-        if (queueUrl != null) {
-            return queueUrl
-        }
-
-        val newQueueUrl = fixEmulatorQueueUrl(
-            sqsClient.createQueue(queueName).queueUrl
+        snsClient.createTopicAsync(
+            topicName,
+            createAsyncHandler(promise)
         )
 
-        queueCache[queueName] = newQueueUrl
-        return newQueueUrl
+        return promise.future()
+            .map { result ->
+                result.topicArn
+            }
+            .map { newTopicArn ->
+                topicCache[topicName] = newTopicArn
+                newTopicArn
+            }
+    }
+
+    private fun getQueue(queueName: String): Future<String> {
+        val queueUrl = queueCache[queueName]
+        if (queueUrl != null) {
+            return Future.succeededFuture(queueUrl)
+        }
+
+        val promise = Promise.promise<CreateQueueResult>()
+
+        sqsClient.createQueueAsync(
+            queueName,
+            createAsyncHandler(promise)
+        )
+
+        return promise.future()
+            .map { result ->
+                fixEmulatorQueueUrl(result.queueUrl)
+            }
+            .map { newQueueUrl ->
+                queueCache[queueName] = newQueueUrl
+                newQueueUrl
+            }
     }
 
     private fun fixEmulatorQueueUrl(queueUrl: String): String {
