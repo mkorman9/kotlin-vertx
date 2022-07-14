@@ -181,15 +181,11 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    inline fun <reified T, H, R> updateItem(item: T): Future<UpdateItemResult> {
+    inline fun <reified T> updateItem(
+        key: Map<String, AttributeValue>,
+        toUpdate: Map<String, AttributeValueUpdate>
+    ): Future<UpdateItemResult> {
         val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
-        val tableModel = mapper.getTableModel(T::class.java)
-
-        val key = tableModel.convertKey<H, R>(item)
-        val fields = tableModel.convert(item)
-            .filterNot { (k, _) ->
-                key.containsKey(k)
-            }
 
         val promise = Promise.promise<UpdateItemResult>()
 
@@ -197,13 +193,7 @@ class DynamoDBClient private constructor(
             UpdateItemRequest()
                 .withTableName(tableName)
                 .withKey(key)
-                .withAttributeUpdates(fields
-                    .mapValues { (_, value) ->
-                        AttributeValueUpdate()
-                            .withAction("PUT")
-                            .withValue(value)
-                    }
-                ),
+                .withAttributeUpdates(toUpdate),
             createAsyncHandler<UpdateItemRequest, UpdateItemResult>(promise)
         )
 
