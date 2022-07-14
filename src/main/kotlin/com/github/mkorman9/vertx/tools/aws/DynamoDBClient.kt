@@ -124,6 +124,46 @@ class DynamoDBClient private constructor(
             }
     }
 
+    inline fun <reified T> query(queryRequest: QueryRequest): Future<List<T>> {
+        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+
+        val promise = Promise.promise<QueryResult>()
+
+        client.queryAsync(
+            queryRequest
+                .withTableName(tableName),
+            createAsyncHandler<QueryRequest, QueryResult>(promise)
+        )
+
+        return promise.future()
+            .map { result ->
+                result.items
+            }
+            .map { items ->
+                mapper.marshallIntoObjects(T::class.java, items)
+            }
+    }
+
+    inline fun <reified T> scan(scanRequest: ScanRequest): Future<List<T>> {
+        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+
+        val promise = Promise.promise<ScanResult>()
+
+        client.scanAsync(
+            scanRequest
+                .withTableName(tableName),
+            createAsyncHandler<ScanRequest, ScanResult>(promise)
+        )
+
+        return promise.future()
+            .map { result ->
+                result.items
+            }
+            .map { items ->
+                mapper.marshallIntoObjects(T::class.java, items)
+            }
+    }
+
     inline fun <reified T> putItem(item: T): Future<PutItemResult> {
         val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
         val tableModel = mapper.getTableModel(T::class.java)
@@ -136,6 +176,50 @@ class DynamoDBClient private constructor(
                 .withTableName(tableName)
                 .withItem(attributes),
             createAsyncHandler<PutItemRequest, PutItemResult>(promise)
+        )
+
+        return promise.future()
+    }
+
+    inline fun <reified T, H, R> updateItem(item: T): Future<UpdateItemResult> {
+        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+        val tableModel = mapper.getTableModel(T::class.java)
+
+        val key = tableModel.convertKey<H, R>(item)
+        val fields = tableModel.convert(item)
+            .filterNot { (k, _) ->
+                key.containsKey(k)
+            }
+
+        val promise = Promise.promise<UpdateItemResult>()
+
+        client.updateItemAsync(
+            UpdateItemRequest()
+                .withTableName(tableName)
+                .withKey(key)
+                .withAttributeUpdates(fields
+                    .mapValues { (_, value) ->
+                        AttributeValueUpdate()
+                            .withAction("PUT")
+                            .withValue(value)
+                    }
+                ),
+            createAsyncHandler<UpdateItemRequest, UpdateItemResult>(promise)
+        )
+
+        return promise.future()
+    }
+
+    inline fun <reified T> deleteItem(key: Map<String, AttributeValue>): Future<DeleteItemResult> {
+        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+
+        val promise = Promise.promise<DeleteItemResult>()
+
+        client.deleteItemAsync(
+            DeleteItemRequest()
+                .withTableName(tableName)
+                .withKey(key),
+            createAsyncHandler<DeleteItemRequest, DeleteItemResult>(promise)
         )
 
         return promise.future()
