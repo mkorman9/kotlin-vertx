@@ -99,10 +99,35 @@ class DynamoDBClient private constructor(
         return resultPromise.future()
     }
 
-    inline fun <reified T, H, R> putItem(item: T): Future<PutItemResult> {
+    inline fun <reified T> getItem(key: Map<String, AttributeValue>): Future<T?> {
+        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+
+        val promise = Promise.promise<GetItemResult>()
+
+        client.getItemAsync(
+            GetItemRequest()
+                .withTableName(tableName)
+                .withKey(key),
+            createAsyncHandler<GetItemRequest, GetItemResult>(promise)
+        )
+
+        return promise.future()
+            .map { result ->
+                result.item
+            }
+            .map { attributes ->
+                if (attributes != null) {
+                    mapper.marshallIntoObject(T::class.java, attributes)
+                } else {
+                    null
+                }
+            }
+    }
+
+    inline fun <reified T> putItem(item: T): Future<PutItemResult> {
         val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
         val tableModel = mapper.getTableModel(T::class.java)
-        val attributes = tableModel.convertKey<H, R>(item)
+        val attributes = tableModel.convert(item)
 
         val promise = Promise.promise<PutItemResult>()
 
