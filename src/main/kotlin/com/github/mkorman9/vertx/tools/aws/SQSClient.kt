@@ -165,32 +165,30 @@ class SQSClient private constructor(
         val promise = Promise.promise<Void>()
 
         getTopic(topicName)
-            .onSuccess { topicArn ->
+            .compose { topicArn ->
                 getQueue("${topicName}_${UUID.randomUUID()}")
-                    .onSuccess { queueUrl ->
-                        ephemeralQueues.add(queueUrl)
+                    .map { queueUrl -> Pair(topicArn, queueUrl) }
+            }
+            .onSuccess { (topicArn, queueUrl) ->
+                ephemeralQueues.add(queueUrl)
 
-                        vertx.executeBlocking<Void> { call ->
-                            val subscriptionArn = Topics.subscribeQueue(snsClient, sqsClient, topicArn, queueUrl)
-                            ephemeralSubscriptions.add(subscriptionArn)
+                vertx.executeBlocking<Void> { call ->
+                    val subscriptionArn = Topics.subscribeQueue(snsClient, sqsClient, topicArn, queueUrl)
+                    ephemeralSubscriptions.add(subscriptionArn)
 
-                            call.complete()
-                        }
+                    call.complete()
+                }
 
-                        activeSubscriptions.add(
-                            SQSSubscription(
-                                queueUrl = queueUrl,
-                                handler = handler,
-                                vertx = vertx,
-                                sqsClient = sqsClient
-                            )
-                        )
+                activeSubscriptions.add(
+                    SQSSubscription(
+                        queueUrl = queueUrl,
+                        handler = handler,
+                        vertx = vertx,
+                        sqsClient = sqsClient
+                    )
+                )
 
-                        promise.complete()
-                    }
-                    .onFailure { cause ->
-                        promise.fail(cause)
-                    }
+                promise.complete()
             }
             .onFailure { cause ->
                 promise.fail(cause)
