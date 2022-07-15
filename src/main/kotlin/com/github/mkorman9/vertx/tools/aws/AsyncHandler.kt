@@ -4,7 +4,7 @@ import com.amazonaws.AmazonWebServiceRequest
 import com.amazonaws.handlers.AsyncHandler
 import io.vertx.core.Promise
 
-fun <REQUEST : AmazonWebServiceRequest, RESULT> createAsyncHandler(
+internal fun <REQUEST : AmazonWebServiceRequest, RESULT> createAsyncHandler(
     promise: Promise<RESULT>
 ): AsyncHandler<REQUEST, RESULT> {
     return object : AsyncHandler<REQUEST, RESULT> {

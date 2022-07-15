@@ -6,7 +6,6 @@ import com.amazonaws.Protocol
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.client.builder.AwsClientBuilder
-import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
@@ -28,8 +27,8 @@ class DynamoDBClient private constructor(
         }
     }
 
-    val client: AmazonDynamoDBAsync
-    val mapper: DynamoDBMapper
+    private val client: AmazonDynamoDBAsync
+    private val mapper: DynamoDBMapper
 
     init {
         val emulatorEnabled = config.get<Boolean>("aws.dynamodb.emulator.enabled") ?: false
@@ -64,17 +63,25 @@ class DynamoDBClient private constructor(
         client.shutdown()
     }
 
-    inline fun <reified T> createTable(
-        billingMode: BillingMode = BillingMode.PAY_PER_REQUEST
+    fun <T> createTable(
+        tableClass: Class<T>,
+        billingMode: BillingMode = BillingMode.PAY_PER_REQUEST,
+        readCapacity: Long = 6000,
+        writeCapacity: Long = 2000,
     ): Future<Void> {
-        val request = mapper.generateCreateTableRequest(T::class.java)
+        val request = mapper.generateCreateTableRequest(tableClass)
+            .withBillingMode(billingMode)
+
+        if (billingMode == BillingMode.PROVISIONED) {
+            request
+                .withProvisionedThroughput(ProvisionedThroughput(readCapacity, writeCapacity))
+        }
 
         val createTablePromise = Promise.promise<CreateTableResult>()
 
         client.createTableAsync(
-            request
-                .withBillingMode(billingMode),
-            createAsyncHandler<CreateTableRequest, CreateTableResult>(createTablePromise)
+            request,
+            createAsyncHandler(createTablePromise)
         )
 
         val resultPromise = Promise.promise<Void>()
@@ -99,8 +106,11 @@ class DynamoDBClient private constructor(
         return resultPromise.future()
     }
 
-    inline fun <reified T> getItem(key: Map<String, AttributeValue>): Future<T?> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+    fun <T> getItem(
+        tableClass: Class<T>,
+        key: Map<String, AttributeValue>
+    ): Future<T?> {
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
 
         val promise = Promise.promise<GetItemResult>()
 
@@ -108,7 +118,7 @@ class DynamoDBClient private constructor(
             GetItemRequest()
                 .withTableName(tableName)
                 .withKey(key),
-            createAsyncHandler<GetItemRequest, GetItemResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
@@ -117,22 +127,25 @@ class DynamoDBClient private constructor(
             }
             .map { attributes ->
                 if (attributes != null) {
-                    mapper.marshallIntoObject(T::class.java, attributes)
+                    mapper.marshallIntoObject(tableClass, attributes)
                 } else {
                     null
                 }
             }
     }
 
-    inline fun <reified T> query(queryRequest: QueryRequest): Future<List<T>> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+    fun <T> query(
+        tableClass: Class<T>,
+        queryRequest: QueryRequest
+    ): Future<List<T>> {
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
 
         val promise = Promise.promise<QueryResult>()
 
         client.queryAsync(
             queryRequest
                 .withTableName(tableName),
-            createAsyncHandler<QueryRequest, QueryResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
@@ -140,19 +153,22 @@ class DynamoDBClient private constructor(
                 result.items
             }
             .map { items ->
-                mapper.marshallIntoObjects(T::class.java, items)
+                mapper.marshallIntoObjects(tableClass, items)
             }
     }
 
-    inline fun <reified T> scan(scanRequest: ScanRequest): Future<List<T>> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+    fun <T> scan(
+        tableClass: Class<T>,
+        scanRequest: ScanRequest
+    ): Future<List<T>> {
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
 
         val promise = Promise.promise<ScanResult>()
 
         client.scanAsync(
             scanRequest
                 .withTableName(tableName),
-            createAsyncHandler<ScanRequest, ScanResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
@@ -160,13 +176,16 @@ class DynamoDBClient private constructor(
                 result.items
             }
             .map { items ->
-                mapper.marshallIntoObjects(T::class.java, items)
+                mapper.marshallIntoObjects(tableClass, items)
             }
     }
 
-    inline fun <reified T> putItem(item: T): Future<PutItemResult> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
-        val tableModel = mapper.getTableModel(T::class.java)
+    fun <T> putItem(
+        tableClass: Class<T>,
+        item: T
+    ): Future<PutItemResult> {
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableModel = mapper.getTableModel(tableClass)
         val attributes = tableModel.convert(item)
 
         val promise = Promise.promise<PutItemResult>()
@@ -175,17 +194,18 @@ class DynamoDBClient private constructor(
             PutItemRequest()
                 .withTableName(tableName)
                 .withItem(attributes),
-            createAsyncHandler<PutItemRequest, PutItemResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
     }
 
-    inline fun <reified T> updateItem(
+    fun <T> updateItem(
+        tableClass: Class<T>,
         key: Map<String, AttributeValue>,
         toUpdate: Map<String, AttributeValueUpdate>
     ): Future<UpdateItemResult> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
 
         val promise = Promise.promise<UpdateItemResult>()
 
@@ -194,14 +214,17 @@ class DynamoDBClient private constructor(
                 .withTableName(tableName)
                 .withKey(key)
                 .withAttributeUpdates(toUpdate),
-            createAsyncHandler<UpdateItemRequest, UpdateItemResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
     }
 
-    inline fun <reified T> deleteItem(key: Map<String, AttributeValue>): Future<DeleteItemResult> {
-        val tableName = mapper.generateCreateTableRequest(T::class.java).tableName
+    fun <T> deleteItem(
+        tableClass: Class<T>,
+        key: Map<String, AttributeValue>
+    ): Future<DeleteItemResult> {
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
 
         val promise = Promise.promise<DeleteItemResult>()
 
@@ -209,13 +232,13 @@ class DynamoDBClient private constructor(
             DeleteItemRequest()
                 .withTableName(tableName)
                 .withKey(key),
-            createAsyncHandler<DeleteItemRequest, DeleteItemResult>(promise)
+            createAsyncHandler(promise)
         )
 
         return promise.future()
     }
 
-    fun waitForTableActive(tableName: String): Future<Void> {
+    private fun waitForTableActive(tableName: String): Future<Void> {
         val promise = Promise.promise<Void>()
 
         client.waiters().tableExists().runAsync(
