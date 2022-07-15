@@ -77,16 +77,14 @@ class DynamoDBClient private constructor(
                 .withProvisionedThroughput(ProvisionedThroughput(readCapacity, writeCapacity))
         }
 
-        val createTablePromise = Promise.promise<CreateTableResult>()
+        val promise = Promise.promise<CreateTableResult>()
 
         client.createTableAsync(
             request,
-            createAsyncHandler(createTablePromise)
+            createAsyncHandler(promise)
         )
 
-        val resultPromise = Promise.promise<Void>()
-
-        createTablePromise.future()
+        return promise.future()
             .recover { cause ->
                 if (cause.message?.startsWith("Table already exists:") == true) {
                     Future.succeededFuture(null)
@@ -94,16 +92,9 @@ class DynamoDBClient private constructor(
                     Future.failedFuture(cause)
                 }
             }
-            .onSuccess {
+            .compose {
                 waitForTableActive(request.tableName)
-                    .onSuccess { resultPromise.complete() }
-                    .onFailure { cause -> resultPromise.fail(cause) }
             }
-            .onFailure { cause ->
-                resultPromise.fail(cause)
-            }
-
-        return resultPromise.future()
     }
 
     fun <T> getItem(
