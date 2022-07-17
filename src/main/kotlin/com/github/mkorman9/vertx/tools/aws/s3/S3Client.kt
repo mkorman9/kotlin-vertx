@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.tools.aws
+package com.github.mkorman9.vertx.tools.aws.s3
 
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder

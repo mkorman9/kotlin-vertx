@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.tools.aws
+package com.github.mkorman9.vertx.tools.aws.sqs
 
 import com.amazonaws.services.sqs.model.Message
 import io.vertx.core.json.JsonObject

@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.tools.aws
+package com.github.mkorman9.vertx.tools.aws.sqs
 
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.Protocol
@@ -17,6 +17,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder
 import com.amazonaws.services.sqs.model.CreateQueueResult
 import com.amazonaws.services.sqs.model.SendMessageRequest
 import com.amazonaws.services.sqs.model.SendMessageResult
+import com.github.mkorman9.vertx.tools.aws.createAsyncHandler
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future

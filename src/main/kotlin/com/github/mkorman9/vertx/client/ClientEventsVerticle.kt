@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.tools.aws.SQSClient
+import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.DeployVerticle
 import dev.misfitlabs.kotlinguice4.getInstance

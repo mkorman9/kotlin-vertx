@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.tools.aws
+package com.github.mkorman9.vertx.tools.aws.dynamodb
 
 import com.amazonaws.AmazonWebServiceRequest
 import com.amazonaws.ClientConfiguration
@@ -13,6 +13,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.waiters.WaiterHandler
 import com.amazonaws.waiters.WaiterParameters
+import com.github.mkorman9.vertx.tools.aws.createAsyncHandler
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.Future
