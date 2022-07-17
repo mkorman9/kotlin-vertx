@@ -245,7 +245,8 @@ class DynamoDBClient private constructor(
                 override fun onWaitFailure(e: java.lang.Exception?) {
                     promise.fail(e)
                 }
-            })
+            }
+        )
 
         return promise.future()
     }
