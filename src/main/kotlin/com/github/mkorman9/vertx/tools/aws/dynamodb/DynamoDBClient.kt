@@ -68,7 +68,7 @@ class DynamoDBClient private constructor(
         client.shutdown()
     }
 
-    fun <T> createTable(
+    fun <T : Any> createTable(
         tableClass: Class<T>,
         billingMode: BillingMode = BillingMode.PAY_PER_REQUEST,
         readCapacity: Long = 6000,
@@ -104,7 +104,7 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T> getItem(
+    fun <T : Any> getItem(
         tableClass: Class<T>,
         key: Map<String, AttributeValue>
     ): Future<T?> {
@@ -132,7 +132,7 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T> query(
+    fun <T : Any> query(
         tableClass: Class<T>,
         queryRequest: QueryRequest
     ): Future<List<T>> {
@@ -155,7 +155,7 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T> scan(
+    fun <T : Any> scan(
         tableClass: Class<T>,
         scanRequest: ScanRequest
     ): Future<List<T>> {
@@ -178,12 +178,11 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T> putItem(
-        tableClass: Class<T>,
+    fun <T : Any> putItem(
         item: T
     ): Future<PutItemResult> {
-        val tableName = getTableName(tableClass)
-        val tableModel = getTableModel(tableClass)
+        val tableName = getTableName(item.javaClass)
+        val tableModel = getTableModel(item.javaClass)
         val attributes = tableModel.convert(item)
 
         val promise = Promise.promise<PutItemResult>()
@@ -198,7 +197,7 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    fun <T> updateItem(
+    fun <T : Any> updateItem(
         tableClass: Class<T>,
         key: Map<String, AttributeValue>,
         toUpdate: Map<String, AttributeValueUpdate>
@@ -218,7 +217,7 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    fun <T> deleteItem(
+    fun <T : Any> deleteItem(
         tableClass: Class<T>,
         key: Map<String, AttributeValue>
     ): Future<DeleteItemResult> {
