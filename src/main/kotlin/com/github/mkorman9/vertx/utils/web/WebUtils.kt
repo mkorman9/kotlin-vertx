@@ -38,7 +38,7 @@ fun HttpServerResponse.endWithJson(obj: Any) {
         .end(Json.encode(obj))
 }
 
-suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: suspend (T) -> Unit) {
+suspend fun <T> RoutingContext.handleJsonBody(payloadClass: Class<T>, f: suspend (T) -> Unit) {
     val buffer = body().buffer()
     if (buffer == null) {
         response().setStatusCode(400).endWithJson(
@@ -52,7 +52,7 @@ suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: s
     }
 
     val payload = try {
-        Json.decodeValue(buffer, T::class.java)
+        Json.decodeValue(buffer, payloadClass)
     } catch (e: DecodeException) {
         if (e.cause is JsonMappingException) {
             response().setStatusCode(400).endWithJson(
@@ -89,10 +89,10 @@ suspend inline fun <reified T> RoutingContext.handleJsonBody(crossinline func: s
         return
     }
 
-    func(payload)
+    f(payload)
 }
 
-fun parseJsonExceptionCause(e: JsonMappingException): Cause {
+private fun parseJsonExceptionCause(e: JsonMappingException): Cause {
     val field = buildJsonExceptionPath(e.path)
     val code = when (e) {
         is MissingKotlinParameterException -> "required"
@@ -103,7 +103,7 @@ fun parseJsonExceptionCause(e: JsonMappingException): Cause {
     return Cause(field, code)
 }
 
-fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
+private fun buildJsonExceptionPath(path: List<JsonMappingException.Reference>): String {
     val parts = mutableListOf<String>()
 
     path.forEach { p ->

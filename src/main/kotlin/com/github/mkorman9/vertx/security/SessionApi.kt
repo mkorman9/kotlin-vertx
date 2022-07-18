@@ -22,7 +22,7 @@ class SessionApi (context: VerticleContext) {
     val router: Router = Router.router(context.vertx).apply {
         post("/")
             .coroutineHandler(context.scope) { ctx ->
-                ctx.handleJsonBody<StartSessionPayload> { payload ->
+                ctx.handleJsonBody(StartSessionPayload::class.java) { payload ->
                     val account = accountRepository.findByCredentialsEmail(payload.email).await()
                     if (account == null) {
                         ctx.response().setStatusCode(401).endWithJson(

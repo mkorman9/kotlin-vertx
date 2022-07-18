@@ -106,7 +106,7 @@ class ClientApi (context: VerticleContext) {
             .coroutineHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
-                ctx.handleJsonBody<ClientAddPayload> { payload ->
+                ctx.handleJsonBody(ClientAddPayload::class.java) { payload ->
                     val client = clientRepository.add(payload).await()
 
                     clientEventsPublisher.publish(
@@ -127,7 +127,7 @@ class ClientApi (context: VerticleContext) {
             .coroutineHandler(context.scope) { ctx ->
                 val account = authorizationMiddleware.getActiveSession(ctx).account
 
-                ctx.handleJsonBody<ClientUpdatePayload> { payload ->
+                ctx.handleJsonBody(ClientUpdatePayload::class.java) { payload ->
                     val id = ctx.pathParam("id")
 
                     val client = clientRepository.update(id, payload).await()

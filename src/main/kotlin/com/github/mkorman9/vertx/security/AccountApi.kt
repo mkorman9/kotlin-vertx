@@ -19,7 +19,7 @@ class AccountApi (context: VerticleContext) {
     val router: Router = Router.router(context.vertx).apply {
         post("/")
             .coroutineHandler(context.scope) { ctx ->
-                ctx.handleJsonBody<AccountAddPayload> { payload ->
+                ctx.handleJsonBody(AccountAddPayload::class.java) { payload ->
                     val passwordBcrypt = context.vertx.executeBlocking<String> { call ->
                         val result = bcryptHasher.hashToString(12, payload.password.toCharArray())
                         call.complete(result)
