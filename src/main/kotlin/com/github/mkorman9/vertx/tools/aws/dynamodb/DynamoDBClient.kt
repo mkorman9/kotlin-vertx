@@ -69,8 +69,8 @@ class DynamoDBClient private constructor(
     fun <T : Any> createTable(
         tableClass: Class<T>,
         billingMode: BillingMode = BillingMode.PAY_PER_REQUEST,
-        readCapacity: Long = 6000,
-        writeCapacity: Long = 2000,
+        readCapacity: Long = 3000,
+        writeCapacity: Long = 1000,
     ): Future<Void> {
         val request = mapper.generateCreateTableRequest(tableClass)
             .withBillingMode(billingMode)

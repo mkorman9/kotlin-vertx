@@ -26,6 +26,6 @@ object TableCreator {
 data class TableDefinition(
     val tableClass: Class<*>,
     val billingMode: BillingMode = BillingMode.PAY_PER_REQUEST,
-    val readCapacity: Long = 6000,
-    val writeCapacity: Long = 2000,
+    val readCapacity: Long = 3000,
+    val writeCapacity: Long = 1000,
 )
