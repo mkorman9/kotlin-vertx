@@ -10,6 +10,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperTableModel
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.waiters.WaiterHandler
 import com.amazonaws.waiters.WaiterParameters
@@ -30,6 +31,9 @@ class DynamoDBClient private constructor(
 
     private val client: AmazonDynamoDBAsync
     private val mapper: DynamoDBMapper
+
+    private val tableNamesCache = mutableMapOf<Class<*>, String>()
+    private val tableModelsCache = mutableMapOf<Class<*>, DynamoDBMapperTableModel<*>>()
 
     init {
         val emulatorEnabled = config.get<Boolean>("aws.dynamodb.emulator.enabled") ?: false
@@ -78,6 +82,8 @@ class DynamoDBClient private constructor(
                 .withProvisionedThroughput(ProvisionedThroughput(readCapacity, writeCapacity))
         }
 
+        tableNamesCache[tableClass] = request.tableName
+
         val promise = Promise.promise<CreateTableResult>()
 
         client.createTableAsync(
@@ -102,7 +108,7 @@ class DynamoDBClient private constructor(
         tableClass: Class<T>,
         key: Map<String, AttributeValue>
     ): Future<T?> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<GetItemResult>()
 
@@ -130,7 +136,7 @@ class DynamoDBClient private constructor(
         tableClass: Class<T>,
         queryRequest: QueryRequest
     ): Future<List<T>> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<QueryResult>()
 
@@ -153,7 +159,7 @@ class DynamoDBClient private constructor(
         tableClass: Class<T>,
         scanRequest: ScanRequest
     ): Future<List<T>> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<ScanResult>()
 
@@ -176,8 +182,8 @@ class DynamoDBClient private constructor(
         tableClass: Class<T>,
         item: T
     ): Future<PutItemResult> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
-        val tableModel = mapper.getTableModel(tableClass)
+        val tableName = getTableName(tableClass)
+        val tableModel = getTableModel(tableClass)
         val attributes = tableModel.convert(item)
 
         val promise = Promise.promise<PutItemResult>()
@@ -197,7 +203,7 @@ class DynamoDBClient private constructor(
         key: Map<String, AttributeValue>,
         toUpdate: Map<String, AttributeValueUpdate>
     ): Future<UpdateItemResult> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<UpdateItemResult>()
 
@@ -216,7 +222,7 @@ class DynamoDBClient private constructor(
         tableClass: Class<T>,
         key: Map<String, AttributeValue>
     ): Future<DeleteItemResult> {
-        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<DeleteItemResult>()
 
@@ -250,5 +256,28 @@ class DynamoDBClient private constructor(
         )
 
         return promise.future()
+    }
+
+    private fun getTableName(tableClass: Class<*>): String {
+        val cachedName = tableNamesCache[tableClass]
+        if (cachedName != null) {
+            return cachedName
+        }
+
+        val tableName = mapper.generateCreateTableRequest(tableClass).tableName
+        tableNamesCache[tableClass] = tableName
+        return tableName
+    }
+
+    private fun <T> getTableModel(tableClass: Class<T>): DynamoDBMapperTableModel<T> {
+        val cachedModel = tableModelsCache[tableClass]
+        if (cachedModel != null) {
+            @Suppress("UNCHECKED_CAST")
+            return cachedModel as DynamoDBMapperTableModel<T>
+        }
+
+        val tableModel = mapper.getTableModel(tableClass)
+        tableModelsCache[tableClass] = tableModel
+        return tableModel
     }
 }
