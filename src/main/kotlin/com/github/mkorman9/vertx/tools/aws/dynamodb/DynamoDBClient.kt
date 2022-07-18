@@ -33,7 +33,6 @@ class DynamoDBClient private constructor(
     private val mapper: DynamoDBMapper
 
     private val tableNamesCache = mutableMapOf<Class<*>, String>()
-    private val tableModelsCache = mutableMapOf<Class<*>, DynamoDBMapperTableModel<*>>()
 
     init {
         val emulatorEnabled = config.get<Boolean>("aws.dynamodb.emulator.enabled") ?: false
@@ -182,7 +181,7 @@ class DynamoDBClient private constructor(
         item: T
     ): Future<PutItemResult> {
         val tableName = getTableName(item.javaClass)
-        val tableModel = getTableModel(item.javaClass)
+        val tableModel = mapper.getTableModel(item.javaClass)
         val attributes = tableModel.convert(item)
 
         val promise = Promise.promise<PutItemResult>()
@@ -266,17 +265,5 @@ class DynamoDBClient private constructor(
         val tableName = mapper.generateCreateTableRequest(tableClass).tableName
         tableNamesCache[tableClass] = tableName
         return tableName
-    }
-
-    private fun <T> getTableModel(tableClass: Class<T>): DynamoDBMapperTableModel<T> {
-        val cachedModel = tableModelsCache[tableClass]
-        if (cachedModel != null) {
-            @Suppress("UNCHECKED_CAST")
-            return cachedModel as DynamoDBMapperTableModel<T>
-        }
-
-        val tableModel = mapper.getTableModel(tableClass)
-        tableModelsCache[tableClass] = tableModel
-        return tableModel
     }
 }
