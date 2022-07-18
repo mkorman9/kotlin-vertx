@@ -10,7 +10,6 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperTableModel
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.waiters.WaiterHandler
 import com.amazonaws.waiters.WaiterParameters
