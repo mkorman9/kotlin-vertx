@@ -162,7 +162,7 @@ class ClientRepository @Inject constructor(
                         }
 
                         payload.creditCards.forEach { cc1 ->
-                            if(!client.creditCards.any { cc2 -> cc1.number == cc2.number }) {
+                            if (!client.creditCards.any { cc2 -> cc1.number == cc2.number }) {
                                 client.creditCards.add(
                                     CreditCard(
                                         clientId = idUUID,

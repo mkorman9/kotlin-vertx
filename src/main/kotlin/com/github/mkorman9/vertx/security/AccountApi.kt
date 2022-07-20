@@ -50,7 +50,7 @@ class AccountApi (context: VerticleContext) {
                                 status = "ok"
                             )
                         )
-                    } catch(e: Exception) {
+                    } catch (e: Exception) {
                         if (isUniqueConstraintViolation(e, Account.USERNAME_UNIQUE_CONSTRAINT)) {
                             ctx.response().setStatusCode(400).endWithJson(
                                 StatusDTO(
