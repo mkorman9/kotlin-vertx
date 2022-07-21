@@ -1,16 +1,16 @@
 package com.github.mkorman9.vertx.client
 
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 
-class ClientApi (context: VerticleContext) {
-    private val clientRepository: ClientRepository = context.injector.getInstance()
-    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
-    private val clientEventsPublisher: ClientEventsPublisher = context.injector.getInstance()
+class ClientApi (services: Services, context: VerticleContext) {
+    private val clientRepository: ClientRepository = services.clientRepository
+    private val authorizationMiddleware: AuthorizationMiddleware = services.authorizationMiddleware
+    private val clientEventsPublisher: ClientEventsPublisher = services.clientEventsPublisher
 
     private val websocketApi = ClientEventsWebsocketApi(context)
 

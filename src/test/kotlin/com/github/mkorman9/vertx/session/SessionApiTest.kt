@@ -1,14 +1,12 @@
 package com.github.mkorman9.vertx.session
 
-import com.github.mkorman9.vertx.Application
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.defaultTestPassword
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.*
+import com.github.mkorman9.vertx.utils.TestConfigurator
 import com.github.mkorman9.vertx.utils.coroutineTest
-import com.github.mkorman9.vertx.utils.createTestInjector
 import com.github.mkorman9.vertx.utils.web.StatusDTO
-import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -36,20 +34,15 @@ class SessionApiTest {
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
-        val injector = createTestInjector(
-            packageName = Application.PACKAGE_NAME,
-            module = object : KotlinModule() {
-                override fun configure() {
-                    bind<SessionRepository>().toInstance(sessionRepository)
-                    bind<AccountRepository>().toInstance(accountRepository)
-                    bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
-                }
-            }
-        )
+        val services = TestConfigurator
+            .createServices()
+            .copy(
+                sessionRepository = sessionRepository,
+                accountRepository = accountRepository,
+                authorizationMiddleware = AuthorizationMiddlewareMock(sessionProvider)
+            )
 
-        val serverVerticle = HttpServerVerticle()
-        serverVerticle.injector = injector
-        vertx.deployVerticle(serverVerticle)
+        vertx.deployVerticle(HttpServerVerticle(services))
             .onComplete { testContext.completeNow() }
     }
 

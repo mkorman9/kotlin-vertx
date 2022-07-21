@@ -2,13 +2,10 @@ package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.tools.hibernate.withSession
 import com.github.mkorman9.vertx.tools.hibernate.withTransaction
-import com.google.inject.Inject
-import com.google.inject.Singleton
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 
-@Singleton
-class AccountRepository @Inject constructor(
+class AccountRepository(
     private val sessionFactory: SessionFactory
 ) {
     fun findByCredentialsEmail(email: String): Future<Account?> {

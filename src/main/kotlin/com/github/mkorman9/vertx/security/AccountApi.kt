@@ -1,18 +1,18 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.tools.hibernate.isUniqueConstraintViolation
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 import java.util.*
 
-class AccountApi (context: VerticleContext) {
-    private val accountRepository: AccountRepository = context.injector.getInstance()
+class AccountApi (services: Services, context: VerticleContext) {
+    private val accountRepository: AccountRepository = services.accountRepository
 
     private val bcryptHasher: BCrypt.Hasher = BCrypt.with(SecureRandomGenerator.INSTANCE)
 

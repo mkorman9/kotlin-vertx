@@ -2,8 +2,6 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.tools.hibernate.withSession
 import com.github.mkorman9.vertx.tools.hibernate.withTransaction
-import com.google.inject.Inject
-import com.google.inject.Singleton
 import io.smallrye.mutiny.Uni
 import io.vertx.core.Future
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -15,8 +13,7 @@ import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
 import kotlin.math.ceil
 
-@Singleton
-class ClientRepository @Inject constructor(
+class ClientRepository(
     private val sessionFactory: SessionFactory
 ) {
 

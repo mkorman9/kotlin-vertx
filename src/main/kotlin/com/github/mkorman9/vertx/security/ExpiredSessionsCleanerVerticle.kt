@@ -1,21 +1,21 @@
 package com.github.mkorman9.vertx.security
 
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.utils.ContextualVerticle
-import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.setCronPeriodic
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.await
 import java.time.ZoneOffset
 
-@DeployVerticle
-class ExpiredSessionsCleanerVerticle : ContextualVerticle() {
+class ExpiredSessionsCleanerVerticle(
+    private val services: Services
+) : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
     }
 
     override suspend fun start() {
-        val sessionRepository = injector.getInstance<SessionRepository>()
+        val sessionRepository = services.sessionRepository
 
         try {
             vertx.setCronPeriodic("0 00 22 ? * *", ZoneOffset.UTC, this) {

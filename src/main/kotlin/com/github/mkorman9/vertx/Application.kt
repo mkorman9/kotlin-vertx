@@ -1,11 +1,12 @@
 package com.github.mkorman9.vertx
 
+import com.github.mkorman9.vertx.common.Services
+import com.github.mkorman9.vertx.common.createVerticleDefinitions
 import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.ConfigReader
-import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.vertx.core.Vertx
 import io.vertx.core.impl.logging.LoggerFactory
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
@@ -14,8 +15,6 @@ import kotlin.system.exitProcess
 class Application {
     companion object {
         private val log = LoggerFactory.getLogger(Application::class.java)
-
-        const val PACKAGE_NAME = "com.github.mkorman9.vertx"
     }
 
     private lateinit var sessionFactory: SessionFactory
@@ -34,16 +33,12 @@ class Application {
 
             sqsClient = SQSClient.create(config)
 
+            val services = Services.create(sessionFactory, sqsClient)
+
             BootstrapUtils.bootstrap(
-                packageName = PACKAGE_NAME,
                 vertx = vertx,
                 config = config,
-                module = object : KotlinModule() {
-                    override fun configure() {
-                        bind<SessionFactory>().toInstance(sessionFactory)
-                        bind<SQSClient>().toInstance(sqsClient)
-                    }
-                }
+                verticleDefinitions = createVerticleDefinitions(services)
             )
 
             log.info("App has been bootstrapped successfully")

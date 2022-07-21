@@ -1,18 +1,18 @@
 package com.github.mkorman9.vertx.security
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
 import com.github.mkorman9.vertx.utils.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
 import java.time.LocalDateTime
 
-class SessionApi (context: VerticleContext) {
-    private val accountRepository: AccountRepository = context.injector.getInstance()
-    private val sessionRepository: SessionRepository = context.injector.getInstance()
-    private val authorizationMiddleware: AuthorizationMiddleware = context.injector.getInstance()
+class SessionApi (services: Services, context: VerticleContext) {
+    private val accountRepository: AccountRepository = services.accountRepository
+    private val sessionRepository: SessionRepository = services.sessionRepository
+    private val authorizationMiddleware: AuthorizationMiddleware = services.authorizationMiddleware
 
     private val sessionTokenLength: Long = 64
     private val sessionDurationSeconds: Int = 4 * 60 * 60

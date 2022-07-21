@@ -1,43 +1,52 @@
 package com.github.mkorman9.vertx.utils
 
-import com.google.inject.Guice
-import com.google.inject.Injector
-import com.google.inject.Singleton
-import com.google.inject.util.Modules
-import dev.misfitlabs.kotlinguice4.KotlinModule
+import io.vertx.core.CompositeFuture
+import io.vertx.core.DeploymentOptions
+import io.vertx.core.Future
 import io.vertx.core.Vertx
+import io.vertx.core.impl.logging.LoggerFactory
 
 object BootstrapUtils {
+    private val log = LoggerFactory.getLogger(BootstrapUtils::class.java)
+
     init {
         JsonCodec.configure()
     }
 
-    fun bootstrap(packageName: String, vertx: Vertx, config: Config, module: com.google.inject.Module) {
-        val injector = createInjector(packageName, module)
+    fun bootstrap(vertx: Vertx, config: Config, verticleDefinitions: List<VerticleDefinition>) {
+        val futures = verticleDefinitions
+            .flatMap { definition ->
+                val instances = calculateInstancesNumber(definition.scalingStrategy, definition.minInstances)
+                val futures = mutableListOf<Future<*>>()
 
-        VerticleDeployer.scanAndDeploy(vertx, packageName, config, injector)
-    }
+                for (i in 0 until instances) {
+                    val f = vertx.deployVerticle(
+                        definition.create(),
+                        DeploymentOptions()
+                            .setConfig(config)
+                            .setWorker(definition.worker)
+                            .setWorkerPoolName(definition.workerPoolName.ifEmpty { null })
+                            .setWorkerPoolSize(definition.workerPoolSize)
+                    )
 
-    private fun createInjector(packageName: String, module: com.google.inject.Module): Injector {
-        return Guice.createInjector(
-            Modules.override(createAutoconfiguredModule(packageName))
-                .with(module)
-        )
-    }
+                    futures.add(f)
+                }
 
-    private fun createAutoconfiguredModule(packageName: String): KotlinModule {
-        return object : KotlinModule() {
-            override fun configure() {
-                ReflectionsUtils.findClasses(packageName, Singleton::class.java)
-                    .forEach { c ->
-                        bind(c)
+                log.info("Deployed $instances instances of ${definition.name}")
 
-                        c.genericInterfaces.forEach { i ->
-                            @Suppress("UNCHECKED_CAST")
-                            bind(Class.forName(i.typeName) as Class<Any>).to(c)
-                        }
-                    }
+                futures
             }
+
+        CompositeFuture.all(futures)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+    }
+
+    private fun calculateInstancesNumber(scalingStrategy: VerticesScalingStrategy, minInstances: Int): Int {
+        return when(scalingStrategy) {
+            VerticesScalingStrategy.CONSTANT -> minInstances
+            VerticesScalingStrategy.NUM_OF_CPUS -> Integer.max(Runtime.getRuntime().availableProcessors(), minInstances)
         }
     }
 }

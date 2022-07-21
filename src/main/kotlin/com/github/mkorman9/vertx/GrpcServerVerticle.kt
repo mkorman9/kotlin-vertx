@@ -1,16 +1,17 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientServiceGrpcImpl
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.utils.ContextualVerticle
-import com.github.mkorman9.vertx.utils.DeployVerticle
 import com.github.mkorman9.vertx.utils.get
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.await
 
-@DeployVerticle
-class GrpcServerVerticle : ContextualVerticle() {
+class GrpcServerVerticle(
+    private val services: Services
+) : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(GrpcServerVerticle::class.java)
     }
@@ -22,7 +23,7 @@ class GrpcServerVerticle : ContextualVerticle() {
             vertx.executeBlocking<Void> { call ->
                 server = ServerBuilder
                     .forPort(config.get<Int>("grpc.port") ?: 9090)
-                    .addService(ClientServiceGrpcImpl(context))
+                    .addService(ClientServiceGrpcImpl(services, context))
                     .build()
                     .start()
                 call.complete()

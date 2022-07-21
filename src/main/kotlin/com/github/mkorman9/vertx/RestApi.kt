@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.appinfo.AppInfoApi
 import com.github.mkorman9.vertx.client.ClientApi
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.security.AccountApi
 import com.github.mkorman9.vertx.security.SessionApi
 import com.github.mkorman9.vertx.utils.VerticleContext
@@ -14,7 +15,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.micrometer.PrometheusScrapingHandler
 
-class RestApi (context: VerticleContext) {
+class RestApi (services: Services, context: VerticleContext) {
     companion object {
         private val log = LoggerFactory.getLogger(RestApi::class.java)
     }
@@ -27,9 +28,9 @@ class RestApi (context: VerticleContext) {
         route("/metrics").handler(PrometheusScrapingHandler.create())
 
         route("/api/v1/info*").subRouter(AppInfoApi(context).router)
-        route("/api/v1/client*").subRouter(ClientApi(context).router)
-        route("/api/v1/session*").subRouter(SessionApi(context).router)
-        route("/api/v1/account*").subRouter(AccountApi(context).router)
+        route("/api/v1/client*").subRouter(ClientApi(services, context).router)
+        route("/api/v1/session*").subRouter(SessionApi(services, context).router)
+        route("/api/v1/account*").subRouter(AccountApi(services, context).router)
 
         errorHandler(404) { ctx ->
             ctx.response().endWithJson(

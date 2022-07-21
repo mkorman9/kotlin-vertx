@@ -1,13 +1,12 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
+import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.utils.ContextualVerticle
-import com.github.mkorman9.vertx.utils.DeployVerticle
-import dev.misfitlabs.kotlinguice4.getInstance
 import io.vertx.core.impl.logging.LoggerFactory
 
-@DeployVerticle
-class ClientEventsVerticle : ContextualVerticle() {
+class ClientEventsVerticle(
+    private val services: Services
+) : ContextualVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 
@@ -18,7 +17,7 @@ class ClientEventsVerticle : ContextualVerticle() {
     }
 
     override suspend fun start() {
-        val sqsClient = injector.getInstance<SQSClient>()
+        val sqsClient = services.sqsClient
 
         try {
             sqsClient.createTopicSink(vertx, OUTGOING_CHANNEL, SNS_TOPIC_NAME)

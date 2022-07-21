@@ -1,16 +1,13 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.Application
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.fakeSession
-import com.github.mkorman9.vertx.security.AuthorizationMiddleware
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
+import com.github.mkorman9.vertx.utils.TestConfigurator
 import com.github.mkorman9.vertx.utils.coroutineTest
-import com.github.mkorman9.vertx.utils.createTestInjector
 import com.github.mkorman9.vertx.utils.web.Cause
 import com.github.mkorman9.vertx.utils.web.StatusDTO
-import dev.misfitlabs.kotlinguice4.KotlinModule
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.SpyK
@@ -43,20 +40,15 @@ class ClientApiTest {
 
     @BeforeEach
     fun setUp(vertx: Vertx, testContext: VertxTestContext) {
-        val injector = createTestInjector(
-            packageName = Application.PACKAGE_NAME,
-            module = object : KotlinModule() {
-                override fun configure() {
-                    bind<ClientRepository>().toInstance(clientRepository)
-                    bind<AuthorizationMiddleware>().toInstance(AuthorizationMiddlewareMock(sessionProvider))
-                    bind<ClientEventsPublisher>().toInstance(clientEventsPublisher)
-                }
-            }
-        )
+        val services = TestConfigurator
+            .createServices()
+            .copy(
+                clientRepository = clientRepository,
+                clientEventsPublisher = clientEventsPublisher,
+                authorizationMiddleware = AuthorizationMiddlewareMock(sessionProvider)
+            )
 
-        val serverVerticle = HttpServerVerticle()
-        serverVerticle.injector = injector
-        vertx.deployVerticle(serverVerticle)
+        vertx.deployVerticle(HttpServerVerticle(services))
             .onComplete { testContext.completeNow() }
     }
 
