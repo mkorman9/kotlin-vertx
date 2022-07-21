@@ -1,12 +1,12 @@
 package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.ContextualVerticle
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 
 class ClientEventsVerticle(
     private val services: Services
-) : ContextualVerticle() {
+) : CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ClientEventsVerticle::class.java)
 

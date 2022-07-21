@@ -1,16 +1,17 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.ContextualVerticle
+import com.github.mkorman9.vertx.utils.verticleContext
 import com.github.mkorman9.vertx.utils.get
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 
 class HttpServerVerticle(
     private val services: Services
-) : ContextualVerticle() {
+) : CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(HttpServerVerticle::class.java)
     }
@@ -19,7 +20,7 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         try {
-            val restApi = RestApi(services, context)
+            val restApi = RestApi(services, verticleContext)
 
             server = vertx
                 .createHttpServer(

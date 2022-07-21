@@ -4,8 +4,16 @@ import io.vertx.core.Vertx
 import io.vertx.core.eventbus.EventBus
 import io.vertx.core.eventbus.Message
 import io.vertx.core.eventbus.MessageConsumer
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+
+val CoroutineVerticle.verticleContext: VerticleContext
+    get() = VerticleContext(
+        vertx = vertx,
+        config = Vertx.currentContext().config(),
+        scope = this
+    )
 
 fun Vertx.setTimerCoroutine(
     delay: Long,

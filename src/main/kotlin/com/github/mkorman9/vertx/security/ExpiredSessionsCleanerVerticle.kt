@@ -1,15 +1,15 @@
 package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.ContextualVerticle
 import com.github.mkorman9.vertx.utils.setCronPeriodic
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import java.time.ZoneOffset
 
 class ExpiredSessionsCleanerVerticle(
     private val services: Services
-) : ContextualVerticle() {
+) : CoroutineVerticle() {
     companion object {
         private val log = LoggerFactory.getLogger(ExpiredSessionsCleanerVerticle::class.java)
     }
