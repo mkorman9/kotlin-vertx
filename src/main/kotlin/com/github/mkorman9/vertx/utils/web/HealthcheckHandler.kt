@@ -14,7 +14,8 @@ class HealthcheckHandler {
                     status = "healthy",
                     version = info.version,
                     startupTime = info.startupTime,
-                    environment = info.environment
+                    environment = info.environment,
+                    profile = info.profile
                 )
             )
         }

@@ -14,7 +14,8 @@ class AppInfoApi (context: VerticleContext) {
             .coroutineHandler(context.scope) { ctx ->
                 ctx.response().endWithJson(
                     AppInfoResponse(
-                        envName = info.environment
+                        envName = info.environment,
+                        profile = info.profile
                     )
                 )
             }

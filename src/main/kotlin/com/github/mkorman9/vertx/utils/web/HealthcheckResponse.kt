@@ -6,5 +6,6 @@ data class HealthcheckResponse(
     val status: String,
     val version: String,
     val startupTime: LocalDateTime,
-    val environment: String
+    val environment: String,
+    val profile: String
 )

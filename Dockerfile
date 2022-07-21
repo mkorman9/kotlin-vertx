@@ -1,5 +1,7 @@
 FROM eclipse-temurin:11
 
+ENV PROFILE=dev
+
 RUN mkdir -p /app
 WORKDIR /app
 

@@ -7,21 +7,29 @@ import java.util.jar.Manifest
 class DeploymentInfo private constructor(
     val version: String,
     val startupTime: LocalDateTime,
-    val environment: String
+    val environment: String,
+    val profile: String
 ) {
     companion object {
         private const val DEFAULT_VERSION = "dev"
         private const val DEFAULT_ENVIRONMENT = "default"
+        private const val DEFAULT_PROFILE = "local"
 
         private val instance =
             DeploymentInfo(
                 version = readVersion() ?: DEFAULT_VERSION,
                 startupTime = LocalDateTime.now(),
-                environment = System.getenv("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT
+                environment = System.getenv("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT,
+                profile = System.getenv("PROFILE") ?: DEFAULT_PROFILE
             )
 
         fun get(): DeploymentInfo {
-            return instance
+            return DeploymentInfo(
+                version = instance.version,
+                startupTime = instance.startupTime,
+                environment = instance.environment,
+                profile = instance.profile
+            )
         }
 
         private fun readVersion(): String? {
