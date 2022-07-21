@@ -24,12 +24,7 @@ class DeploymentInfo private constructor(
             )
 
         fun get(): DeploymentInfo {
-            return DeploymentInfo(
-                version = instance.version,
-                startupTime = instance.startupTime,
-                environment = instance.environment,
-                profile = instance.profile
-            )
+            return instance
         }
 
         private fun readVersion(): String? {
