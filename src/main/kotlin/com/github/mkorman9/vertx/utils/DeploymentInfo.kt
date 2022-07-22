@@ -1,12 +1,12 @@
 package com.github.mkorman9.vertx.utils
 
 import java.io.IOException
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.jar.Manifest
 
 class DeploymentInfo private constructor(
     val version: String,
-    val startupTime: LocalDateTime,
+    val startupTime: Instant,
     val environment: String,
     val profile: String
 ) {
@@ -18,7 +18,7 @@ class DeploymentInfo private constructor(
         private val instance =
             DeploymentInfo(
                 version = readVersion() ?: DEFAULT_VERSION,
-                startupTime = LocalDateTime.now(),
+                startupTime = Instant.now(),
                 environment = System.getenv("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT,
                 profile = System.getenv("PROFILE") ?: DEFAULT_PROFILE
             )
