@@ -4,7 +4,6 @@ import com.github.mkorman9.vertx.GrpcServerVerticle
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
-import com.github.mkorman9.vertx.utils.VerticesScalingStrategy
 import com.github.mkorman9.vertx.utils.VerticleDefinition
 
 fun createVerticleDefinitions(services: Services): List<VerticleDefinition> {
@@ -12,8 +11,7 @@ fun createVerticleDefinitions(services: Services): List<VerticleDefinition> {
         VerticleDefinition(
             name = "HttpServerVerticle",
             create = { HttpServerVerticle(services) },
-            scalingStrategy = VerticesScalingStrategy.NUM_OF_CPUS,
-            minInstances = 4
+            instances = Integer.max(Runtime.getRuntime().availableProcessors(), 4)
         ),
         VerticleDefinition(
             name = "GrpcServerVerticle",

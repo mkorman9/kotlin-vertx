@@ -16,10 +16,9 @@ object BootstrapUtils {
     fun bootstrap(vertx: Vertx, config: Config, verticleDefinitions: List<VerticleDefinition>) {
         val futures = verticleDefinitions
             .flatMap { definition ->
-                val instances = calculateInstancesNumber(definition.scalingStrategy, definition.minInstances)
                 val futures = mutableListOf<Future<*>>()
 
-                for (i in 0 until instances) {
+                for (i in 0 until definition.instances) {
                     val f = vertx.deployVerticle(
                         definition.create(),
                         DeploymentOptions()
@@ -32,7 +31,7 @@ object BootstrapUtils {
                     futures.add(f)
                 }
 
-                log.info("Deployed $instances instances of ${definition.name}")
+                log.info("Deployed ${definition.instances} instances of ${definition.name}")
 
                 futures
             }
@@ -41,12 +40,5 @@ object BootstrapUtils {
             .toCompletionStage()
             .toCompletableFuture()
             .join()
-    }
-
-    private fun calculateInstancesNumber(scalingStrategy: VerticesScalingStrategy, minInstances: Int): Int {
-        return when(scalingStrategy) {
-            VerticesScalingStrategy.CONSTANT -> minInstances
-            VerticesScalingStrategy.NUM_OF_CPUS -> Integer.max(Runtime.getRuntime().availableProcessors(), minInstances)
-        }
     }
 }
