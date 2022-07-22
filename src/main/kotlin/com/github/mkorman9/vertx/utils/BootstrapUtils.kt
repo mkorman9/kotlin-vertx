@@ -13,8 +13,8 @@ object BootstrapUtils {
         JsonCodec.configure()
     }
 
-    fun bootstrap(vertx: Vertx, config: Config, verticleDefinitions: List<VerticleDefinition>) {
-        val futures = verticleDefinitions
+    fun bootstrap(vertx: Vertx, config: Config, verticles: List<VerticleDefinition>) {
+        val futures = verticles
             .flatMap { definition ->
                 val futures = mutableListOf<Future<*>>()
 

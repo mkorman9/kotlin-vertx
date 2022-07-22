@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.common.createVerticleDefinitions
+import com.github.mkorman9.vertx.common.getVerticlesToDeploy
 import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
@@ -38,7 +38,7 @@ class Application {
             BootstrapUtils.bootstrap(
                 vertx = vertx,
                 config = config,
-                verticleDefinitions = createVerticleDefinitions(services)
+                verticles = getVerticlesToDeploy(services)
             )
 
             log.info("App has been bootstrapped successfully")

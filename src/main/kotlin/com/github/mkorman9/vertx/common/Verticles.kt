@@ -6,7 +6,7 @@ import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
 import com.github.mkorman9.vertx.utils.VerticleDefinition
 
-fun createVerticleDefinitions(services: Services): List<VerticleDefinition> {
+fun getVerticlesToDeploy(services: Services): List<VerticleDefinition> {
     return listOf(
         VerticleDefinition(
             name = "HttpServerVerticle",
