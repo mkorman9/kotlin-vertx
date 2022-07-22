@@ -17,10 +17,14 @@ object BootstrapUtils {
         val futures = verticles
             .flatMap { definition ->
                 val futures = mutableListOf<Future<*>>()
+                var verticleName = "UnknownVerticle"
 
                 for (i in 0 until definition.instances) {
+                    val instance = definition.create()
+                    verticleName = instance.javaClass.name
+
                     val f = vertx.deployVerticle(
-                        definition.create(),
+                        instance,
                         DeploymentOptions()
                             .setConfig(config)
                             .setWorker(definition.worker)
@@ -31,7 +35,7 @@ object BootstrapUtils {
                     futures.add(f)
                 }
 
-                log.info("Deployed ${definition.instances} instances of ${definition.name}")
+                log.info("Deployed ${definition.instances} instances of verticle $verticleName")
 
                 futures
             }

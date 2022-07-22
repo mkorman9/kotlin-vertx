@@ -4,7 +4,6 @@ import io.vertx.core.Verticle
 import io.vertx.core.VertxOptions
 
 data class VerticleDefinition(
-    val name: String,
     val create: () -> Verticle,
     val instances: Int = 1,
     val worker: Boolean = false,
