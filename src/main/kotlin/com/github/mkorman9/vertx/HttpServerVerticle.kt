@@ -44,4 +44,8 @@ class HttpServerVerticle(
     override suspend fun stop() {
         server.close().await()
     }
+
+    fun getPort(): Int {
+        return server.actualPort()
+    }
 }

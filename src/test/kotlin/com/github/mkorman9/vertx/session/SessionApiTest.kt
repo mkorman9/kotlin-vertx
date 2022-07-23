@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.session
 
-import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.defaultTestPassword
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.*
@@ -25,6 +24,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
 class SessionApiTest {
+    private var port: Int = 0
+
     @MockK
     private lateinit var sessionRepository: SessionRepository
     @MockK
@@ -42,8 +43,11 @@ class SessionApiTest {
                 authorizationMiddleware = AuthorizationMiddlewareMock(sessionProvider)
             )
 
-        vertx.deployVerticle(HttpServerVerticle(services))
-            .onComplete { testContext.completeNow() }
+        TestConfigurator.deployHttpServer(vertx, services)
+            .onSuccess {
+                port = it
+                testContext.completeNow()
+            }
     }
 
     @Test
@@ -62,7 +66,7 @@ class SessionApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/session")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -85,7 +89,7 @@ class SessionApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/session")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -109,7 +113,7 @@ class SessionApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/session")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/session")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -130,7 +134,7 @@ class SessionApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/session")
+            httpClient.request(HttpMethod.PUT, port, "127.0.0.1", "/api/v1/session")
                 .await()
                 .send()
                 .await()
@@ -151,7 +155,7 @@ class SessionApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.DELETE, 8080, "127.0.0.1", "/api/v1/session")
+            httpClient.request(HttpMethod.DELETE, port, "127.0.0.1", "/api/v1/session")
                 .await()
                 .send()
                 .await()

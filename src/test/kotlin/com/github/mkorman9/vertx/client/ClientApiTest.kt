@@ -1,6 +1,5 @@
 package com.github.mkorman9.vertx.client
 
-import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.fakeSession
 import com.github.mkorman9.vertx.security.AuthorizationMiddlewareMock
 import com.github.mkorman9.vertx.security.MockSessionProvider
@@ -31,6 +30,8 @@ import java.util.*
 
 @ExtendWith(VertxExtension::class, MockKExtension::class)
 class ClientApiTest {
+    private var port: Int = 0
+
     @SpyK
     private var clientRepository: ClientRepository = mockk()
     @MockK
@@ -48,8 +49,11 @@ class ClientApiTest {
                 authorizationMiddleware = AuthorizationMiddlewareMock(sessionProvider)
             )
 
-        vertx.deployVerticle(HttpServerVerticle(services))
-            .onComplete { testContext.completeNow() }
+        TestConfigurator.deployHttpServer(vertx, services)
+            .onSuccess {
+                port = it
+                testContext.completeNow()
+            }
     }
 
     @Test
@@ -73,7 +77,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client")
+            httpClient.request(HttpMethod.GET, port, "127.0.0.1", "/api/v1/client")
                 .await()
                 .send()
                 .await()
@@ -113,7 +117,7 @@ class ClientApiTest {
         val result =
             httpClient.request(
                 HttpMethod.GET,
-                8080,
+                port,
                 "127.0.0.1",
                 "/api/v1/client?filter[lastName]=User&page=2&pageSize=20&sortBy=firstName&sortReverse"
             )
@@ -156,7 +160,7 @@ class ClientApiTest {
         val result =
             httpClient.request(
                 HttpMethod.GET,
-                8080,
+                port,
                 "127.0.0.1",
                 "/api/v1/client?filter[invalid]=xxx&page=-2&pageSize=200&sortBy=unknown"
             )
@@ -192,7 +196,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+            httpClient.request(HttpMethod.GET, port, "127.0.0.1", "/api/v1/client/${id}")
                 .await()
                 .send()
                 .await()
@@ -214,7 +218,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.GET, 8080, "127.0.0.1", "/api/v1/client/${id}")
+            httpClient.request(HttpMethod.GET, port, "127.0.0.1", "/api/v1/client/${id}")
                 .await()
                 .send()
                 .await()
@@ -245,7 +249,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/client")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -278,7 +282,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/client")
                 .await()
                 .send(payload.encode())
                 .await()
@@ -304,7 +308,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/client")
                 .await()
                 .send(payload.encode())
                 .await()
@@ -333,7 +337,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.POST, 8080, "127.0.0.1", "/api/v1/client")
+            httpClient.request(HttpMethod.POST, port, "127.0.0.1", "/api/v1/client")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -368,7 +372,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/${client.id}")
+            httpClient.request(HttpMethod.PUT, port, "127.0.0.1", "/api/v1/client/${client.id}")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -404,7 +408,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.PUT, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+            httpClient.request(HttpMethod.PUT, port, "127.0.0.1", "/api/v1/client/$clientId")
                 .await()
                 .send(Json.encodeToBuffer(payload))
                 .await()
@@ -427,7 +431,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.DELETE, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+            httpClient.request(HttpMethod.DELETE, port, "127.0.0.1", "/api/v1/client/$clientId")
                 .await()
                 .send()
                 .await()
@@ -460,7 +464,7 @@ class ClientApiTest {
 
         // when
         val result =
-            httpClient.request(HttpMethod.DELETE, 8080, "127.0.0.1", "/api/v1/client/$clientId")
+            httpClient.request(HttpMethod.DELETE, port, "127.0.0.1", "/api/v1/client/$clientId")
                 .await()
                 .send()
                 .await()
