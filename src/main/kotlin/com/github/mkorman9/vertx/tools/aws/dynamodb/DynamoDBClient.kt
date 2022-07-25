@@ -137,7 +137,7 @@ class DynamoDBClient private constructor(
     fun <T : Any> query(
         tableClass: Class<T>,
         queryExpression: DynamoDBQueryExpression<T>
-    ): Future<List<T>> {
+    ): Future<DynamoDBResult<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<QueryResult>()
@@ -150,17 +150,19 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
-                result.items
-            }
-            .map { items ->
-                mapper.marshallIntoObjects(tableClass, items)
+                DynamoDBResult(
+                    items = mapper.marshallIntoObjects(tableClass, result.items),
+                    count = result.count,
+                    scannedCount = result.scannedCount,
+                    lastKey = result.lastEvaluatedKey
+                )
             }
     }
 
     fun <T : Any> scan(
         tableClass: Class<T>,
         scanExpression: DynamoDBScanExpression
-    ): Future<List<T>> {
+    ): Future<DynamoDBResult<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<ScanResult>()
@@ -173,10 +175,12 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
-                result.items
-            }
-            .map { items ->
-                mapper.marshallIntoObjects(tableClass, items)
+                DynamoDBResult(
+                    items = mapper.marshallIntoObjects(tableClass, result.items),
+                    count = result.count,
+                    scannedCount = result.scannedCount,
+                    lastKey = result.lastEvaluatedKey
+                )
             }
     }
 
