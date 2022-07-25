@@ -10,6 +10,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.waiters.WaiterHandler
 import com.amazonaws.waiters.WaiterParameters
@@ -102,18 +103,20 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T : Any> getItem(
+    fun <T : Any, HKEY : Any, RKEY : Any> getItem(
         tableClass: Class<T>,
-        key: TableKey
+        hashKey: HKEY,
+        rangeKey: RKEY? = null
     ): Future<T?> {
         val tableName = getTableName(tableClass)
+        val tableModel = mapper.getTableModel(tableClass)
 
         val promise = Promise.promise<GetItemResult>()
 
         client.getItemAsync(
             GetItemRequest()
                 .withTableName(tableName)
-                .withKey(key.toMap()),
+                .withKey(tableModel.convertKey(hashKey, rangeKey)),
             createAsyncHandler(promise)
         )
 
@@ -155,14 +158,14 @@ class DynamoDBClient private constructor(
 
     fun <T : Any> scan(
         tableClass: Class<T>,
-        scanRequest: ScanRequest
+        scanExpression: DynamoDBScanExpression
     ): Future<List<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<ScanResult>()
 
         client.scanAsync(
-            scanRequest
+            convertScanExpression(scanExpression)
                 .withTableName(tableName),
             createAsyncHandler(promise)
         )
@@ -195,19 +198,21 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    fun <T : Any> updateItem(
+    fun <T : Any, HKEY : Any, RKEY : Any> updateItem(
         tableClass: Class<T>,
-        key: TableKey,
+        hashKey: HKEY,
+        rangeKey: RKEY? = null,
         toUpdate: Map<String, AttributeValueUpdate>
     ): Future<UpdateItemResult> {
         val tableName = getTableName(tableClass)
+        val tableModel = mapper.getTableModel(tableClass)
 
         val promise = Promise.promise<UpdateItemResult>()
 
         client.updateItemAsync(
             UpdateItemRequest()
                 .withTableName(tableName)
-                .withKey(key.toMap())
+                .withKey(tableModel.convertKey(hashKey, rangeKey))
                 .withAttributeUpdates(toUpdate),
             createAsyncHandler(promise)
         )
@@ -215,18 +220,20 @@ class DynamoDBClient private constructor(
         return promise.future()
     }
 
-    fun <T : Any> deleteItem(
+    fun <T : Any, HKEY : Any, RKEY : Any> deleteItem(
         tableClass: Class<T>,
-        key: TableKey
+        hashKey: HKEY,
+        rangeKey: RKEY? = null,
     ): Future<DeleteItemResult> {
         val tableName = getTableName(tableClass)
+        val tableModel = mapper.getTableModel(tableClass)
 
         val promise = Promise.promise<DeleteItemResult>()
 
         client.deleteItemAsync(
             DeleteItemRequest()
                 .withTableName(tableName)
-                .withKey(key.toMap()),
+                .withKey(tableModel.convertKey(hashKey, rangeKey)),
             createAsyncHandler(promise)
         )
 
@@ -264,5 +271,26 @@ class DynamoDBClient private constructor(
         val tableName = mapper.generateCreateTableRequest(tableClass).tableName
         tableNamesCache[tableClass] = tableName
         return tableName
+    }
+
+    private fun convertScanExpression(scanExpression: DynamoDBScanExpression): ScanRequest {
+        val scanRequest = ScanRequest()
+
+        scanRequest.indexName = scanExpression.indexName
+        scanRequest.scanFilter = scanExpression.scanFilter
+        scanRequest.limit = scanExpression.limit
+        scanRequest.exclusiveStartKey = scanExpression.exclusiveStartKey
+        scanRequest.totalSegments = scanExpression.totalSegments
+        scanRequest.segment = scanExpression.segment
+        scanRequest.conditionalOperator = scanExpression.conditionalOperator
+        scanRequest.filterExpression = scanExpression.filterExpression
+        scanRequest.expressionAttributeNames = scanExpression.expressionAttributeNames
+        scanRequest.expressionAttributeValues = scanExpression.expressionAttributeValues
+        scanRequest.select = scanExpression.select
+        scanRequest.projectionExpression = scanExpression.projectionExpression
+        scanRequest.returnConsumedCapacity = scanExpression.returnConsumedCapacity
+        scanRequest.isConsistentRead = scanExpression.isConsistentRead
+
+        return scanRequest
     }
 }
