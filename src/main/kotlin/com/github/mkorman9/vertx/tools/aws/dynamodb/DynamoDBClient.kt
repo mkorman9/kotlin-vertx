@@ -104,7 +104,7 @@ class DynamoDBClient private constructor(
 
     fun <T : Any> getItem(
         tableClass: Class<T>,
-        key: Map<String, AttributeValue>
+        key: TableKey
     ): Future<T?> {
         val tableName = getTableName(tableClass)
 
@@ -113,7 +113,7 @@ class DynamoDBClient private constructor(
         client.getItemAsync(
             GetItemRequest()
                 .withTableName(tableName)
-                .withKey(key),
+                .withKey(key.toMap()),
             createAsyncHandler(promise)
         )
 
@@ -197,7 +197,7 @@ class DynamoDBClient private constructor(
 
     fun <T : Any> updateItem(
         tableClass: Class<T>,
-        key: Map<String, AttributeValue>,
+        key: TableKey,
         toUpdate: Map<String, AttributeValueUpdate>
     ): Future<UpdateItemResult> {
         val tableName = getTableName(tableClass)
@@ -207,7 +207,7 @@ class DynamoDBClient private constructor(
         client.updateItemAsync(
             UpdateItemRequest()
                 .withTableName(tableName)
-                .withKey(key)
+                .withKey(key.toMap())
                 .withAttributeUpdates(toUpdate),
             createAsyncHandler(promise)
         )
@@ -217,7 +217,7 @@ class DynamoDBClient private constructor(
 
     fun <T : Any> deleteItem(
         tableClass: Class<T>,
-        key: Map<String, AttributeValue>
+        key: TableKey
     ): Future<DeleteItemResult> {
         val tableName = getTableName(tableClass)
 
@@ -226,7 +226,7 @@ class DynamoDBClient private constructor(
         client.deleteItemAsync(
             DeleteItemRequest()
                 .withTableName(tableName)
-                .withKey(key),
+                .withKey(key.toMap()),
             createAsyncHandler(promise)
         )
 
