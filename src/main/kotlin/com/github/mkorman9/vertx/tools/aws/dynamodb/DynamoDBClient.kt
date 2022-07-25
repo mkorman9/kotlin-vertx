@@ -10,6 +10,7 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsync
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClientBuilder
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression
 import com.amazonaws.services.dynamodbv2.model.*
 import com.amazonaws.waiters.WaiterHandler
@@ -135,14 +136,14 @@ class DynamoDBClient private constructor(
 
     fun <T : Any> query(
         tableClass: Class<T>,
-        queryRequest: QueryRequest
+        queryExpression: DynamoDBQueryExpression<T>
     ): Future<List<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<QueryResult>()
 
         client.queryAsync(
-            queryRequest
+            convertQueryExpression(queryExpression)
                 .withTableName(tableName),
             createAsyncHandler(promise)
         )
@@ -271,6 +272,27 @@ class DynamoDBClient private constructor(
         val tableName = mapper.generateCreateTableRequest(tableClass).tableName
         tableNamesCache[tableClass] = tableName
         return tableName
+    }
+
+    private fun <T> convertQueryExpression(queryExpression: DynamoDBQueryExpression<T>): QueryRequest {
+        val queryRequest = QueryRequest()
+
+        queryRequest.isConsistentRead = queryExpression.isConsistentRead
+        queryRequest.indexName = queryExpression.indexName
+        queryRequest.keyConditionExpression = queryExpression.keyConditionExpression
+        queryRequest.withScanIndexForward(queryExpression.isScanIndexForward)
+            .withLimit(queryExpression.limit)
+            .withExclusiveStartKey(queryExpression.exclusiveStartKey)
+            .withQueryFilter(queryExpression.queryFilter)
+            .withConditionalOperator(queryExpression.conditionalOperator)
+            .withSelect(queryExpression.select)
+            .withProjectionExpression(queryExpression.projectionExpression)
+            .withFilterExpression(queryExpression.filterExpression)
+            .withExpressionAttributeNames(queryExpression.expressionAttributeNames)
+            .withExpressionAttributeValues(queryExpression.expressionAttributeValues)
+            .withReturnConsumedCapacity(queryExpression.returnConsumedCapacity)
+
+        return queryRequest
     }
 
     private fun convertScanExpression(scanExpression: DynamoDBScanExpression): ScanRequest {
