@@ -205,9 +205,9 @@ class DynamoDBClient private constructor(
 
     fun <T : Any, HKEY : Any, RKEY : Any> updateItem(
         tableClass: Class<T>,
+        toUpdate: Map<String, AttributeValueUpdate>,
         hashKey: HKEY,
-        rangeKey: RKEY? = null,
-        toUpdate: Map<String, AttributeValueUpdate>
+        rangeKey: RKEY? = null
     ): Future<UpdateItemResult> {
         val tableName = getTableName(tableClass)
         val tableModel = mapper.getTableModel(tableClass)
