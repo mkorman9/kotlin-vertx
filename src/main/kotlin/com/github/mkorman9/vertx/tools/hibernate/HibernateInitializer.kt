@@ -40,15 +40,11 @@ object HibernateInitializer {
 
         // Hibernate needs to be initialized inside the context of Vert.x thread pool
         return vertx.executeBlocking { call ->
-            try {
-                val sessionFactory = Persistence
-                    .createEntityManagerFactory("default", props)
-                    .unwrap(SessionFactory::class.java)
+            val sessionFactory = Persistence
+                .createEntityManagerFactory("default", props)
+                .unwrap(SessionFactory::class.java)
 
-                call.complete(sessionFactory)
-            } catch (e: Exception) {
-                call.fail(e)
-            }
+            call.complete(sessionFactory)
         }
     }
 }
