@@ -150,11 +150,22 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
+                var fetchNextPage: DynamoDBResultFetcher<T>? = null
+                if (result.lastEvaluatedKey != null) {
+                    fetchNextPage = {
+                        query(
+                            tableClass,
+                            queryExpression
+                                .withExclusiveStartKey(result.lastEvaluatedKey)
+                        )
+                    }
+                }
+
                 DynamoDBResult(
                     items = mapper.marshallIntoObjects(tableClass, result.items),
                     count = result.count,
                     scannedCount = result.scannedCount,
-                    lastKey = result.lastEvaluatedKey
+                    fetchNextPage = fetchNextPage
                 )
             }
     }
@@ -175,11 +186,22 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
+                var fetchNextPage: DynamoDBResultFetcher<T>? = null
+                if (result.lastEvaluatedKey != null) {
+                    fetchNextPage = {
+                        scan(
+                            tableClass,
+                            scanExpression
+                                .withExclusiveStartKey(result.lastEvaluatedKey)
+                        )
+                    }
+                }
+
                 DynamoDBResult(
                     items = mapper.marshallIntoObjects(tableClass, result.items),
                     count = result.count,
                     scannedCount = result.scannedCount,
-                    lastKey = result.lastEvaluatedKey
+                    fetchNextPage = fetchNextPage
                 )
             }
     }
