@@ -2,6 +2,7 @@ package com.github.mkorman9.vertx.tools.postgres
 
 import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.get
+import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.jdbc.JDBCClient
@@ -17,7 +18,7 @@ import java.sql.Connection
 object LiquibaseExecutor {
     private const val CHANGELOG_PATH = "classpath:/liquibase/changelog.xml"
 
-    fun migrateSchema(vertx: Vertx, config: Config) {
+    fun migrateSchema(vertx: Vertx, config: Config): Future<Void> {
         val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
         val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
         val password = config.get<String>("db.password")
@@ -34,19 +35,22 @@ object LiquibaseExecutor {
                 .put("acquire_retry_delay", 1000)
         ) as JDBCClientImpl
 
-        val connection = client.connection
+        return client.connection
             .map<Connection>(SQLConnection::unwrap)
-            .toCompletionStage()
-            .toCompletableFuture()
-            .join()
-        val database = DatabaseFactory.getInstance()
-            .findCorrectDatabaseImplementation(JdbcConnection(connection))
+            .map { connection ->
+                val database = DatabaseFactory.getInstance()
+                    .findCorrectDatabaseImplementation(JdbcConnection(connection))
+                val resourceAccessor = ClassLoaderResourceAccessor()
 
-        val resourceAccessor = ClassLoaderResourceAccessor()
-        val liquibase = Liquibase(CHANGELOG_PATH, resourceAccessor, database)
+                Liquibase(CHANGELOG_PATH, resourceAccessor, database)
+            }
+            .compose { liquibase ->
+                vertx.executeBlocking { call ->
+                    liquibase.update(null as Contexts?)
+                    client.close()
 
-        liquibase.update(null as Contexts?)
-
-        client.close()
+                    call.complete()
+                }
+            }
     }
 }

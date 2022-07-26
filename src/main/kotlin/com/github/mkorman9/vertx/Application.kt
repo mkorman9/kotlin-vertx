@@ -25,12 +25,14 @@ class Application {
             val config = ConfigReader.read(vertx)
 
             LiquibaseExecutor.migrateSchema(vertx, config)
+                .toCompletionStage()
+                .toCompletableFuture()
+                .join()
 
             sessionFactory = HibernateInitializer.initialize(vertx, config)
                 .toCompletionStage()
                 .toCompletableFuture()
                 .join()
-
             sqsClient = SQSClient.create(config)
 
             val services = Services.create(sessionFactory, sqsClient)
