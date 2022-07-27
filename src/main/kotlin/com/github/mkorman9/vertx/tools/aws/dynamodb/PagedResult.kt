@@ -10,11 +10,11 @@ data class PagedResult<T>(
     val scannedCount: Int,
     private val fetchNextPage: PagedResultFetcher<T>?
 ) {
-    internal fun hasNextPage(): Boolean {
+    fun hasNextPage(): Boolean {
         return fetchNextPage != null
     }
 
-    internal fun nextPage(): Future<PagedResult<T>> {
+    fun nextPage(): Future<PagedResult<T>> {
         if (fetchNextPage != null) {
             return fetchNextPage.invoke()
         } else {
