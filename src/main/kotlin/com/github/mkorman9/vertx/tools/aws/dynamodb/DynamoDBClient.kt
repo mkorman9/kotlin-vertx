@@ -137,7 +137,7 @@ class DynamoDBClient private constructor(
     fun <T : Any> query(
         tableClass: Class<T>,
         queryExpression: DynamoDBQueryExpression<T>
-    ): Future<DynamoDBResult<T>> {
+    ): Future<PagedResult<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<QueryResult>()
@@ -150,7 +150,7 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
-                var fetchNextPage: DynamoDBResultFetcher<T>? = null
+                var fetchNextPage: PagedResultFetcher<T>? = null
                 if (result.lastEvaluatedKey != null) {
                     fetchNextPage = {
                         query(
@@ -161,7 +161,7 @@ class DynamoDBClient private constructor(
                     }
                 }
 
-                DynamoDBResult(
+                PagedResult(
                     items = mapper.marshallIntoObjects(tableClass, result.items),
                     count = result.count,
                     scannedCount = result.scannedCount,
@@ -173,7 +173,7 @@ class DynamoDBClient private constructor(
     fun <T : Any> scan(
         tableClass: Class<T>,
         scanExpression: DynamoDBScanExpression
-    ): Future<DynamoDBResult<T>> {
+    ): Future<PagedResult<T>> {
         val tableName = getTableName(tableClass)
 
         val promise = Promise.promise<ScanResult>()
@@ -186,7 +186,7 @@ class DynamoDBClient private constructor(
 
         return promise.future()
             .map { result ->
-                var fetchNextPage: DynamoDBResultFetcher<T>? = null
+                var fetchNextPage: PagedResultFetcher<T>? = null
                 if (result.lastEvaluatedKey != null) {
                     fetchNextPage = {
                         scan(
@@ -197,7 +197,7 @@ class DynamoDBClient private constructor(
                     }
                 }
 
-                DynamoDBResult(
+                PagedResult(
                     items = mapper.marshallIntoObjects(tableClass, result.items),
                     count = result.count,
                     scannedCount = result.scannedCount,

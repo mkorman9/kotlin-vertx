@@ -2,19 +2,19 @@ package com.github.mkorman9.vertx.tools.aws.dynamodb
 
 import io.vertx.core.Future
 
-typealias DynamoDBResultFetcher<T> = () -> Future<DynamoDBResult<T>>
+typealias PagedResultFetcher<T> = () -> Future<PagedResult<T>>
 
-data class DynamoDBResult<T>(
+data class PagedResult<T>(
     val items: List<T>,
     val count: Int,
     val scannedCount: Int,
-    private val fetchNextPage: DynamoDBResultFetcher<T>?
-) {
-    fun hasMorePages(): Boolean {
+    private val fetchNextPage: PagedResultFetcher<T>?
+): Iterator<Future<PagedResult<T>>> {
+    override fun hasNext(): Boolean {
         return fetchNextPage != null
     }
 
-    fun nextPage(): Future<DynamoDBResult<T>> {
+    override fun next(): Future<PagedResult<T>> {
         if (fetchNextPage != null) {
             return fetchNextPage.invoke()
         } else {
