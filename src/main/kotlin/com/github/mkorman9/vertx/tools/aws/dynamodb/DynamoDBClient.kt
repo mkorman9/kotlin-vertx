@@ -134,16 +134,16 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T : Any> queryPaged(
+    fun <T : Any> query(
         tableClass: Class<T>,
         queryExpression: DynamoDBQueryExpression<T>
     ): PagedResultIterator<T> {
         return PagedResultIterator(
-            query(tableClass, queryExpression)
+            queryFirstPage(tableClass, queryExpression)
         )
     }
 
-    fun <T : Any> query(
+    fun <T : Any> queryFirstPage(
         tableClass: Class<T>,
         queryExpression: DynamoDBQueryExpression<T>
     ): Future<PagedResult<T>> {
@@ -162,7 +162,7 @@ class DynamoDBClient private constructor(
                 var fetchNextPage: PagedResultFetcher<T>? = null
                 if (result.lastEvaluatedKey != null) {
                     fetchNextPage = {
-                        query(
+                        queryFirstPage(
                             tableClass,
                             queryExpression
                                 .withExclusiveStartKey(result.lastEvaluatedKey)
@@ -179,16 +179,16 @@ class DynamoDBClient private constructor(
             }
     }
 
-    fun <T : Any> scanPaged(
+    fun <T : Any> scan(
         tableClass: Class<T>,
         scanExpression: DynamoDBScanExpression
     ): PagedResultIterator<T> {
         return PagedResultIterator(
-            scan(tableClass, scanExpression)
+            scanFirstPage(tableClass, scanExpression)
         )
     }
 
-    fun <T : Any> scan(
+    fun <T : Any> scanFirstPage(
         tableClass: Class<T>,
         scanExpression: DynamoDBScanExpression
     ): Future<PagedResult<T>> {
@@ -207,7 +207,7 @@ class DynamoDBClient private constructor(
                 var fetchNextPage: PagedResultFetcher<T>? = null
                 if (result.lastEvaluatedKey != null) {
                     fetchNextPage = {
-                        scan(
+                        scanFirstPage(
                             tableClass,
                             scanExpression
                                 .withExclusiveStartKey(result.lastEvaluatedKey)
