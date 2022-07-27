@@ -134,6 +134,15 @@ class DynamoDBClient private constructor(
             }
     }
 
+    fun <T : Any> queryPaged(
+        tableClass: Class<T>,
+        queryExpression: DynamoDBQueryExpression<T>
+    ): PagedResultIterator<T> {
+        return PagedResultIterator(
+            query(tableClass, queryExpression)
+        )
+    }
+
     fun <T : Any> query(
         tableClass: Class<T>,
         queryExpression: DynamoDBQueryExpression<T>
@@ -168,6 +177,15 @@ class DynamoDBClient private constructor(
                     fetchNextPage = fetchNextPage
                 )
             }
+    }
+
+    fun <T : Any> scanPaged(
+        tableClass: Class<T>,
+        scanExpression: DynamoDBScanExpression
+    ): PagedResultIterator<T> {
+        return PagedResultIterator(
+            scan(tableClass, scanExpression)
+        )
     }
 
     fun <T : Any> scan(
