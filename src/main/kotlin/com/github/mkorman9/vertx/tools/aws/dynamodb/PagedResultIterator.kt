@@ -3,9 +3,10 @@ package com.github.mkorman9.vertx.tools.aws.dynamodb
 import io.vertx.core.Future
 
 class PagedResultIterator<T> internal constructor(
-    private var head: Future<PagedResult<T>>,
-    private var hasNextPage: Boolean = true
+    private var head: Future<PagedResult<T>>
 ): Iterator<Future<PagedResult<T>>>  {
+    private var hasNextPage: Boolean = true
+
     override fun hasNext(): Boolean {
         return hasNextPage
     }
