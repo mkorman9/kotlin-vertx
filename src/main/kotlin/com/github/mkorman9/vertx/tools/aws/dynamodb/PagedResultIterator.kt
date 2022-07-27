@@ -2,6 +2,8 @@ package com.github.mkorman9.vertx.tools.aws.dynamodb
 
 import io.vertx.core.Future
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class PagedResultIterator<T> internal constructor(
     private var head: Future<PagedResult<T>>
@@ -30,6 +32,16 @@ class PagedResultIterator<T> internal constructor(
         forEach { resultFuture ->
             val result = resultFuture.await()
             f(result)
+        }
+    }
+
+    suspend fun items(): Flow<T> {
+        return flow {
+            forEachAsync { result ->
+                result.items.forEach { item ->
+                    emit(item)
+                }
+            }
         }
     }
 }
