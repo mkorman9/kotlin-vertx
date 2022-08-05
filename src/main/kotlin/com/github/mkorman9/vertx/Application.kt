@@ -6,6 +6,7 @@ import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
+import com.github.mkorman9.vertx.utils.Config
 import com.github.mkorman9.vertx.utils.ConfigReader
 import com.github.mkorman9.vertx.utils.ShutdownHook
 import io.vertx.core.Vertx
@@ -27,30 +28,13 @@ class Application {
 
     fun bootstrap() {
         try {
-            vertx = Vertx.vertx(
-                VertxOptions()
-                .setPreferNativeTransport(true)
-                .setMetricsOptions(
-                    MicrometerMetricsOptions()
-                        .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true))
-                        .setEnabled(true)
-                )
-            )
+            createVertx()
 
             val config = ConfigReader.read(vertx)
 
-            LiquibaseExecutor.migrateSchema(vertx, config)
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
+            migrateDbSchema(config)
 
-            sessionFactory = HibernateInitializer.initialize(vertx, config)
-                .toCompletionStage()
-                .toCompletableFuture()
-                .join()
-            sqsClient = SQSClient.create(config)
-
-            val services = Services.create(sessionFactory, sqsClient)
+            val services = createServices(config)
 
             BootstrapUtils.bootstrap(
                 vertx = vertx,
@@ -79,5 +63,35 @@ class Application {
         sessionFactory.close()
 
         log.info("App has been stopped")
+    }
+
+    private fun createVertx() {
+        vertx = Vertx.vertx(
+            VertxOptions()
+                .setPreferNativeTransport(true)
+                .setMetricsOptions(
+                    MicrometerMetricsOptions()
+                        .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true))
+                        .setEnabled(true)
+                )
+        )
+    }
+
+    private fun createServices(config: Config): Services {
+        sessionFactory = HibernateInitializer.initialize(vertx, config)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+
+        sqsClient = SQSClient.create(config)
+
+        return Services.create(sessionFactory, sqsClient)
+    }
+
+    private fun migrateDbSchema(config: Config) {
+        LiquibaseExecutor.migrateSchema(vertx, config)
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
     }
 }
