@@ -69,7 +69,15 @@ jobs:
         with:
           name: kotlin-vertx-version
 
-      - name: Build Docker Image
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Push to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: kotlin-vertx
         run: |
           VERSION="$(cat version.txt)"
-          docker build -t mkorman/kotlin-vertx:$VERSION .
+          docker build -t $REGISTRY/$REPOSITORY:$VERSION .
+          docker push $REGISTRY/$REPOSITORY:$VERSION
