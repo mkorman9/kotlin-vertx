@@ -72,4 +72,5 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t mkorman/kotlin-vertx .
+          VERSION="$(cat version.txt)"
+          docker build -t mkorman/kotlin-vertx:$VERSION .
