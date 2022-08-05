@@ -7,8 +7,12 @@ import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.BootstrapUtils
 import com.github.mkorman9.vertx.utils.ConfigReader
+import com.github.mkorman9.vertx.utils.ShutdownHook
 import io.vertx.core.Vertx
+import io.vertx.core.VertxOptions
 import io.vertx.core.impl.logging.LoggerFactory
+import io.vertx.micrometer.MicrometerMetricsOptions
+import io.vertx.micrometer.VertxPrometheusOptions
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
@@ -17,11 +21,22 @@ class Application {
         private val log = LoggerFactory.getLogger(Application::class.java)
     }
 
+    private lateinit var vertx: Vertx
     private lateinit var sessionFactory: SessionFactory
     private lateinit var sqsClient: SQSClient
 
-    fun bootstrap(vertx: Vertx) {
+    fun bootstrap() {
         try {
+            vertx = Vertx.vertx(
+                VertxOptions()
+                .setPreferNativeTransport(true)
+                .setMetricsOptions(
+                    MicrometerMetricsOptions()
+                        .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true))
+                        .setEnabled(true)
+                )
+            )
+
             val config = ConfigReader.read(vertx)
 
             LiquibaseExecutor.migrateSchema(vertx, config)
@@ -48,9 +63,18 @@ class Application {
             log.error("Failed to bootstrap the app", e)
             exitProcess(1)
         }
+
+        ShutdownHook.register {
+            shutdown()
+        }
     }
 
     fun shutdown() {
+        vertx.close()
+            .toCompletionStage()
+            .toCompletableFuture()
+            .join()
+
         sqsClient.close()
         sessionFactory.close()
 
