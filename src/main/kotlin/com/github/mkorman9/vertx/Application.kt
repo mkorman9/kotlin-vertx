@@ -53,7 +53,7 @@ class Application {
         }
     }
 
-    fun shutdown() {
+    private fun shutdown() {
         vertx.close()
             .toCompletionStage()
             .toCompletableFuture()
