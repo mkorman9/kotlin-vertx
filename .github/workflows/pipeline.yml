@@ -31,11 +31,21 @@ jobs:
       with:
         arguments: build
 
+    - name: Save Version
+      run: |
+        ./gradlew -q cV | sed -rn '/Project version:/p' | sed -e 's/Project version: //g' | tr -d '\n' > version.txt
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: kotlin-vertx-jar
         path: build/libs/app.jar
+
+    - name: Upload Version File
+      uses: actions/upload-artifact@v3
+      with:
+        name: kotlin-vertx-version
+        path: version.txt
 
   package:
     runs-on: ubuntu-latest
@@ -53,6 +63,12 @@ jobs:
         with:
           name: kotlin-vertx-jar
           path: build/libs/app.jar
+
+      - name: Download Version File
+        uses: actions/download-artifact@master
+        with:
+          name: kotlin-vertx-version
+          path: version.txt
 
       - name: Build Docker Image
         run: |
