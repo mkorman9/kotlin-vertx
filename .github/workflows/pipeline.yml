@@ -69,6 +69,11 @@ jobs:
         with:
           name: kotlin-vertx-version
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-central-1
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
