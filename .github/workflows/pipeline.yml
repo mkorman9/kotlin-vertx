@@ -62,13 +62,12 @@ jobs:
         uses: actions/download-artifact@master
         with:
           name: kotlin-vertx-jar
-          path: build/libs/app.jar
+          path: build/libs
 
       - name: Download Version File
         uses: actions/download-artifact@master
         with:
           name: kotlin-vertx-version
-          path: version.txt
 
       - name: Build Docker Image
         run: |
