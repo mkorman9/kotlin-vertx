@@ -17,10 +17,8 @@ import io.vertx.micrometer.VertxPrometheusOptions
 import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
-class Application {
-    companion object {
-        private val log = LoggerFactory.getLogger(Application::class.java)
-    }
+object Application {
+    private val log = LoggerFactory.getLogger(Application::class.java)
 
     private lateinit var vertx: Vertx
     private lateinit var sessionFactory: SessionFactory

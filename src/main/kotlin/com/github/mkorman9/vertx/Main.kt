@@ -4,6 +4,5 @@ fun main() {
     System.setProperty("vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory")
     System.setProperty("user.timezone", "UTC")
 
-    val application = Application()
-    application.bootstrap()
+    Application.bootstrap()
 }
