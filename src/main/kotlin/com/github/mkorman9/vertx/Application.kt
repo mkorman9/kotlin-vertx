@@ -5,10 +5,7 @@ import com.github.mkorman9.vertx.common.getVerticlesToDeploy
 import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
-import com.github.mkorman9.vertx.utils.BootstrapUtils
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.ConfigReader
-import com.github.mkorman9.vertx.utils.ShutdownHook
+import com.github.mkorman9.vertx.utils.*
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.impl.logging.LoggerFactory
@@ -40,7 +37,7 @@ object Application {
                 verticles = getVerticlesToDeploy(services)
             )
 
-            log.info("App has been bootstrapped successfully")
+            log.info("App has been bootstrapped successfully (version: ${DeploymentInfo.get().version})")
         } catch (e: Exception) {
             log.error("Failed to bootstrap the app", e)
             exitProcess(1)
