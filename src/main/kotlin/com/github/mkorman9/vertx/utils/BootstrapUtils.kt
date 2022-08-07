@@ -14,6 +14,8 @@ object BootstrapUtils {
     }
 
     fun bootstrap(vertx: Vertx, config: Config, verticles: List<VerticleDefinition>) {
+        DeploymentInfo.initialize(config)
+
         val futures = verticles
             .flatMap { definition ->
                 val futures = mutableListOf<Future<*>>()

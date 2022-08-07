@@ -15,13 +15,16 @@ class DeploymentInfo private constructor(
         private const val DEFAULT_ENVIRONMENT = "default"
         private const val DEFAULT_PROFILE = "local"
 
-        private val instance =
-            DeploymentInfo(
+        private lateinit var instance: DeploymentInfo
+
+        internal fun initialize(config: Config) {
+            instance = DeploymentInfo(
                 version = readVersion() ?: DEFAULT_VERSION,
                 startupTime = Instant.now(),
-                environment = System.getenv("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT,
-                profile = System.getenv("PROFILE") ?: DEFAULT_PROFILE
+                environment = config.get<String>("ENVIRONMENT_NAME") ?: DEFAULT_ENVIRONMENT,
+                profile = config.get<String>("PROFILE") ?: DEFAULT_PROFILE
             )
+        }
 
         fun get(): DeploymentInfo {
             return instance
