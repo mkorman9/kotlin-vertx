@@ -33,10 +33,7 @@ object TestConfigurator {
                 DeploymentOptions()
                     .setConfig(
                         Config()
-                            .put("server",
-                                Config()
-                                    .put("port", 0)
-                            )
+                            .put("SERVER_PORT", 0)
                     )
             )
             .map {
