@@ -25,6 +25,8 @@ object TestConfigurator {
     }
 
     fun deployHttpServer(vertx: Vertx, services: Services): Future<Int> {
+        DeploymentInfo.initialize(Config())
+
         val verticle = HttpServerVerticle(services)
 
         return vertx
