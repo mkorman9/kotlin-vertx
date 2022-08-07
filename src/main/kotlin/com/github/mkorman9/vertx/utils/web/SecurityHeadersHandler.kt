@@ -7,7 +7,7 @@ import com.github.mkorman9.vertx.utils.get
 
 object SecurityHeadersHandler {
     fun create(config: Config): Handler<RoutingContext> {
-        val isEnabled = config.get<Boolean>("server.security.headers") ?: false
+        val isEnabled = config.get<Boolean>("SERVER_SECURITY_HEADERS") ?: false
 
         return Handler { ctx ->
             if (isEnabled) {

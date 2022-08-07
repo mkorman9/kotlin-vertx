@@ -6,8 +6,7 @@ import io.vertx.core.json.pointer.JsonPointer
 typealias Config = JsonObject
 
 inline fun <reified T> Config.get(path: String): T? {
-    val pointer = "/${path.replace(".", "/")}"
-    val value = JsonPointer.from(pointer).queryJson(this)
+    val value = JsonPointer.from("/$path").queryJson(this)
 
     return if (value is T?) {
         value

@@ -36,8 +36,8 @@ class DynamoDBClient private constructor(
     private val tableNamesCache = mutableMapOf<Class<*>, String>()
 
     init {
-        val emulatorEnabled = config.get<Boolean>("aws.dynamodb.emulator.enabled") ?: false
-        val emulatorAddress = config.get<String>("aws.dynamodb.emulator.address") ?: "localhost:4100"
+        val emulatorEnabled = config.get<Boolean>("AWS_DYNAMODB_EMULATOR_ENABLED") ?: false
+        val emulatorAddress = config.get<String>("AWS_DYNAMODB_EMULATOR_ADDRESS") ?: "localhost:4100"
 
         if (emulatorEnabled) {
             client = AmazonDynamoDBAsyncClientBuilder.standard()

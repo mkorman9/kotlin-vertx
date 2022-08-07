@@ -9,19 +9,19 @@ import javax.persistence.Persistence
 
 object HibernateInitializer {
     fun initialize(vertx: Vertx, config: Config): Future<SessionFactory> {
-        val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
-        val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
-        val password = config.get<String>("db.password")
-            ?: throw RuntimeException("db.password is missing from config")
+        val uri = config.get<String>("DB_URI") ?: throw RuntimeException("DB_URI is missing from config")
+        val user = config.get<String>("DB_USER") ?: throw RuntimeException("DB_USER is missing from config")
+        val password = config.get<String>("DB_PASSWORD")
+            ?: throw RuntimeException("DB_PASSWORD is missing from config")
 
-        val poolSize = config.get<Int>("db.pool.size") ?: 8
-        val connectTimeout = config.get<Int>("db.pool.timeouts.connect") ?: 30_000
-        val idleTimeout = config.get<Int>("db.pool.timeouts.idle") ?: 0
-        val cleanerPeriod = config.get<Int>("db.pool.cleaner") ?: 1000
+        val poolSize = config.get<Int>("DB_POOL_SIZE") ?: 8
+        val connectTimeout = config.get<Int>("DB_POOL_TIMEOUTS_CONNECT") ?: 30_000
+        val idleTimeout = config.get<Int>("DB_POOL_TIMEOUTS_IDLE") ?: 0
+        val cleanerPeriod = config.get<Int>("DB_POOL_CLEANER_PERIOD") ?: 1000
 
-        val showSql = config.get<Boolean>("db.sql.show") ?: false
-        val formatSql = config.get<Boolean>("db.sql.format") ?: false
-        val highlightSql = config.get<Boolean>("db.sql.highlight") ?: false
+        val showSql = config.get<Boolean>("DB_SQL_SHOW") ?: false
+        val formatSql = config.get<Boolean>("DB_SQL_FORMAT") ?: false
+        val highlightSql = config.get<Boolean>("DB_SQL_HIGHLIGHT") ?: false
 
         val props = mapOf(
             "hibernate.connection.url" to uri,

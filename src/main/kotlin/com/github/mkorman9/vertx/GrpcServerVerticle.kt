@@ -23,7 +23,7 @@ class GrpcServerVerticle(
         try {
             vertx.executeBlocking<Void> { call ->
                 server = ServerBuilder
-                    .forPort(config.get<Int>("grpc.port") ?: 9090)
+                    .forPort(config.get<Int>("GRPC_PORT") ?: 9090)
                     .addService(ClientServiceGrpcImpl(services, verticleContext))
                     .build()
                     .start()

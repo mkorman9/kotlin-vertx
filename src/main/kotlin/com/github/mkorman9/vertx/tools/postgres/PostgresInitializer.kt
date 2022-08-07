@@ -10,18 +10,18 @@ import io.vertx.sqlclient.SqlClient
 
 object PostgresInitializer {
     fun initialize(vertx: Vertx, config: Config): SqlClient {
-        val host = config.get<String>("db.host") ?: throw RuntimeException("db.host is missing from config")
-        val database = config.get<String>("db.database") ?: throw RuntimeException("db.database is missing from config")
-        val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
-        val password = config.get<String>("db.password")
-            ?: throw RuntimeException("db.password is missing from config")
-        val port = config.get<Int>("db.port") ?: 5432
-        val tls = config.get<Boolean>("db.tls") ?: false
+        val host = config.get<String>("DB_HOST") ?: throw RuntimeException("DB_HOST is missing from config")
+        val database = config.get<String>("DB_DATABASE") ?: throw RuntimeException("DB_DATABASE is missing from config")
+        val user = config.get<String>("DB_USER") ?: throw RuntimeException("DB_USER is missing from config")
+        val password = config.get<String>("DB_PASSWORD")
+            ?: throw RuntimeException("DB_PASSWORD is missing from config")
+        val port = config.get<Int>("DB_PORT") ?: 5432
+        val tls = config.get<Boolean>("DB_TLS") ?: false
 
-        val poolSize = config.get<Int>("db.pool.size") ?: 8
-        val connectTimeout = config.get<Int>("db.pool.timeouts.connect") ?: 30
-        val idleTimeout = config.get<Int>("db.pool.timeouts.idle") ?: 0
-        val cleanerPeriod = config.get<Int>("db.pool.cleaner") ?: 1000
+        val poolSize = config.get<Int>("DB_POOL_SIZE") ?: 8
+        val connectTimeout = config.get<Int>("DB_POOL_TIMEOUTS_CONNECT") ?: 30
+        val idleTimeout = config.get<Int>("DB_POOL_TIMEOUTS_IDLE") ?: 0
+        val cleanerPeriod = config.get<Int>("DB_POOL_CLEANER_PERIOD") ?: 1000
 
         val connectOptions = PgConnectOptions()
             .setHost(host)

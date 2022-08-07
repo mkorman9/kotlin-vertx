@@ -19,10 +19,10 @@ object LiquibaseExecutor {
     private const val CHANGELOG_PATH = "classpath:/liquibase/changelog.xml"
 
     fun migrateSchema(vertx: Vertx, config: Config): Future<Void> {
-        val uri = config.get<String>("db.uri") ?: throw RuntimeException("db.uri is missing from config")
-        val user = config.get<String>("db.user") ?: throw RuntimeException("db.user is missing from config")
-        val password = config.get<String>("db.password")
-            ?: throw RuntimeException("db.password is missing from config")
+        val uri = config.get<String>("DB_URI") ?: throw RuntimeException("DB_URI is missing from config")
+        val user = config.get<String>("DB_USER") ?: throw RuntimeException("DB_USER is missing from config")
+        val password = config.get<String>("DB_PASSWORD")
+            ?: throw RuntimeException("DB_PASSWORD is missing from config")
 
         val client = JDBCClient.createShared(
             vertx,

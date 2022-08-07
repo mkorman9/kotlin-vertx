@@ -25,8 +25,8 @@ class HttpServerVerticle(
             server = vertx
                 .createHttpServer(
                     httpServerOptionsOf(
-                        host = config.get<String>("server.host") ?: "0.0.0.0",
-                        port = config.get<Int>("server.port") ?: 8080,
+                        host = config.get<String>("SERVER_HOST") ?: "0.0.0.0",
+                        port = config.get<Int>("SERVER_PORT") ?: 8080,
                         tcpFastOpen = true,
                         tcpCork = true,
                         reusePort = true

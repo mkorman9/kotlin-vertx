@@ -52,8 +52,8 @@ class SQSClient private constructor(
     private val ephemeralSubscriptions: ConcurrentHashSet<String> = ConcurrentHashSet()
 
     init {
-        emulatorEnabled = config.get<Boolean>("aws.sqs.emulator.enabled") ?: false
-        emulatorAddress = config.get<String>("aws.sqs.emulator.address") ?: "localhost:4100"
+        emulatorEnabled = config.get<Boolean>("AWS_SQS_EMULATOR_ENABLED") ?: false
+        emulatorAddress = config.get<String>("AWS_SQS_EMULATOR_ADDRESS") ?: "localhost:4100"
 
         val sqsBuilder = AmazonSQSAsyncClientBuilder.standard()
         val snsBuilder = AmazonSNSAsyncClientBuilder.standard()

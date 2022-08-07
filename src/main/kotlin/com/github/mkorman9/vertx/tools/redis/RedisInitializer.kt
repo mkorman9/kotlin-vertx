@@ -10,12 +10,12 @@ import io.vertx.redis.client.RedisOptions
 
 object RedisInitializer {
     fun initialize(vertx: Vertx, config: Config): Future<RedisAPI> {
-        val uri = config.get<String>("redis.uri") ?: throw RuntimeException("redis.uri is missing from config")
-        val password = config.get<String>("redis.password")
-        val poolSize = config.get<Int>("redis.pool.size") ?: 6
-        val poolWaiting = config.get<Int>("redis.pool.waiting") ?: 24
-        val poolCleanerInterval = config.get<Int>("redis.pool.cleaner.interval") ?: 30_000
-        val poolRecycleTimeout = config.get<Int>("redis.pool.recycle.timeout") ?: 180_000
+        val uri = config.get<String>("REDIS_URI") ?: throw RuntimeException("REDIS_URI is missing from config")
+        val password = config.get<String>("REDIS_PASSWORD")
+        val poolSize = config.get<Int>("REDIS_POOL_SIZE") ?: 6
+        val poolWaiting = config.get<Int>("REDIS_POOL_WAITING") ?: 24
+        val poolCleanerInterval = config.get<Int>("REDIS_POOL_CLEANER_INTERVAL") ?: 30_000
+        val poolRecycleTimeout = config.get<Int>("REDIS_POOL_RECYCLE_TIMEOUT") ?: 180_000
 
         val options = RedisOptions()
         options.setConnectionString(uri)
