@@ -14,7 +14,7 @@ object ConfigReader {
             .setOptional(true)
             .setConfig(
                 JsonObject()
-                .put("path", System.getenv().getOrDefault("ENV_FILE", "./.env"))
+                    .put("path", System.getenv().getOrDefault("ENV_FILE", "./.env"))
             )
         val envVarsStore = ConfigStoreOptions()
             .setType("env")
