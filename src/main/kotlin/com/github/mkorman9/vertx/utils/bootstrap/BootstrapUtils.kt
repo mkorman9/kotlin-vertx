@@ -1,5 +1,8 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.bootstrap
 
+import com.github.mkorman9.vertx.utils.core.Config
+import com.github.mkorman9.vertx.utils.core.DeploymentInfo
+import com.github.mkorman9.vertx.utils.core.JsonCodec
 import io.vertx.core.CompositeFuture
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future

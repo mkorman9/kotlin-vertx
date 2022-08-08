@@ -1,8 +1,8 @@
 package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.verticleContext
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.core.verticleContext
+import com.github.mkorman9.vertx.utils.core.get
 import io.vertx.core.http.HttpServer
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.core.http.httpServerOptionsOf

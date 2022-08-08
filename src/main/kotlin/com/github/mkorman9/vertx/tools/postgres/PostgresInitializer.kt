@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.tools.postgres
 
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.core.Config
+import com.github.mkorman9.vertx.utils.core.get
 import io.vertx.core.Vertx
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool

@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.core
 
 import java.io.IOException
 import java.time.Instant

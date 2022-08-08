@@ -6,6 +6,10 @@ import com.github.mkorman9.vertx.tools.aws.sqs.SQSClient
 import com.github.mkorman9.vertx.tools.hibernate.HibernateInitializer
 import com.github.mkorman9.vertx.tools.postgres.LiquibaseExecutor
 import com.github.mkorman9.vertx.utils.*
+import com.github.mkorman9.vertx.utils.bootstrap.BootstrapUtils
+import com.github.mkorman9.vertx.utils.core.Config
+import com.github.mkorman9.vertx.utils.core.ConfigReader
+import com.github.mkorman9.vertx.utils.core.DeploymentInfo
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.impl.logging.LoggerFactory

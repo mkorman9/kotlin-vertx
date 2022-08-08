@@ -18,8 +18,8 @@ import com.amazonaws.services.sqs.model.CreateQueueResult
 import com.amazonaws.services.sqs.model.SendMessageRequest
 import com.amazonaws.services.sqs.model.SendMessageResult
 import com.github.mkorman9.vertx.tools.aws.createAsyncHandler
-import com.github.mkorman9.vertx.utils.Config
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.core.Config
+import com.github.mkorman9.vertx.utils.core.get
 import io.vertx.core.Future
 import io.vertx.core.Promise
 import io.vertx.core.Vertx

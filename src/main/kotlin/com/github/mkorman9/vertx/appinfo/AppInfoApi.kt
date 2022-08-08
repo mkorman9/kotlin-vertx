@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.appinfo
 
-import com.github.mkorman9.vertx.utils.DeploymentInfo
-import com.github.mkorman9.vertx.utils.VerticleContext
+import com.github.mkorman9.vertx.utils.core.DeploymentInfo
+import com.github.mkorman9.vertx.utils.core.VerticleContext
 import com.github.mkorman9.vertx.utils.web.coroutineHandler
 import com.github.mkorman9.vertx.utils.web.endWithJson
 import io.vertx.ext.web.Router

@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.core
 
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.EventBus

@@ -4,7 +4,7 @@ import com.github.mkorman9.vertx.GrpcServerVerticle
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.client.ClientEventsVerticle
 import com.github.mkorman9.vertx.security.ExpiredSessionsCleanerVerticle
-import com.github.mkorman9.vertx.utils.VerticleDefinition
+import com.github.mkorman9.vertx.utils.bootstrap.VerticleDefinition
 
 fun getVerticlesToDeploy(services: Services): List<VerticleDefinition> {
     return listOf(

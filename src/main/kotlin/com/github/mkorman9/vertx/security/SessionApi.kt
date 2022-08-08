@@ -3,7 +3,7 @@ package com.github.mkorman9.vertx.security
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.utils.SecureRandomGenerator
-import com.github.mkorman9.vertx.utils.VerticleContext
+import com.github.mkorman9.vertx.utils.core.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await

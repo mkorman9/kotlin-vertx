@@ -1,9 +1,9 @@
 package com.github.mkorman9.vertx.utils.web
 
-import com.github.mkorman9.vertx.utils.Config
+import com.github.mkorman9.vertx.utils.core.Config
 import io.vertx.core.Handler
 import io.vertx.ext.web.RoutingContext
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.core.get
 
 object SecurityHeadersHandler {
     fun create(config: Config): Handler<RoutingContext> {

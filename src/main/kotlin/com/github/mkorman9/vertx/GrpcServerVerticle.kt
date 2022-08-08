@@ -2,8 +2,8 @@ package com.github.mkorman9.vertx
 
 import com.github.mkorman9.vertx.client.ClientServiceGrpcImpl
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.verticleContext
-import com.github.mkorman9.vertx.utils.get
+import com.github.mkorman9.vertx.utils.core.verticleContext
+import com.github.mkorman9.vertx.utils.core.get
 import io.grpc.Server
 import io.grpc.ServerBuilder
 import io.vertx.core.impl.logging.LoggerFactory

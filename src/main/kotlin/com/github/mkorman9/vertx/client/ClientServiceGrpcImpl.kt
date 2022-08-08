@@ -5,7 +5,7 @@ import com.github.mkorman9.vertx.protocol.Client
 import com.github.mkorman9.vertx.protocol.ClientRequest
 import com.github.mkorman9.vertx.protocol.ClientServiceGrpcKt
 import com.github.mkorman9.vertx.protocol.CreditCard
-import com.github.mkorman9.vertx.utils.VerticleContext
+import com.github.mkorman9.vertx.utils.core.VerticleContext
 import com.google.protobuf.Timestamp
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.Flow

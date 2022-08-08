@@ -1,4 +1,4 @@
-package com.github.mkorman9.vertx.utils
+package com.github.mkorman9.vertx.utils.bootstrap
 
 import io.vertx.core.Verticle
 import io.vertx.core.VertxOptions

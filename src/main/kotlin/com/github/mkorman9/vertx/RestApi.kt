@@ -5,7 +5,7 @@ import com.github.mkorman9.vertx.client.ClientApi
 import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.security.AccountApi
 import com.github.mkorman9.vertx.security.SessionApi
-import com.github.mkorman9.vertx.utils.VerticleContext
+import com.github.mkorman9.vertx.utils.core.VerticleContext
 import com.github.mkorman9.vertx.utils.web.HealthcheckHandler
 import com.github.mkorman9.vertx.utils.web.SecurityHeadersHandler
 import com.github.mkorman9.vertx.utils.web.StatusDTO

@@ -2,6 +2,9 @@ package com.github.mkorman9.vertx.utils
 
 import com.github.mkorman9.vertx.HttpServerVerticle
 import com.github.mkorman9.vertx.common.Services
+import com.github.mkorman9.vertx.utils.core.Config
+import com.github.mkorman9.vertx.utils.core.DeploymentInfo
+import com.github.mkorman9.vertx.utils.core.JsonCodec
 import io.mockk.mockk
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Future

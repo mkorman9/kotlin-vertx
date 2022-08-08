@@ -1,6 +1,6 @@
 package com.github.mkorman9.vertx.utils.web
 
-import com.github.mkorman9.vertx.utils.DeploymentInfo
+import com.github.mkorman9.vertx.utils.core.DeploymentInfo
 import io.vertx.core.Handler
 import io.vertx.ext.web.RoutingContext
 

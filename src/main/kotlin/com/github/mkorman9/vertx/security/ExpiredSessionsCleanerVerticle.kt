@@ -1,7 +1,7 @@
 package com.github.mkorman9.vertx.security
 
 import com.github.mkorman9.vertx.common.Services
-import com.github.mkorman9.vertx.utils.setCronPeriodic
+import com.github.mkorman9.vertx.utils.core.setCronPeriodic
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await

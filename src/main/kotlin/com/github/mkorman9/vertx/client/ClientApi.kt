@@ -2,7 +2,7 @@ package com.github.mkorman9.vertx.client
 
 import com.github.mkorman9.vertx.common.Services
 import com.github.mkorman9.vertx.security.AuthorizationMiddleware
-import com.github.mkorman9.vertx.utils.VerticleContext
+import com.github.mkorman9.vertx.utils.core.VerticleContext
 import com.github.mkorman9.vertx.utils.web.*
 import io.vertx.ext.web.Router
 import io.vertx.kotlin.coroutines.await
