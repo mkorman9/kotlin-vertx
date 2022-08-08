@@ -57,21 +57,21 @@ spec:
             limits:
               memory: {{ .Values.app.resources.memory.limit }}
           volumeMounts:
-            - name: config
-              mountPath: /app/config.yml
-              subPath: config.yml
-              readOnly: true
-            - name: secrets
-              mountPath: /app/secrets.yml
-              subPath: secrets.yml
-              readOnly: true
-            - name: secrets
-              mountPath: /app/credentials.json
-              subPath: credentials.json
+            - name: env
+              mountPath: /app/.env
+              subPath: env.conf
               readOnly: true
           env:
             - name: ENVIRONMENT_NAME
               value: {{ .Values.app.config.environmentName }}
+            - name: PROFILE
+              value: {{ .Values.app.config.profile }}
+            - name: SERVER_HOST
+              value: 0.0.0.0
+            - name: SERVER_PORT
+              value: 8080
+            - name: SERVER_SECURITY_HEADERS
+              value: true
             {{- if .Values.app.config.graylog.enabled }}
             - name: GRAYLOG_HOST
               value: {{ .Values.app.config.graylog.host }}
@@ -85,14 +85,11 @@ spec:
         runAsUser: 10000
         runAsGroup: 10000
       volumes:
-        - name: config
-          configMap:
-            name: {{ .Values.app.configMap }}
-        - name: secrets
+        - name: env
           secret:
-            secretName: {{ .Values.app.secrets }}
+            secretName: {{ .Values.app.env }}
       {{- if .Values.images.pullSecret }}
       imagePullSecrets:
         - name: {{ .Values.images.pullSecret }}
       {{- end }}
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true

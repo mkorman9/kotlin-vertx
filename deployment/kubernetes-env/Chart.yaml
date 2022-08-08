@@ -1,5 +1,0 @@
-apiVersion: v2
-name: kotlin-vertx-local-environment
-description: External dependencies of kotlin-vertx for local setup
-type: application
-version: 0.1.0

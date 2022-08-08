@@ -5,12 +5,11 @@ app:
   port: 8080
   historicRevisions: 3
 
-  configMap: kotlin-vertx-config
-  secrets: kotlin-vertx-secrets
-  backendConfig: kotlin-vertx-ingress-backend-config
+  env: kotlin-vertx-env
 
   config:
     environmentName: default
+    profile: dev
     db:
       pool:
         size: 8
@@ -64,12 +63,5 @@ ingress:
   name: kotlin-vertx-ingress
   hostname: localhost
 
-  class: nginx
-  frontendConfig: kotlin-vertx-ingress-frontend-config
-
   useHttps: false
   tlsCertName: ""
-  strictHostCheck: false
-
-  proxyReadTimeout: 3600
-  proxySendTimeout: 3600
