@@ -62,6 +62,4 @@ images:
 ingress:
   name: kotlin-vertx-ingress
   hostname: localhost
-
-  useHttps: false
-  tlsCertName: ""
+  tlsCertArn: ""
