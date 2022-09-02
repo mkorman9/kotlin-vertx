@@ -4,20 +4,20 @@ buildscript {
         kotlinVersion = '1.5.31'
 
         // Vertx
-        vertxVersion = '4.3.1'
-        nettyVersion = '4.1.77.Final'  // must match the version used by vertx (https://github.com/vert-x3/vertx-dependencies/blob/master/pom.xml)
+        vertxVersion = '4.3.3'
+        nettyVersion = '4.1.78.Final'  // must match the version used by vertx (https://github.com/vert-x3/vertx-dependencies/blob/master/pom.xml)
 
         // Commons
         jacksonVersion = '2.13.3'
 
         // Hibernate
-        mutinyVersion = '2.22.0'
+        mutinyVersion = '2.26.0'
 
         // AWS
-        awsVersion = '1.12.252'
+        awsVersion = '1.12.295'
 
         // gRPC
-        grpcVersion = '1.47.0'
+        grpcVersion = '1.49.0'
         grpcKotlinVersion = '1.3.0'
     }
 
@@ -74,7 +74,7 @@ dependencies {
     implementation "io.vertx:vertx-micrometer-metrics:$vertxVersion"
     implementation "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
     implementation "io.netty:netty-transport-native-kqueue:$nettyVersion:osx-x86_64"
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.0'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.3'
     testImplementation "io.vertx:vertx-junit5:$vertxVersion"
 
     // Commons
@@ -88,21 +88,21 @@ dependencies {
     implementation "org.hibernate.validator:hibernate-validator:6.0.21.Final"
     implementation 'at.favre.lib:bcrypt:0.9.0'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
-    testImplementation 'io.mockk:mockk:1.12.4'
+    testImplementation 'io.mockk:mockk:1.12.7'
     testImplementation 'org.assertj:assertj-core:3.23.1'
 
     // Postgres
     implementation "io.vertx:vertx-pg-client:$vertxVersion"
     implementation "io.vertx:vertx-jdbc-client:$vertxVersion"
-    implementation 'org.liquibase:liquibase-core:4.12.0'
-    implementation 'org.postgresql:postgresql:42.4.0'
+    implementation 'org.liquibase:liquibase-core:4.15.0'
+    implementation 'org.postgresql:postgresql:42.5.0'
     implementation 'com.mattbertolini:liquibase-slf4j:4.1.0'
 
     // Redis
     implementation "io.vertx:vertx-redis-client:$vertxVersion"
 
     // Hibernate
-    implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.6.Final'
+    implementation 'org.hibernate.reactive:hibernate-reactive-core:1.1.7.Final'
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-core:$mutinyVersion"
     implementation "io.smallrye.reactive:smallrye-mutiny-vertx-pg-client:$mutinyVersion"
 
@@ -116,7 +116,7 @@ dependencies {
     implementation "io.grpc:grpc-netty:$grpcVersion"
     implementation "io.grpc:grpc-protobuf:$grpcVersion"
     implementation "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
-    implementation "com.google.protobuf:protobuf-kotlin:3.21.1"
+    implementation "com.google.protobuf:protobuf-kotlin:3.21.5"
     testImplementation "io.grpc:grpc-testing:$grpcVersion"
 }
 
