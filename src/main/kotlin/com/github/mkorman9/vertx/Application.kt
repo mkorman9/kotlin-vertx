@@ -15,25 +15,19 @@ import io.vertx.core.VertxOptions
 import io.vertx.core.impl.logging.LoggerFactory
 import io.vertx.micrometer.MicrometerMetricsOptions
 import io.vertx.micrometer.VertxPrometheusOptions
-import org.hibernate.reactive.mutiny.Mutiny.SessionFactory
 import kotlin.system.exitProcess
 
 object Application {
     private val log = LoggerFactory.getLogger(Application::class.java)
 
-    private lateinit var vertx: Vertx
-    private lateinit var sessionFactory: SessionFactory
-    private lateinit var sqsClient: SQSClient
-
     fun bootstrap() {
         try {
-            createVertx()
-
+            val vertx = createVertx()
             val config = ConfigReader.read(vertx)
 
-            migrateDbSchema(config)
+            migrateDbSchema(vertx, config)
 
-            val services = createServices(config)
+            val services = createServices(vertx, config)
 
             BootstrapUtils.bootstrap(
                 vertx = vertx,
@@ -42,30 +36,30 @@ object Application {
             )
 
             log.info("App has been bootstrapped successfully (version: ${DeploymentInfo.get().version})")
+
+            ShutdownHook.register {
+                shutdown(vertx, services)
+            }
         } catch (e: Exception) {
             log.error("Failed to bootstrap the app", e)
             exitProcess(1)
         }
-
-        ShutdownHook.register {
-            shutdown()
-        }
     }
 
-    private fun shutdown() {
+    private fun shutdown(vertx: Vertx, services: Services) {
         vertx.close()
             .toCompletionStage()
             .toCompletableFuture()
             .join()
 
-        sqsClient.close()
-        sessionFactory.close()
+        services.sqsClient.close()
+        services.sessionFactory.close()
 
         log.info("App has been stopped")
     }
 
-    private fun createVertx() {
-        vertx = Vertx.vertx(
+    private fun createVertx(): Vertx {
+        return Vertx.vertx(
             VertxOptions()
                 .setPreferNativeTransport(true)
                 .setMetricsOptions(
@@ -76,18 +70,18 @@ object Application {
         )
     }
 
-    private fun createServices(config: Config): Services {
-        sessionFactory = HibernateInitializer.initialize(vertx, config)
+    private fun createServices(vertx: Vertx, config: Config): Services {
+        val sessionFactory = HibernateInitializer.initialize(vertx, config)
             .toCompletionStage()
             .toCompletableFuture()
             .join()
 
-        sqsClient = SQSClient.create(config)
+        val sqsClient = SQSClient.create(config)
 
         return Services.create(sessionFactory, sqsClient)
     }
 
-    private fun migrateDbSchema(config: Config) {
+    private fun migrateDbSchema(vertx: Vertx, config: Config) {
         LiquibaseExecutor.migrateSchema(vertx, config)
             .toCompletionStage()
             .toCompletableFuture()
